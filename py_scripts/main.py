@@ -1,22 +1,12 @@
 #!/usr/bin/env python
-import rospy_utils.hrirosnode as hriros
 import time
-from itertools import repeat
-from multiprocessing import Pool
+from agents.mobilerobot import MobileRobot
 
 print('Launching application...')
 
-#Run Robot motors actuation nodes
-nodes = 'allMotorPub.py'
-speed = '1.0'
-
-pool = Pool()
-pool.starmap(hriros.rosrun_nodes, [(nodes, speed)])
-
+rob = MobileRobot(1, 10, 5)
+rob.start_moving(rob.max_speed)
 time.sleep(10)
-
-speed = '0.0'
-pool = Pool()
-pool.starmap(hriros.rosrun_nodes, [(nodes, speed)])
+rob.stop_moving()
 
 print('Application stopped.')

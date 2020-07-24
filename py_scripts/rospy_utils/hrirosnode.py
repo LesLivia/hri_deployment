@@ -2,8 +2,6 @@
 import time
 import subprocess
 import rospy_utils.hriconstants as const
-from itertools import repeat
-from multiprocessing import Pool
 from typing import List
 
 def rosrun_nodes(node: str, args: List[str]):
