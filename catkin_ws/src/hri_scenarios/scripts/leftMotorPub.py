@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import sys
 from std_msgs.msg import Float32
 
 def leftMotorPub(speed):
@@ -15,6 +16,7 @@ def leftMotorPub(speed):
 
 if __name__ == '__main__':
     try:
-        leftMotorPub(3.14)
+	print(sys.argv)
+        leftMotorPub(float(sys.argv[1]))
     except rospy.ROSInterruptException:
         pass
