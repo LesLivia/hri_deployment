@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import Float32
+import os
+import sys
+from std_msgs.msg import String
 
 def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)
-    
+    #rospy.loginfo("data %s", data.data)
+    f = open("../scene_logs/humanPosition.log", "a")
+    f.write("\n" + data.data)
+    f.close()
+        
 def listener():
-    rospy.init_node('humProxSub', anonymous=False)
-    rospy.Subscriber("humProximity", Float32, callback)
+    rospy.init_node('humPosSub', anonymous=False)
+    rospy.Subscriber("humPosition", String, callback)
     rospy.spin()
 
 if __name__ == '__main__':

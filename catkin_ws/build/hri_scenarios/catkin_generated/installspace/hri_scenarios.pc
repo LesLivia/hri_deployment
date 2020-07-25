@@ -1,8 +1,0 @@
-prefix=/home/parallels/Desktop/hri_deployment/catkin_ws/install
-
-Name: hri_scenarios
-Description: Description of hri_scenarios
-Version: 0.1.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

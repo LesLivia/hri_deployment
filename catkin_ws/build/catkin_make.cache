@@ -1,2 +1,0 @@
-hri_scenarios
--DCATKIN_DEVEL_PREFIX=/home/parallels/Desktop/hri_deployment/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/parallels/Desktop/hri_deployment/catkin_ws/install -G Unix Makefiles
