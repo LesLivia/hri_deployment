@@ -21,5 +21,16 @@ class MobileRobot:
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, str(targetSpeed))])
 
+	def turn_left(self):
+		node = 'rightMotorPub.py'
+
+		pool = Pool()
+		pool.starmap(hriros.rosrun_nodes, [(node, str(self.max_speed/2))])
+
+	def turn_right(self):
+		node = 'leftMotorPub.py'
+
+		pool = Pool()
+		pool.starmap(hriros.rosrun_nodes, [(node, str(self.max_speed/2))])
 
 
