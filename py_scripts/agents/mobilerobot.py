@@ -1,13 +1,21 @@
 #!/usr/bin/env python
 import os
-from multiprocessing import Pool
 import rospy_utils.hrirosnode as hriros
+import rospy_utils.hriconstants as const
+from multiprocessing import Pool
+from agents.position import Position
 
 class MobileRobot:
 	def __init__(self, rob_id, max_speed, max_accel):
 		self.rob_id = rob_id
 		self.max_speed = max_speed
 		self.max_accel = max_accel
+
+	def set_position(self, position: Position):
+		self.position = position
+
+	def get_position(self):
+		return self.position
 
 	def start_reading_position(self):
 		f = open('../scene_logs/robotPosition.log', 'r+')
@@ -27,7 +35,8 @@ class MobileRobot:
 				f = open(filename, 'r')
 				lines = f.read().splitlines()
 				last_line = lines[-1]
-				print('robot' + last_line)
+				self.set_position(Position.parse_position(last_line))
+				print(str(self.get_position()))
 				_cached_stamp = stamp
 
 	def start_moving(self, targetSpeed):
