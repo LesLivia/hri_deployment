@@ -11,12 +11,19 @@ global appStatus
 appStatus = 1
 
 bill = Human(1, 0, 10, 1, 1)
+
 bill.start_reading_position()
 time.sleep(1)
-thread = Thread(target = bill.follow_position)
-thread.start()
+thread_h = Thread(target = bill.follow_position)
+thread_h.start()
 
 rob = MobileRobot(1, 10, 5)
+
+rob.start_reading_position()
+time.sleep(1)
+thread_r = Thread(target = rob.follow_position)
+thread_r.start()
+
 rob.start_moving(rob.max_speed)
 time.sleep(10)
 rob.stop_moving()

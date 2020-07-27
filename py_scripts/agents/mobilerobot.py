@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 from multiprocessing import Pool
 import rospy_utils.hrirosnode as hriros
 
@@ -7,6 +8,27 @@ class MobileRobot:
 		self.rob_id = rob_id
 		self.max_speed = max_speed
 		self.max_accel = max_accel
+
+	def start_reading_position(self):
+		f = open('../scene_logs/robotPosition.log', 'r+')
+		f.truncate(0)
+
+		node = 'robSensorsSub.py'
+
+		pool = Pool()
+		pool.starmap(hriros.rosrun_nodes, [(node, '')])
+
+	def follow_position(self):
+		filename = '../scene_logs/robotPosition.log'
+		_cached_stamp = 0
+		while True:
+			stamp = os.stat(filename).st_mtime
+			if stamp != _cached_stamp:
+				f = open(filename, 'r')
+				lines = f.read().splitlines()
+				last_line = lines[-1]
+				print('robot' + last_line)
+				_cached_stamp = stamp
 
 	def start_moving(self, targetSpeed):
 		node = 'allMotorPub.py'

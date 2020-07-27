@@ -29,7 +29,7 @@ class Human:
 				f = open(filename, 'r')
 				lines = f.read().splitlines()
 				last_line = lines[-1]
-				print(last_line)
+				print('human' + last_line)
 				_cached_stamp = stamp
 
 
