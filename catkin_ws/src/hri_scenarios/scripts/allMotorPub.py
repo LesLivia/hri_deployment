@@ -5,7 +5,7 @@ from std_msgs.msg import Float32
 
 def allMotorPub(speed):
     pub = rospy.Publisher('allMotorSpeed', Float32, queue_size=10)
-    rospy.init_node('allPub', anonymous=False)
+    rospy.init_node('allMotorPub', anonymous=False)
     rospy.loginfo(speed)
     rate = rospy.Rate(10)
     count = 0
@@ -16,7 +16,6 @@ def allMotorPub(speed):
 
 if __name__ == '__main__':
     try:
-	print(sys.argv)
         allMotorPub(float(sys.argv[1]))
     except rospy.ROSInterruptException:
         pass

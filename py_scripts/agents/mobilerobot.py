@@ -40,12 +40,16 @@ class MobileRobot:
 				_cached_stamp = stamp
 
 	def start_moving(self, targetSpeed):
+		print('Robot moving forward...')
+
 		node = 'allMotorPub.py'
 
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, str(targetSpeed))])
 
 	def stop_moving(self):
+		print('Robot stopping...')
+
 		node = 'allMotorPub.py'
 		targetSpeed = '0.0'
 
@@ -57,27 +61,39 @@ class MobileRobot:
 		
 		orientStart = float(self.get_position().g)
 		orientDest = float(orientStart+deg)
-		epsilon = 0.5
-		print('current: ' + str(orientStart) + ' deg: ' + str(deg) + ' diff: ' + str(abs(deg-orientStart)))
+		epsilon = 0.4
 		if abs(orientStart-orientDest) >= epsilon:
-			print('turning left')
+			print('Robot turning ' + str(deg) + 'rad left...')
 			pool = Pool()
 			pool.starmap(hriros.rosrun_nodes, [(node, str(self.max_speed/10))])
 
 			orientCurr = float(orientStart)
 
-			print('current: ' + str(orientCurr) + ' start: ' + str(orientStart) + ' diff: ' + str(abs(orientCurr-orientStart)))
 			while abs(orientCurr-orientDest) >= epsilon:
-				print('current: ' + str(orientCurr) + ' start: ' + str(orientDest) + ' diff: ' + str(abs(orientCurr-orientDest)))
 				orientCurr = float(self.get_position().g)
 
-			hriros.roskill_nodes('rightMotorPub')
+			print('Robot current orientation: ' + str(orientCurr))
+			print('Stop turning...') 
 			pool.starmap(hriros.rosrun_nodes, [(node, str(0))])
 		
 	def turn_right(self, deg: float):
 		node = 'leftMotorPub.py'
+		
+		orientStart = float(self.get_position().g)
+		orientDest = float(orientStart+deg)
+		epsilon = 0.4
+		if abs(orientStart-orientDest) >= epsilon:
+			print('Robot turning ' + str(deg) + 'rad right...')
+			pool = Pool()
+			pool.starmap(hriros.rosrun_nodes, [(node, str(self.max_speed/10))])
 
-		pool = Pool()
-		pool.starmap(hriros.rosrun_nodes, [(node, str(self.max_speed/2))])
+			orientCurr = float(orientStart)
+
+			while abs(orientCurr-orientDest) >= epsilon:
+				orientCurr = float(self.get_position().g)
+
+			print('Robot current orientation: ' + str(orientCurr))
+			print('Stop turning...') 
+			pool.starmap(hriros.rosrun_nodes, [(node, str(0))])
 
 

@@ -16,7 +16,6 @@ def rightMotorPub(speed):
 
 if __name__ == '__main__':
     try:
-	print(sys.argv)
         rightMotorPub(float(sys.argv[1]))
     except rospy.ROSInterruptException:
         pass

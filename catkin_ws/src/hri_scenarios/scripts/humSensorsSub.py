@@ -5,7 +5,6 @@ import sys
 from std_msgs.msg import String
 
 def callback(data):
-    #rospy.loginfo("data %s", data.data)
     f = open("../scene_logs/humanPosition.log", "a")
     f.write("\n" + data.data)
     f.close()
