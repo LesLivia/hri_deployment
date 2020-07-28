@@ -56,18 +56,22 @@ class MobileRobot:
 		node = 'rightMotorPub.py'
 		
 		orientStart = float(self.get_position().g)
-		epsilon = 0.01
+		orientDest = float(orientStart+deg)
+		epsilon = 0.5
 		print('current: ' + str(orientStart) + ' deg: ' + str(deg) + ' diff: ' + str(abs(deg-orientStart)))
-		if abs(deg-orientStart) >= epsilon:
+		if abs(orientStart-orientDest) >= epsilon:
+			print('turning left')
 			pool = Pool()
 			pool.starmap(hriros.rosrun_nodes, [(node, str(self.max_speed/10))])
 
 			orientCurr = float(orientStart)
 
-			while abs(orientCurr-orientStart) >= epsilon:
-				print('current: ' + str(orientCurr) + ' start: ' + str(orientStart) + ' diff: ' + str(abs(orientCurr-orientStart)))
+			print('current: ' + str(orientCurr) + ' start: ' + str(orientStart) + ' diff: ' + str(abs(orientCurr-orientStart)))
+			while abs(orientCurr-orientDest) >= epsilon:
+				print('current: ' + str(orientCurr) + ' start: ' + str(orientDest) + ' diff: ' + str(abs(orientCurr-orientDest)))
 				orientCurr = float(self.get_position().g)
 
+			hriros.roskill_nodes('rightMotorPub')
 			pool.starmap(hriros.rosrun_nodes, [(node, str(0))])
 		
 	def turn_right(self, deg: float):
