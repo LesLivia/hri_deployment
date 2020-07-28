@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import time
 import os
+import sys
 import rospy_utils.hrirosnode as hriros
 from threading import Thread
 from agents.mobilerobot import MobileRobot
@@ -27,12 +28,17 @@ try:
 	rob.stop_moving()
 	time.sleep(1)
 	rob.turn_left(1.57)
-	time.sleep(1)
-	#rob.turn_right(1.57)
-	#time.sleep(1)
+	time.sleep(5)
+	rob.turn_right(-1.57)
+	time.sleep(5)
+	rob.start_moving(rob.max_speed*3)
+	time.sleep(5)
+	rob.stop_moving()
+	
+	print('Execution finished.')
 
 except (KeyboardInterrupt, SystemExit):
-	print('Application stopped.')
+	print('Exception caught...')
 	#hriros.roskill_nodes('/humPosSub')
 	#hriros.roskill_nodes('/robPosSub')
 	#hriros.roskill_nodes('/allPub')
