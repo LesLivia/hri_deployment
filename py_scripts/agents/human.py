@@ -38,7 +38,7 @@ class Human:
 				lines = f.read().splitlines()
 				last_line = lines[-1]
 				self.set_position(Position.parse_position(last_line))
-				print(str(self.get_position()))
+				#print('Human: ' + str(self.get_position()))
 				_cached_stamp = stamp
 
 

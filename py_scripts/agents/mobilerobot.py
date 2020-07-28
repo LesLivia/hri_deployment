@@ -36,7 +36,7 @@ class MobileRobot:
 				lines = f.read().splitlines()
 				last_line = lines[-1]
 				self.set_position(Position.parse_position(last_line))
-				print(str(self.get_position()))
+				#print('Robot: ' + str(self.get_position()))
 				_cached_stamp = stamp
 
 	def start_moving(self, targetSpeed):
@@ -52,13 +52,25 @@ class MobileRobot:
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, str(targetSpeed))])
 
-	def turn_left(self):
+	def turn_left(self, deg: float):
 		node = 'rightMotorPub.py'
+		
+		orientStart = float(self.get_position().g)
+		epsilon = 0.01
+		print('current: ' + str(orientStart) + ' deg: ' + str(deg) + ' diff: ' + str(abs(deg-orientStart)))
+		if abs(deg-orientStart) >= epsilon:
+			pool = Pool()
+			pool.starmap(hriros.rosrun_nodes, [(node, str(self.max_speed/10))])
 
-		pool = Pool()
-		pool.starmap(hriros.rosrun_nodes, [(node, str(self.max_speed/2))])
+			orientCurr = float(orientStart)
 
-	def turn_right(self):
+			while abs(orientCurr-orientStart) >= epsilon:
+				print('current: ' + str(orientCurr) + ' start: ' + str(orientStart) + ' diff: ' + str(abs(orientCurr-orientStart)))
+				orientCurr = float(self.get_position().g)
+
+			pool.starmap(hriros.rosrun_nodes, [(node, str(0))])
+		
+	def turn_right(self, deg: float):
 		node = 'leftMotorPub.py'
 
 		pool = Pool()

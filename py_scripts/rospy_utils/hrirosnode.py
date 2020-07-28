@@ -10,3 +10,7 @@ def rosrun_nodes(node: str, args: List[str]):
 		command += " " + arg
 	subprocess.Popen(command, shell=True)
 
+def roskill_nodes(node: str):
+	command = "rosnode kill " +  node
+	subprocess.Popen(command, shell=True)
+
