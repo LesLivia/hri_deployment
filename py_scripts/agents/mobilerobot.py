@@ -2,6 +2,7 @@
 import os
 import rospy_utils.hrirosnode as hriros
 import rospy_utils.hriconstants as const
+import agents.navigation as nav
 from multiprocessing import Pool
 from agents.position import Position
 from agents.coordinates import Point
@@ -135,6 +136,46 @@ class MobileRobot:
 	
 	def navigate_to(self, dest: Point):
 		start = self.get_position()
-		print('Robot in: ' + str(start))
+		pos = Point(start.x, start.y)
+		rob_theta = round(start.g, 2)
+		print('Robot in: ' + str(pos) + ' current orientation: ' + str(rob_theta))
 		print('navigating to: ' + str(dest))
+		
+		std_length = 10
+		std_height = 3
+
+		checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
+		print(checks)		
+		if checks[2]:
+			print('Robot should move forward')
+			self.start_moving(2.0)
+
+			while checks[2]:
+				curr = self.get_position()
+				pos = Point(curr.x, curr.y)
+				#print('Robot in: ' + str(pos) + ' current orientation: ' + str(rob_theta))
+				checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
+
+			self.stop_moving()
+			print(checks)		
+			if checks[0]:
+				print('Robot should turn left')
+			elif checks[1]:
+				print('Robot should turn right')
+		
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
