@@ -11,12 +11,19 @@ class MobileRobot:
 		self.rob_id = rob_id
 		self.max_speed = max_speed
 		self.max_accel = max_accel
+		self.sim_running = 0
 
 	def set_position(self, position: Position):
 		self.position = position
 
 	def get_position(self):
 		return self.position
+	
+	def set_sim_running(self, run):
+		self.sim_running = run	
+
+	def is_sim_running(self):
+		return self.sim_running	
 
 	def start_reading_position(self):
 		# clear robot position log file
@@ -27,30 +34,35 @@ class MobileRobot:
 				
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, '')])
+		self.set_sim_running(1)	
 
 	def follow_position(self):
 		filename = '../scene_logs/robotPosition.log'
 		_cached_stamp = 0
-		while True:
-			# when a new line is written to log file,
-			# robot position attribute is updated as well
-			# -> this needs to be continuously running in a
-			# parallel thread
-			stamp = os.stat(filename).st_mtime
-			if stamp != _cached_stamp:
-				f = open(filename, 'r')
-				lines = f.read().splitlines()
+		while self.is_sim_running():
+			try:
+				# when a new line is written to log file,
+				# robot position attribute is updated as well
+				# -> this needs to be continuously running in a
+				# parallel thread
+				stamp = os.stat(filename).st_mtime
+				if stamp != _cached_stamp:
+					f = open(filename, 'r')
+					lines = f.read().splitlines()
 
-				last_line = lines[-1]
-				newPos = Position.parse_position(last_line)
+					last_line = lines[-1]
+					newPos = Position.parse_position(last_line)
 
-				# VRep layout origin is different from the 
-				# one in the Uppaal model: translation is necessary
-				newPos.x += const.VREP_X_OFFSET
-				newPos.y += const.VREP_Y_OFFSET
-
-				self.set_position(newPos)
-				_cached_stamp = stamp
+					# VRep layout origin is different from the 
+					# one in the Uppaal model: translation is necessary
+					newPos.x += const.VREP_X_OFFSET
+					newPos.y += const.VREP_Y_OFFSET
+		
+					self.set_position(newPos)
+					_cached_stamp = stamp
+			except (KeyboardInterrupt, SystemExit):
+				print('Stopping robot position monitoring...')
+				return
 
 	def start_moving(self, targetSpeed):
 		node = 'allMotorPub.py'
