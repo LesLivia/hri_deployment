@@ -4,6 +4,7 @@ import rospy_utils.hrirosnode as hriros
 import rospy_utils.hriconstants as const
 from multiprocessing import Pool
 from agents.position import Position
+from agents.coordinates import Point
 
 class MobileRobot:
 	def __init__(self, rob_id, max_speed, max_accel):
@@ -18,11 +19,12 @@ class MobileRobot:
 		return self.position
 
 	def start_reading_position(self):
+		# clear robot position log file
 		f = open('../scene_logs/robotPosition.log', 'r+')
 		f.truncate(0)
-
+		# launch ROS node that subscribes to robot GPS data
 		node = 'robSensorsSub.py'
-
+				
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, '')])
 
@@ -30,17 +32,30 @@ class MobileRobot:
 		filename = '../scene_logs/robotPosition.log'
 		_cached_stamp = 0
 		while True:
+			# when a new line is written to log file,
+			# robot position attribute is updated as well
+			# -> this needs to be continuously running in a
+			# parallel thread
 			stamp = os.stat(filename).st_mtime
 			if stamp != _cached_stamp:
 				f = open(filename, 'r')
 				lines = f.read().splitlines()
+
 				last_line = lines[-1]
-				self.set_position(Position.parse_position(last_line))
+				newPos = Position.parse_position(last_line)
+
+				# VRep layout origin is different from the 
+				# one in the Uppaal model: translation is necessary
+				newPos.x += const.VREP_X_OFFSET
+				newPos.y += const.VREP_Y_OFFSET
+
+				self.set_position(newPos)
 				_cached_stamp = stamp
 
 	def start_moving(self, targetSpeed):
 		node = 'allMotorPub.py'
-
+		# requested target speed is published to both robot motors,
+		# so that the robot starts moving straight
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, str(targetSpeed))])
 		print('Robot moving forward...')
@@ -48,16 +63,25 @@ class MobileRobot:
 	def stop_moving(self):
 		node = 'allMotorPub.py'
 		targetSpeed = '0.0'
-
+		# both motors speed is set to 0, so that the robot stops moving
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, str(targetSpeed))])
 		print('Robot stopping...')
 
 	def turn_left(self, deg: float):
+		# if the robot needs to turn left/right, 
+		# actuation is required for only one robot
 		node = 'rightMotorPub.py'
-		
+
+		# the robot can only revolve around its z-axis,
+		# therefore starting orientation is saved so that
+		# the master knows when the rotation is complete
+		# (orientDest has been reached)
 		orientStart = float(self.get_position().g)
 		orientDest = float(orientStart+deg)
+		
+		# this is necessary to account for ROS delay
+		# in sending the "stop" command to VRep
 		epsilon = 0.45
 		if abs(orientStart-orientDest) >= epsilon:
 			pool = Pool()
@@ -65,10 +89,13 @@ class MobileRobot:
 			print('Robot turning ' + str(deg) + 'rad left...')
 
 			orientCurr = float(orientStart)
-
+			# while the requested orientation is yet to be reached, 
+			# keed acquiring robot orientation from GPS sensor
 			while abs(orientCurr-orientDest) >= epsilon:
 				orientCurr = float(self.get_position().g)
 
+			# when the requested orientation has been reached,
+			# motor speed is set to 0 and the robot stops turning
 			pool.starmap(hriros.rosrun_nodes, [(node, str(0))])
 			print('Robot current orientation: ' + str(orientCurr))
 			print('Stop turning...') 
@@ -93,4 +120,9 @@ class MobileRobot:
 			print('Robot current orientation: ' + str(orientCurr))
 			print('Stop turning...') 
 
+	
+	def navigate_to(self, dest: Point):
+		start = self.get_position()
+		print('Robot in: ' + str(start))
+		print('navigating to: ' + str(dest))
 

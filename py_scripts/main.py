@@ -6,6 +6,7 @@ import rospy_utils.hrirosnode as hriros
 from threading import Thread
 from agents.mobilerobot import MobileRobot
 from agents.human import Human
+from agents.coordinates import Point
 
 try:
 	print('Launching application...')
@@ -23,17 +24,20 @@ try:
 	thread_r = Thread(target = rob.follow_position)
 	thread_r.start()
 
-	rob.start_moving(rob.max_speed)
-	time.sleep(5)
-	rob.stop_moving()
 	time.sleep(1)
-	rob.turn_left(1.57)
-	time.sleep(5)
-	rob.turn_right(-1.57)
-	time.sleep(5)
-	rob.start_moving(rob.max_speed*3)
-	time.sleep(5)
-	rob.stop_moving()
+	dest = Point(10.0, 3.0)
+	rob.navigate_to(dest)
+	#rob.start_moving(rob.max_speed)
+	#time.sleep(5)
+	#rob.stop_moving()
+	#time.sleep(1)
+	#rob.turn_left(1.57)
+	#time.sleep(5)
+	#rob.turn_right(-1.57)
+	#time.sleep(5)
+	#rob.start_moving(rob.max_speed*3)
+	#time.sleep(5)
+	#rob.stop_moving()
 	
 	print('Execution finished.')
 
