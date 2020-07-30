@@ -29,7 +29,7 @@ thread_r = Thread(target = rob.follow_position)
 thread_r.start()
 
 time.sleep(1)
-dest = Point(10.0, 2.0)
+dest = Point(10.0, 2.5)
 rob.navigate_to(dest)
 #rob.start_moving(rob.max_speed)
 #time.sleep(5)
@@ -44,7 +44,7 @@ rob.navigate_to(dest)
 #rob.stop_moving()
 
 rob.set_sim_running(0)
-#vrep.stop_sim(vrep_sim)
+vrep.stop_sim(vrep_sim)
 quit()
 print('Execution finished.')
 

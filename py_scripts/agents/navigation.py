@@ -10,24 +10,42 @@ from agents.coordinates import Point
 PI = 3.14
 
 def is_in_rectangle(pos: Point, dest: Point, length: float, height: float):
-	vrep.draw_point(const.VREP_CLIENT_ID, Point(dest.x-const.VREP_X_OFFSET, dest.y-const.VREP_Y_OFFSET))
+	# visualization of dest in vrep
+	vrep.draw_point(const.VREP_CLIENT_ID, Point(dest.x, dest.y))
+
 	destXisIn = 0
 	destYisIn = 0
 	allowance = 0.95
+	pts = []
 	if abs(length) > abs(height):
 		if length > 0:
+			# visualization of projected rectangle in vrep
+			pts = [Point(pos.x - (1-allowance)*length, pos.y + height/2), Point(pos.x + allowance*length, pos.y + height/2), Point(pos.x + allowance*length, pos.y - height/2), Point(pos.x - (1-allowance)*length, pos.y - height/2)]
+		
 			destXisIn = dest.x < pos.x + allowance*length and dest.x > pos.x - (1-allowance)*length
 		else:
+			# visualization of projected rectangle in vrep
+			pts = [Point(pos.x + allowance*length, pos.y + height/2), Point(pos.x - (1-allowance)*length, pos.y + height/2), Point(pos.x - (1-allowance)*length, pos.y - height/2), Point(pos.x + allowance*length, pos.y - height/2)]
+
 			destXisIn = dest.x < pos.x + (1-allowance)*length and dest.x > pos.x - allowance*length
 		
 		destYisIn = dest.y < pos.y + height/2 and dest.y > pos.y - height/2
 	else:
 		destXisIn = dest.x < pos.x + length/2 and dest.x > pos.x - length/2
+
 		if height > 0:
+			# visualization of projected rectangle in vrep
+			pts = [Point(pos.x - length/2, pos.y - (1-allowance)*height), Point(pos.x + length/2, pos.y - (1-allowance)*height), Point(pos.x + length/2, pos.y + allowance*height), Point(pos.x - length/2, pos.y + allowance*height)]
+
 			destYisIn = dest.y < pos.y + allowance*height and dest.y > pos.y - (1-allowance)*height
 		else:
-			destYisIn = dest.y < pos.y + (1-allowance)*height and dest.y > pos.y - allowance*height
+			# visualization of projected rectangle in vrep
+			pts = [Point(pos.x + length/2, pos.y - (1-allowance)*height), Point(pos.x - length/2, pos.y - (1-allowance)*height), Point(pos.x + length/2, pos.y + allowance*height), Point(pos.x - length/2, pos.y + allowance*height)]
 
+			destYisIn = dest.y < pos.y + (1-allowance)*height and dest.y > pos.y - allowance*height
+	
+	if destXisIn and destYisIn:
+		vrep.draw_rectangle(const.VREP_CLIENT_ID, pts[0], pts[1], pts[2], pts[3])			
 	return destXisIn and destYisIn
 
 

@@ -148,12 +148,11 @@ class MobileRobot:
 		print(checks)		
 		if checks[2]:
 			print('Robot should move forward')
-			self.start_moving(2.0)
+			self.start_moving(3.0)
 
 			while checks[2]:
 				curr = self.get_position()
 				pos = Point(curr.x, curr.y)
-				#print('Robot in: ' + str(pos) + ' current orientation: ' + str(rob_theta))
 				checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
 
 			self.stop_moving()
