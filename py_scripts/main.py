@@ -11,7 +11,8 @@ from agents.coordinates import Point
 
 print('Launching application...')
 
-vrep.connect(19999)
+vrep_sim = vrep.connect(19999)
+vrep.start_sim(vrep_sim)
 
 #bill = Human(1, 0, 10, 1, 1)
 
@@ -43,6 +44,7 @@ rob.navigate_to(dest)
 #rob.stop_moving()
 
 rob.set_sim_running(0)
+#vrep.stop_sim(vrep_sim)
 quit()
 print('Execution finished.')
 

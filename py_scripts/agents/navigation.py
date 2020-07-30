@@ -2,6 +2,7 @@
 import os
 import rospy_utils.hrirosnode as hriros
 import rospy_utils.hriconstants as const
+import vrep_utils.vrep as vrep
 from multiprocessing import Pool
 from agents.position import Position
 from agents.coordinates import Point
@@ -9,6 +10,7 @@ from agents.coordinates import Point
 PI = 3.14
 
 def is_in_rectangle(pos: Point, dest: Point, length: float, height: float):
+	vrep.draw_point(const.VREP_CLIENT_ID, Point(dest.x-const.VREP_X_OFFSET, dest.y-const.VREP_Y_OFFSET))
 	destXisIn = 0
 	destYisIn = 0
 	allowance = 0.95
