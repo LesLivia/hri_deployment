@@ -3,12 +3,16 @@ import time
 import os
 import sys
 import rospy_utils.hrirosnode as hriros
+import vrep_utils.vrep as vrep
 from threading import Thread
 from agents.mobilerobot import MobileRobot
 from agents.human import Human
 from agents.coordinates import Point
 
 print('Launching application...')
+
+vrep.connect(19999)
+
 #bill = Human(1, 0, 10, 1, 1)
 
 #bill.start_reading_position()
