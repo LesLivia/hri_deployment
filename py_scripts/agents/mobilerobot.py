@@ -22,13 +22,19 @@ class MobileRobot:
     def get_position(self):
         return self.position
 
+    def set_charge(self, charge: float):
+        self.charge = charge
+
+    def get_charge(self):
+        return self.charge
+
     def set_sim_running(self, run):
         self.sim_running = run
 
     def is_sim_running(self):
         return self.sim_running
 
-    def start_reading_position(self):
+    def start_reading_data(self):
         # clear robot position log file
         f = open('../scene_logs/robotPosition.log', 'r+')
         f.truncate(0)
@@ -37,6 +43,16 @@ class MobileRobot:
 
         pool = Pool()
         pool.starmap(hriros.rosrun_nodes, [(node, '')])
+
+        # clear robot position log file
+        f = open('../scene_logs/robotBattery.log', 'r+')
+        f.truncate(0)
+        # launch ROS node that subscribes to robot GPS data
+        node = 'robBatterySub.py'
+
+        pool = Pool()
+        pool.starmap(hriros.rosrun_nodes, [(node, '')])
+
         self.set_sim_running(1)
 
     def follow_position(self):
@@ -65,6 +81,29 @@ class MobileRobot:
                     _cached_stamp = stamp
             except (KeyboardInterrupt, SystemExit):
                 print('Stopping robot position monitoring...')
+                return
+
+    def follow_charge(self):
+        filename = '../scene_logs/robotBattery.log'
+        _cached_stamp = 0
+        while self.is_sim_running():
+            try:
+                # when a new line is written to log file,
+                # robot charge attribute is updated as well
+                # -> this needs to be continuously running in a
+                # parallel thread
+                stamp = os.stat(filename).st_mtime
+                if stamp != _cached_stamp:
+                    f = open(filename, 'r')
+                    lines = f.read().splitlines()
+
+                    last_line = lines[-1]
+                    new_charge = float(last_line)
+
+                    self.set_charge(new_charge)
+                    _cached_stamp = stamp
+            except (KeyboardInterrupt, SystemExit):
+                print('Stopping robot battery charge monitoring...')
                 return
 
     def start_moving(self, targetSpeed):
