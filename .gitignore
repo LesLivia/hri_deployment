@@ -3,3 +3,4 @@ catkin_ws/devel
 catkin_ws/install
 scene_logs/
 __pycache__/
+.idea/
