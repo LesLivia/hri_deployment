@@ -22,13 +22,13 @@ def stop_sim(clientID):
 		print('Simulation stopped.')
 
 def draw_point(clientID, pos: Point):
-	vrep.simxCallScriptFunction(clientID, 'wall', vrep.sim_scripttype_childscript, 'draw_point', [], [pos.x-const.VREP_X_OFFSET, pos.y-const.VREP_Y_OFFSET], '', '', vrep.simx_opmode_blocking)
+	vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'draw_point', [], [pos.x-const.VREP_X_OFFSET, pos.y-const.VREP_Y_OFFSET], '', '', vrep.simx_opmode_blocking)
 
 def draw_line(clientID, pos1: Point, pos2: Point):
-	vrep.simxCallScriptFunction(clientID, 'wall', vrep.sim_scripttype_childscript, 'draw_line', [], [pos1.x-const.VREP_X_OFFSET, pos1.y-const.VREP_Y_OFFSET, pos2.x-const.VREP_X_OFFSET, pos2.y-const.VREP_Y_OFFSET], '', '', vrep.simx_opmode_blocking)
+	vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'draw_line', [], [pos1.x-const.VREP_X_OFFSET, pos1.y-const.VREP_Y_OFFSET, pos2.x-const.VREP_X_OFFSET, pos2.y-const.VREP_Y_OFFSET], '', '', vrep.simx_opmode_blocking)
 
 def clear_lines(clientID):
-	vrep.simxCallScriptFunction(clientID, 'wall', vrep.sim_scripttype_childscript, 'clear_line', [], [], '', '', vrep.simx_opmode_blocking)
+	vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'clear_line', [], [], '', '', vrep.simx_opmode_blocking)
 
 def draw_rectangle(clientID, pos1: Point, pos2: Point, pos3: Point, pos4: Point):
 	clear_lines(const.VREP_CLIENT_ID)

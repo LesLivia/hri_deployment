@@ -42,7 +42,7 @@ class MobileRobot:
         node = 'robSensorsSub.py'
 
         pool = Pool()
-        pool.starmap(hriros.rosrun_nodes, [(node, '')])
+        pool.starmap(hriros.rosrun_nodes, [(node, [''])])
 
         # clear robot position log file
         f = open('../scene_logs/robotBattery.log', 'r+')
@@ -51,7 +51,7 @@ class MobileRobot:
         node = 'robBatterySub.py'
 
         pool = Pool()
-        pool.starmap(hriros.rosrun_nodes, [(node, '')])
+        pool.starmap(hriros.rosrun_nodes, [(node, [''])])
 
         self.set_sim_running(1)
 
@@ -111,7 +111,7 @@ class MobileRobot:
         # requested target speed is published to both robot motors,
         # so that the robot starts moving straight
         pool = Pool()
-        pool.starmap(hriros.rosrun_nodes, [(node, str(targetSpeed))])
+        pool.starmap(hriros.rosrun_nodes, [(node, [str(targetSpeed)])])
         print('Robot moving forward...')
 
     def stop_moving(self):
@@ -119,7 +119,7 @@ class MobileRobot:
         targetSpeed = '0.0'
         # both motors speed is set to 0, so that the robot stops moving
         pool = Pool()
-        pool.starmap(hriros.rosrun_nodes, [(node, str(targetSpeed))])
+        pool.starmap(hriros.rosrun_nodes, [(node, [str(targetSpeed)])])
         print('Robot stopping...')
 
     def turn_left(self, deg: float):
@@ -175,67 +175,49 @@ class MobileRobot:
 
         std_length = 10
         std_height = 3
-        _min_dist = 1.5
+        _min_dist = 1.0
 
-        _parachuteCnt = 0
-
-        while pos.distance_from(dest) > _min_dist and _parachuteCnt < 20:
+        while pos.distance_from(dest) > _min_dist:
             checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
-            print(checks)
-            _parachuteCnt = _parachuteCnt + 1
 
-            if not checks[0] and not checks[1] and not checks[2]:
+            if not checks[0] and not checks[1] and not checks[2] and pos.distance_from(dest) > _min_dist:
                 print('Robot should move forward')
                 self.start_moving(2.0)
-                while not checks[0] and not checks[1] and not checks[2]:
-                    _parachuteCnt = 0
 
+                while not checks[0] and not checks[1] and not checks[2]:
                     curr = self.get_position()
                     pos = Point(curr.x, curr.y)
                     rob_theta = round(curr.g, 2)
            
-                    #print(str(pos.distance_from(dest)))
                     checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
                 
                 self.stop_moving()		
 
-            elif checks[2]:
+            elif checks[2] and pos.distance_from(dest) > _min_dist:
                 print('Robot should move forward')
                 self.start_moving(2.0)
 
-                while checks[2] and pos.distance_from(dest) > _min_dist:
-                    _parachuteCnt = 0
-
+                while checks[2] and pos.distance_from(dest) > _min_dist and not checks[0] and not checks[1]:
                     curr = self.get_position()
                     pos = Point(curr.x, curr.y)
                     rob_theta = round(curr.g, 2)
            
-                    #print(str(pos.distance_from(dest)))
                     checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
-                    if checks[0] or checks[1]:
-                        break
 
                 self.stop_moving()
 
             elif checks[0] and pos.distance_from(dest) > _min_dist:
-                _parachuteCnt = 0
-                time.sleep(0.5)
-                self.turn_left(1.57)
-                time.sleep(0.5)
-                curr = self.get_position()
-                pos = Point(curr.x, curr.y)
-                rob_theta = round(curr.g, 2)
                 print('Robot should turn left')
-            elif checks[1] and pos.distance_from(dest) > _min_dist:
-                _parachuteCnt = 0
-                time.sleep(0.5)
-                self.turn_right(1.57)
-                time.sleep(0.5)
+                self.turn_left(1.57)
                 curr = self.get_position()
                 pos = Point(curr.x, curr.y)
                 rob_theta = round(curr.g, 2)
-                print('Robot should turn right')
 
-        print(str(pos.distance_from(dest)))
+            elif checks[1] and pos.distance_from(dest) > _min_dist:
+                print('Robot should turn right')
+                self.turn_right(1.57)
+                curr = self.get_position()
+                pos = Point(curr.x, curr.y)
+                rob_theta = round(curr.g, 2)
 
 
