@@ -12,7 +12,6 @@ class Point:
 
     def distance_from(self, pos2):
         result = float(math.sqrt((self.x - pos2.x) ** 2 + (self.y - pos2.y) ** 2))
-        print(str(self) + ' distance from ' + str(pos2) + ' ' + str(result))
         return result
 
     def parse_point(posStr: str):

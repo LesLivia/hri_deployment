@@ -183,28 +183,39 @@ class MobileRobot:
 
         std_length = 10
         std_height = 3
+        _min_dist = 1.5
 
-        while pos.distance_from(dest) > 1.0:
+        _parachuteCnt = 0
+
+        while pos.distance_from(dest) > _min_dist and _parachuteCnt < 20:
             checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
             print(checks)
+            print(str(pos.distance_from(dest)))
+            _parachuteCnt = _parachuteCnt + 1
             if not checks[0] and not checks[1]:
                 print('Robot should move forward')
                 self.start_moving(2.0)
 
-                while checks[2]:
+                while checks[2] and pos.distance_from(dest) > _min_dist:
+                    _parachuteCnt = 0
+
                     curr = self.get_position()
                     pos = Point(curr.x, curr.y)
                     checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
+                    if checks[0] or checks[1]:
+                        break
 
                 self.stop_moving()
-                print(checks)
-                if checks[0]:
-                    time.sleep(0.5)
-                    self.turn_left(1.57)
-                    print('Robot should turn left')
+            elif checks[0] and pos.distance_from(dest) > _min_dist:
+                _parachuteCnt = 0
 
-                elif checks[1]:
-                    self.turn_right(1.57)
-                    print('Robot should turn right')
+                time.sleep(0.5)
+                self.turn_left(1.57)
+                print('Robot should turn left')
+            elif checks[1] and pos.distance_from(dest) > _min_dist:
+                _parachuteCnt = 0
 
-                checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
+                self.turn_right(1.57)
+                print('Robot should turn right')
+
+            checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
