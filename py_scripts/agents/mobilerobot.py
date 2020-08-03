@@ -136,10 +136,10 @@ class MobileRobot:
 
         # this is necessary to account for ROS delay
         # in sending the "stop" command to VRep
-        epsilon = 0.3
+        epsilon = 0.45
         if abs(orientStart - orientDest) >= epsilon:
             pool = Pool()
-            pool.starmap(hriros.rosrun_nodes, [(node, str(self.max_speed / 10))])
+            pool.starmap(hriros.rosrun_nodes, [(node, str(self.max_speed / 10)) + "#" + str(deg)])
             print('Robot turning ' + str(deg) + 'rad left...')
 
             orientCurr = float(orientStart)
@@ -150,8 +150,9 @@ class MobileRobot:
 
             # when the requested orientation has been reached,
             # motor speed is set to 0 and the robot stops turning
-            pool.starmap(hriros.rosrun_nodes, [(node, str(0))])
-            print('Robot current orientation: ' + str(orientCurr))
+            #pool.starmap(hriros.rosrun_nodes, [(node, str(0))])
+            #print('Robot current orientation: ' + str(orientCurr))
+            #time.sleep(1) 
             print('Stop turning...')
 
     def turn_right(self, deg: float):
@@ -190,9 +191,24 @@ class MobileRobot:
         while pos.distance_from(dest) > _min_dist and _parachuteCnt < 20:
             checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
             print(checks)
-            print(str(pos.distance_from(dest)))
             _parachuteCnt = _parachuteCnt + 1
-            if not checks[0] and not checks[1]:
+
+            if not checks[0] and not checks[1] and not checks[2]:
+                print('Robot should move forward')
+                self.start_moving(2.0)
+                while not checks[0] and not checks[1] and not checks[2]:
+                    _parachuteCnt = 0
+
+                    curr = self.get_position()
+                    pos = Point(curr.x, curr.y)
+                    rob_theta = round(curr.g, 2)
+           
+                    #print(str(pos.distance_from(dest)))
+                    checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
+                
+                self.stop_moving()		
+
+            elif checks[2]:
                 print('Robot should move forward')
                 self.start_moving(2.0)
 
@@ -201,21 +217,34 @@ class MobileRobot:
 
                     curr = self.get_position()
                     pos = Point(curr.x, curr.y)
+                    rob_theta = round(curr.g, 2)
+           
+                    #print(str(pos.distance_from(dest)))
                     checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
                     if checks[0] or checks[1]:
                         break
 
                 self.stop_moving()
+
             elif checks[0] and pos.distance_from(dest) > _min_dist:
                 _parachuteCnt = 0
-
                 time.sleep(0.5)
                 self.turn_left(1.57)
+                time.sleep(0.5)
+                curr = self.get_position()
+                pos = Point(curr.x, curr.y)
+                rob_theta = round(curr.g, 2)
                 print('Robot should turn left')
             elif checks[1] and pos.distance_from(dest) > _min_dist:
                 _parachuteCnt = 0
-
+                time.sleep(0.5)
                 self.turn_right(1.57)
+                time.sleep(0.5)
+                curr = self.get_position()
+                pos = Point(curr.x, curr.y)
+                rob_theta = round(curr.g, 2)
                 print('Robot should turn right')
 
-            checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
+        print(str(pos.distance_from(dest)))
+
+

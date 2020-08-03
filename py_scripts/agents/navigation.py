@@ -55,11 +55,27 @@ def get_dir_to_check(pos: Point, dest: Point, rob_theta: float, length: float, h
 	destIsOnTheRight = 0
 	destIsAhead = 0
 	destIsBehind = 0
+
 	if abs(rob_theta-0) <= epsilon:
 		destIsOnTheLeft = is_in_rectangle(pos, dest, height, length)		
 		destIsOnTheRight = is_in_rectangle(pos, dest, height, -length)		
 		destIsAhead = is_in_rectangle(pos, dest, length, height)		
-		destIsBehind = is_in_rectangle(pos, dest, -length, height)		
+		destIsBehind = is_in_rectangle(pos, dest, -length, height)
+	elif abs(rob_theta-PI) <= epsilon:
+		destIsOnTheLeft = is_in_rectangle(pos, dest, height, -length)
+		destIsOnTheRight = is_in_rectangle(pos, dest, height, length)
+		destIsAhead = is_in_rectangle(pos, dest, -length, height)
+		destIsBehind = is_in_rectangle(pos, dest, length, height)
+	elif abs(rob_theta-PI/2) <= epsilon:	        
+		destIsOnTheLeft = is_in_rectangle(pos, dest, -length, height)
+		destIsOnTheRight = is_in_rectangle(pos, dest, length, height)
+		destIsAhead = is_in_rectangle(pos, dest, height, length)
+		destIsBehind = is_in_rectangle(pos, dest, height, -length)
+	elif abs(rob_theta-3/2*PI) <= epsilon:
+		destIsOnTheLeft = is_in_rectangle(pos, dest, length, height)
+		destIsOnTheRight = is_in_rectangle(pos, dest, -length, height)
+		destIsAhead = is_in_rectangle(pos, dest, height, -length)
+		destIsBehind = is_in_rectangle(pos, dest, height, length)
 	
 	return [destIsOnTheLeft, destIsOnTheRight, destIsAhead, destIsBehind]
 

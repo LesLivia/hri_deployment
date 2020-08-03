@@ -32,8 +32,9 @@ try:
 	thread_rb.start()
 	
 	time.sleep(1)
-	dest = Point(5.0, 2.0)
-	rob.navigate_to(dest)
+	dest = Point(5.0, 3.2)
+	rob.turn_left(1.57)
+	#rob.navigate_to(dest)
 
 	rob.set_sim_running(0)
 	bill.set_sim_running(0)

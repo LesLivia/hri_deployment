@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 import rospy
 import sys
-from std_msgs.msg import Float32
+from std_msgs.msg import String
 
-def rightMotorPub(speed):
-    pub = rospy.Publisher('rightMotorSpeed', Float32, queue_size=10)
+def rightMotorPub(data):
+    pub = rospy.Publisher('rightMotorSpeed', String, queue_size=10)
     rospy.init_node('rightMotorPub', anonymous=False)
-    rospy.loginfo(speed)
+    rospy.loginfo(data)
     rate = rospy.Rate(10)
     count = 0
     while count < 3:
-	pub.publish(speed) 
+	pub.publish(data) 
         rate.sleep()
         count+=1
 
 if __name__ == '__main__':
     try:
-        rightMotorPub(float(sys.argv[1]))
+        rightMotorPub(str(sys.argv[1]))
     except rospy.ROSInterruptException:
         pass

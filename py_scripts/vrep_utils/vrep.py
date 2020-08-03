@@ -19,7 +19,7 @@ def start_sim(clientID):
 def stop_sim(clientID):
 	result = vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
 	if result != vrep.simx_return_ok:
-		print('Something went wrong while stopping the simulation')
+		print('Simulation stopped.')
 
 def draw_point(clientID, pos: Point):
 	vrep.simxCallScriptFunction(clientID, 'wall', vrep.sim_scripttype_childscript, 'draw_point', [], [pos.x-const.VREP_X_OFFSET, pos.y-const.VREP_Y_OFFSET], '', '', vrep.simx_opmode_blocking)
