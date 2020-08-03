@@ -176,13 +176,14 @@ class MobileRobot:
         std_length = 10
         std_height = 3
         _min_dist = 1.0
+        _nav_speed = 3.0
 
         while pos.distance_from(dest) > _min_dist:
             checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
 
             if not checks[0] and not checks[1] and not checks[2] and pos.distance_from(dest) > _min_dist:
                 print('Robot should move forward')
-                self.start_moving(2.0)
+                self.start_moving(_nav_speed)
 
                 while not checks[0] and not checks[1] and not checks[2]:
                     curr = self.get_position()
@@ -195,9 +196,9 @@ class MobileRobot:
 
             elif checks[2] and pos.distance_from(dest) > _min_dist:
                 print('Robot should move forward')
-                self.start_moving(2.0)
+                self.start_moving(_nav_speed)
 
-                while checks[2] and pos.distance_from(dest) > _min_dist and not checks[0] and not checks[1]:
+                while checks[2] and pos.distance_from(dest) > _min_dist:
                     curr = self.get_position()
                     pos = Point(curr.x, curr.y)
                     rob_theta = round(curr.g, 2)
