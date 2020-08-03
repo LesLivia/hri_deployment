@@ -124,56 +124,47 @@ class MobileRobot:
 
     def turn_left(self, deg: float):
         # if the robot needs to turn left/right,
-        # actuation is required for only one robot
+        # actuation is required for only one motor
         node = 'rightMotorPub.py'
 
         # the robot can only revolve around its z-axis,
         # therefore starting orientation is saved so that
         # the master knows when the rotation is complete
         # (orientDest has been reached)
-        orientStart = float(self.get_position().g)
-        orientDest = float(orientStart + deg)
+        _current_orientation = float(self.get_position().g)
+        dest_orientation = float(_current_orientation + deg)
+        epsilon = 0.1
 
-        # this is necessary to account for ROS delay
-        # in sending the "stop" command to VRep
-        epsilon = 0.45
-        if abs(orientStart - orientDest) >= epsilon:
-            pool = Pool()
-            pool.starmap(hriros.rosrun_nodes, [(node, str(self.max_speed / 10)) + "#" + str(deg)])
-            print('Robot turning ' + str(deg) + 'rad left...')
+        pool = Pool()
+        msg:str = str(self.max_speed / 10) + '#' + str(deg)
+        pool.starmap(hriros.rosrun_nodes, [(node, [msg])])
+        print('Robot turning ' + str(deg) + 'rad left...')
 
-            orientCurr = float(orientStart)
-            # while the requested orientation is yet to be reached,
-            # keed acquiring robot orientation from GPS sensor
-            while abs(orientCurr - orientDest) >= epsilon:
-                orientCurr = float(self.get_position().g)
+        while abs(_current_orientation - dest_orientation) >= epsilon:
+            _current_orientation = float(self.get_position().g)
 
-            # when the requested orientation has been reached,
-            # motor speed is set to 0 and the robot stops turning
-            #pool.starmap(hriros.rosrun_nodes, [(node, str(0))])
-            #print('Robot current orientation: ' + str(orientCurr))
-            #time.sleep(1) 
-            print('Stop turning...')
+        print('Robot turning complete.')
 
     def turn_right(self, deg: float):
         node = 'leftMotorPub.py'
 
-        orientStart = float(self.get_position().g)
-        orientDest = float(orientStart + deg)
-        epsilon = 0.45
-        if abs(orientStart - orientDest) >= epsilon:
-            pool = Pool()
-            pool.starmap(hriros.rosrun_nodes, [(node, str(self.max_speed / 10))])
-            print('Robot turning ' + str(deg) + 'rad right...')
+        # the robot can only revolve around its z-axis,
+        # therefore starting orientation is saved so that
+        # the master knows when the rotation is complete
+        # (orientDest has been reached)
+        _current_orientation = float(self.get_position().g)
+        dest_orientation = float(_current_orientation + deg)
+        epsilon = 0.1
 
-            orientCurr = float(orientStart)
+        pool = Pool()
+        msg:str = str(self.max_speed / 10) + '#' + str(deg)
+        pool.starmap(hriros.rosrun_nodes, [(node, [msg])])
+        print('Robot turning ' + str(deg) + 'rad right...')
 
-            while abs(orientCurr - orientDest) >= epsilon:
-                orientCurr = float(self.get_position().g)
+        while abs(_current_orientation - dest_orientation) >= epsilon:
+            _current_orientation = float(self.get_position().g)
 
-            pool.starmap(hriros.rosrun_nodes, [(node, str(0))])
-            print('Robot current orientation: ' + str(orientCurr))
-            print('Stop turning...')
+        print('Robot turning complete.')
 
     def navigate_to(self, dest: Point):
         start = self.get_position()
