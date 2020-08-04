@@ -17,14 +17,14 @@ vrep.start_sim(vrep_sim)
 bill = Human(1, 0, 10, 1, 1)
 rob = MobileRobot(1, 10, 5)
 try:
-	#bill.start_reading_data()
+	bill.start_reading_data()
 	rob.start_reading_data()
 	time.sleep(5)
 
-	#thread_h = Thread(target = bill.follow_position)
-	#thread_h.start()
-	#thread_h_f = Thread(target = bill.follow_fatigue)
-	#thread_h_f.start()
+	thread_h = Thread(target = bill.follow_position)
+	thread_h.start()
+	thread_h_f = Thread(target = bill.follow_fatigue)
+	thread_h_f.start()
 
 	thread_r = Thread(target=rob.follow_position)
 	thread_r.start()
@@ -32,7 +32,7 @@ try:
 	thread_rb.start()
 	
 	time.sleep(1)
-	dest = Point(13.0, 11.0)
+	dest = Point(22.0, 14.0)
 	rob.navigate_to(dest)
 
 	rob.set_sim_running(0)
