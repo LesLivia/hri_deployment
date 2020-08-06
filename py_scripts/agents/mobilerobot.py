@@ -7,6 +7,7 @@ import agents.navigation as nav
 from multiprocessing import Pool
 from agents.position import Position
 from agents.coordinates import Point
+from agents.orchestrator import Orchestrator
 
 
 class MobileRobot:
@@ -15,6 +16,7 @@ class MobileRobot:
         self.max_speed = max_speed
         self.max_accel = max_accel
         self.sim_running = 0
+        self.orchestrator = Orchestrator(5, 1)
 
     def set_position(self, position: Position):
         self.position = position
@@ -106,6 +108,14 @@ class MobileRobot:
                 print('Stopping robot battery charge monitoring...')
                 return
 
+    def run_mission(self):
+        cnt = 0
+        while cnt < 5:
+                print('checking actions...')
+                time.sleep(self.orchestrator.t_int)
+                cnt +=1
+        self.set_sim_running(0)
+	
     def start_moving(self, targetSpeed):
         node = 'allMotorPub.py'
         # requested target speed is published to both robot motors,

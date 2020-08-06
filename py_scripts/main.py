@@ -19,12 +19,12 @@ rob = MobileRobot(1, 10, 5)
 try:
 	bill.start_reading_data()
 	rob.start_reading_data()
-	time.sleep(5)
+	time.sleep(7)
 
-	thread_h = Thread(target = bill.follow_position)
-	thread_h.start()
-	thread_h_f = Thread(target = bill.follow_fatigue)
-	thread_h_f.start()
+	#thread_h = Thread(target = bill.follow_position)
+	#thread_h.start()
+	#thread_h_f = Thread(target = bill.follow_fatigue)
+	#thread_h_f.start()
 
 	thread_r = Thread(target=rob.follow_position)
 	thread_r.start()
@@ -33,9 +33,14 @@ try:
 	
 	time.sleep(1)
 	dest = Point(22.0, 14.0)
-	rob.navigate_to(dest)
-
-	rob.set_sim_running(0)
+	thread_m = Thread(target = rob.run_mission)
+	thread_m.start()
+	
+	#rob.navigate_to(dest)
+	while rob.is_sim_running():
+		pass
+ 
+	#rob.set_sim_running(0)
 	bill.set_sim_running(0)
 	vrep.stop_sim(vrep_sim)
 	quit()
