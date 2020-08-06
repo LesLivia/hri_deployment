@@ -8,6 +8,7 @@ from threading import Thread
 from agents.mobilerobot import MobileRobot
 from agents.human import Human
 from agents.coordinates import Point
+from agents.orchestrator import Orchestrator
 
 print('Launching application...')
 
@@ -33,7 +34,8 @@ try:
 	
 	time.sleep(1)
 	dest = Point(22.0, 14.0)
-	thread_m = Thread(target = rob.run_mission)
+	orch = Orchestrator(5, 1, rob)
+	thread_m = Thread(target = orch.run_mission)
 	thread_m.start()
 	
 	#rob.navigate_to(dest)
