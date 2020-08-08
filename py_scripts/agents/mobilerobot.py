@@ -178,47 +178,46 @@ class MobileRobot:
         _min_dist = 1.0
         _nav_speed = 3.0
 
-        while pos.distance_from(dest) > _min_dist:
-            checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
+        checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
 
-            if not checks[0] and not checks[1] and not checks[2] and pos.distance_from(dest) > _min_dist:
-                print('Robot should move forward')
-                self.start_moving(_nav_speed)
+        if not checks[0] and not checks[1] and not checks[2] and pos.distance_from(dest) > _min_dist:
+            print('Robot should move forward')
+            self.start_moving(_nav_speed)
 
-                while not checks[0] and not checks[1] and not checks[2]:
-                    curr = self.get_position()
-                    pos = Point(curr.x, curr.y)
-                    rob_theta = round(curr.g, 2)
+            #while not checks[0] and not checks[1] and not checks[2]:
+                #curr = self.get_position()
+                #pos = Point(curr.x, curr.y)
+                #rob_theta = round(curr.g, 2)
            
-                    checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
+                #checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
                 
-                self.stop_moving()		
+            #self.stop_moving()		
 
-            elif checks[2] and pos.distance_from(dest) > _min_dist:
-                print('Robot should move forward')
-                self.start_moving(_nav_speed)
+        elif checks[2] and pos.distance_from(dest) > _min_dist:
+            print('Robot should move forward')
+            self.start_moving(_nav_speed)
 
-                while checks[2] and pos.distance_from(dest) > _min_dist:
-                    curr = self.get_position()
-                    pos = Point(curr.x, curr.y)
-                    rob_theta = round(curr.g, 2)
+            #while checks[2] and pos.distance_from(dest) > _min_dist:
+                #curr = self.get_position()
+                #pos = Point(curr.x, curr.y)
+                #rob_theta = round(curr.g, 2)
            
-                    checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
+                #checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
 
-                self.stop_moving()
+            #self.stop_moving()
 
-            elif checks[0] and pos.distance_from(dest) > _min_dist:
-                print('Robot should turn left')
-                self.turn_left(1.57)
-                curr = self.get_position()
-                pos = Point(curr.x, curr.y)
-                rob_theta = round(curr.g, 2)
+        elif checks[0] and pos.distance_from(dest) > _min_dist:
+            print('Robot should turn left')
+            self.turn_left(1.57)
+            curr = self.get_position()
+            pos = Point(curr.x, curr.y)
+            rob_theta = round(curr.g, 2)
 
-            elif checks[1] and pos.distance_from(dest) > _min_dist:
-                print('Robot should turn right')
-                self.turn_right(1.57)
-                curr = self.get_position()
-                pos = Point(curr.x, curr.y)
-                rob_theta = round(curr.g, 2)
+        elif checks[1] and pos.distance_from(dest) > _min_dist:
+            print('Robot should turn right')
+            self.turn_right(1.57)
+            curr = self.get_position()
+            pos = Point(curr.x, curr.y)
+            rob_theta = round(curr.g, 2)
 
 
