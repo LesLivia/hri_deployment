@@ -1,18 +1,26 @@
 #!/usr/bin/env python
 import time
+from enum import Enum
 from typing import List
 from agents.coordinates import Point
 from agents.mobilerobot import MobileRobot
 from agents.human import Human
 from agents.mission import Mission
 
+class Operating_Modes(Enum):
+	ROBOT_IDLE = 1
+	ROBOT_LEAD = 2
+	ROBOT_RECH = 3
+	ROBOT_CARR = 4
+	ROBOT_FOLL = 5
+	
 class Orchestrator:
 	def __init__(self, t_int: int, t_proc: int, rob: MobileRobot, hum: List[Human], m: Mission):
 		# PARAMS
 		self.t_int = t_int
 		self.t_proc = t_proc
 
-		self.currOp = 1
+		self.currOp = Operating_Modes.ROBOT_IDLE
 		self.currH = 0
 		
 		self.rob = rob
@@ -38,10 +46,6 @@ class Orchestrator:
 			self.check_actions()
 			time.sleep(self.t_int)
 
-		if self.check_scs():
-			print('Mission somehow succeeded')
-		if self.mission.fail:
-			print('Mission somehow failed.')
 		self.rob.set_sim_running(0)
 		return
 
@@ -56,12 +60,12 @@ class Orchestrator:
 
 		self.rob.navigate_to(self.mission.dest[self.currH])
 
-		#if self.currOp==1:
-			#check_start()
-		#elif self.currOp==2 or self.currOp==4:
-			#check_r_move()
-		#elif self.currOp==3:
-			#check_r_rech()
+		if self.currOp == Operating_Modes.ROBOT_IDLE:
+			self.check_start()
+		elif self.currOp == Operating_Modes.ROBOT_LEAD or self.currOp == Operating_Modes.ROBOT_CARR:
+			self.check_r_move()
+		elif self.currOp == Operating_Modes.ROBOT_RECH:
+			self.check_r_rech()
 		#elif self.currOp==5:
 			#check_h_move()
 
@@ -88,6 +92,15 @@ class Orchestrator:
 		if pos.distance_from(dest) <= _min_dist:
 			self.mission.set_served(self.currH)
 			self.currH+=1
+
+	def check_start(self):
+		return
+	
+	def check_r_move(self):
+		return
+	
+	def check_r_rech(self):
+		return
 		
 
 
