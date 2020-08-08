@@ -56,7 +56,11 @@ try:
 	while not mission.get_scs() and not mission.fail:
 		pass
 
-	print('Mission is over')
+	if mission.get_scs():
+		print('Mission successfully completed.')
+	if mission.fail:
+		print('Mission failed.')
+
 	# when mission is over (either with success or failure),
 	# shut everything down
 	bill.set_sim_running(0)

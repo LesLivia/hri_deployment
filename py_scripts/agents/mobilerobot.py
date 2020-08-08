@@ -179,19 +179,24 @@ class MobileRobot:
         _nav_speed = 3.0
 
         checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
+        print(checks)
+        if checks[0]:
+            print('Robot should turn left')
+            self.stop_moving()
+            time.sleep(0.5)
+            self.turn_left(1.57)
+            curr = self.get_position()
+            pos = Point(curr.x, curr.y)
+            rob_theta = round(curr.g, 2)
 
-        if not checks[0] and not checks[1] and not checks[2]:
-            print('Robot should move forward')
-            self.start_moving(_nav_speed)
-
-            #while not checks[0] and not checks[1] and not checks[2]:
-                #curr = self.get_position()
-                #pos = Point(curr.x, curr.y)
-                #rob_theta = round(curr.g, 2)
-           
-                #checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
-                
-            #self.stop_moving()		
+        elif checks[1]:
+            print('Robot should turn right')
+            self.stop_moving()
+            time.sleep(0.5)
+            self.turn_right(1.57)
+            curr = self.get_position()
+            pos = Point(curr.x, curr.y)
+            rob_theta = round(curr.g, 2)
 
         elif checks[2]:
             print('Robot should move forward')
@@ -206,18 +211,18 @@ class MobileRobot:
 
             #self.stop_moving()
 
-        elif checks[0]:
-            print('Robot should turn left')
-            self.turn_left(1.57)
-            curr = self.get_position()
-            pos = Point(curr.x, curr.y)
-            rob_theta = round(curr.g, 2)
+        else: #if not checks[0] and not checks[1] and not checks[2]:
+            print('Robot should move forward')
+            self.start_moving(_nav_speed)
 
-        elif checks[1]:
-            print('Robot should turn right')
-            self.turn_right(1.57)
-            curr = self.get_position()
-            pos = Point(curr.x, curr.y)
-            rob_theta = round(curr.g, 2)
+            #while not checks[0] and not checks[1] and not checks[2]:
+                #curr = self.get_position()
+                #pos = Point(curr.x, curr.y)
+                #rob_theta = round(curr.g, 2)
+           
+                #checks = nav.get_dir_to_check(pos, dest, rob_theta, std_length, std_height)
+                
+            #self.stop_moving()		
+
 
 

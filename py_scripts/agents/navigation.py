@@ -40,9 +40,9 @@ def is_in_rectangle(pos: Point, dest: Point, length: float, height: float):
 			destYisIn = dest.y < pos.y + allowance*height and dest.y > pos.y - (1-allowance)*height
 		else:
 			# visualization of projected rectangle in vrep
-			pts = [Point(pos.x + length/2, pos.y - (1-allowance)*height), Point(pos.x - length/2, pos.y - (1-allowance)*height), Point(pos.x + length/2, pos.y + allowance*height), Point(pos.x - length/2, pos.y + allowance*height)]
+			pts = [Point(pos.x + length/2, pos.y - (1-allowance)*height), Point(pos.x - length/2, pos.y - (1-allowance)*height), Point(pos.x - length/2, pos.y + allowance*height), Point(pos.x + length/2, pos.y + allowance*height)]
 
-			destYisIn = dest.y < pos.y + (1-allowance)*height and dest.y > pos.y - allowance*height
+			destYisIn = dest.y < pos.y + (1-allowance)*-height and dest.y > pos.y - allowance*-height
 	
 	if destXisIn and destYisIn:
 		vrep.draw_rectangle(const.VREP_CLIENT_ID, pts[0], pts[1], pts[2], pts[3])			

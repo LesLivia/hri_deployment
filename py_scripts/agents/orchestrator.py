@@ -87,8 +87,8 @@ class Orchestrator:
 		dest = self.mission.dest[self.currH]
 		position = self.rob.get_position()
 		pos = Point(position.x, position.y)
-		_min_dist = 1.0
-		print('Currently going to: ' + str(dest.x) + ' ' + str(dest.y))
+		_min_dist = 1.5
+		print('Currently going to: ' + str(dest.x) + ' ' + str(dest.y) + ' distance: ' + str(pos.distance_from(dest)))
 		if pos.distance_from(dest) <= _min_dist:
 			self.mission.set_served(self.currH)
 			self.currH+=1
