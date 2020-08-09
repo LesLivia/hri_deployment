@@ -88,16 +88,27 @@ class Orchestrator:
 	# CHECK IF CURRENT SERVICE HAS BEEN PROVIDED, THUS THE MISSION CAN MOVE ON
 	def check_service_provided(self):
 		dest = self.mission.dest[self.currH]
-		position = self.rob.get_position()
+		position = self.humans[self.currH].get_position()
 		pos = Point(position.x, position.y)
-		_min_dist = 1.5
-		print('Currently going to: ' + str(dest.x) + ' ' + str(dest.y) + ' distance: ' + str(pos.distance_from(dest)))
-		if pos.distance_from(dest) <= _min_dist:
+		human_robot_dist = self.get_human_robot_dist()
+		_min_dist = 2.0
+		#print('Currently going to: ' + str(dest.x) + ' ' + str(dest.y) + ' distance: ' + str(pos.distance_from(dest)))
+		if pos.distance_from(dest) <= _min_dist and human_robot_dist <= _min_dist:
+			self.rob.stop_moving()
 			self.mission.set_served(self.currH)
 			self.currH+=1
-			self.curr_dest = self.mission.dest[self.currH]
+			if self.currH < len(self.humans):
+				self.curr_dest = self.mission.dest[self.currH]
 	
 	# METHODS TO CHECK WHETHER ACTION CAN START
+	def get_human_robot_dist(self):
+		human_pos = self.humans[self.currH].get_position()
+		robot_pos = self.rob.get_position()
+		human_coord = Point(human_pos.x, human_pos.y)
+		robot_coord = Point(robot_pos.x, robot_pos.y) 
+		human_robot_dist = robot_coord.distance_from(human_coord)    
+		return human_robot_dist
+
 	def check_start(self):
 		if self.rob.get_charge() < self.RECHARGE_TH:
 			self.rob.stop_moving()
@@ -112,18 +123,11 @@ class Orchestrator:
 		return
 	
 	def get_start_condition(self, p: int):	
-		human_pos = self.humans[self.currH].get_position()
-		robot_pos = self.rob.get_position()
-		human_coord = Point(human_pos.x, human_pos.y)
-		robot_coord = Point(robot_pos.x, robot_pos.y) 
-		human_robot_dist = robot_coord.distance_from(human_coord)    
+		human_robot_dist = self.get_human_robot_dist()  
 
 		battery_charge_sufficient = self.rob.get_charge() >= self.RECHARGE_TH
 		human_fatigue_low = self.humans[self.currH].get_fatigue() <= self.STOP_FATIGUE
 
-		print(human_coord)
-		print(robot_coord)
-		print('Robot to human distance: ' + str(human_robot_dist))
 		print('Robot charge sufficient: ' + str(battery_charge_sufficient) + ' Human fatigue low: ' + str(human_fatigue_low))
 
 		if p == Pattern.HUM_FOLLOWER:
@@ -149,25 +153,34 @@ class Orchestrator:
 			self.curr_dest = self.mission.dest[self.currH]
 		return
  	
-	# METHODS TO CHECK WHETHER ACTION HAS TO STOP	
+	# METHODS TO CHECK WHETHER ACTION HAS TO STOP
+	def get_stop_condition(self, p: int):
+		human_robot_dist = self.get_human_robot_dist()
+		battery_charge_insufficient = self.rob.get_charge() <= self.RECHARGE_TH
+		human_fatigue_high = self.humans[self.currH].get_fatigue() >= self.STOP_FATIGUE
+		if battery_charge_insufficient:
+			print('!!ROBOT BATTERY CHARGE TOO LOW!!')
+		if human_fatigue_high:
+			print('!!HUMAN FATIGUE TOO HIGH!!')
+
+		if p == Pattern.HUM_FOLLOWER:
+			#stopHuman = humanFatigue[currH-1]>=stopFatigue
+			return battery_charge_insufficient or human_fatigue_high or human_robot_dist > self.STOP_DIST
+		#elif p == Pattern.HUM_LEADER: 
+			#return !hExe
+		#elif p == Pattern.HUM_RECIPIENT: 
+			#return robXinDestInterval && robYinDestInterval
+		else:
+			return False
+	
 	def check_r_move(self):
-		return
+		stop = self.get_stop_condition(self.humans[self.currH].ptrn)
+		if not stop:
+			self.rob.navigate_to(self.curr_dest)
+		else:
+			print('Action has to stop')
+			self.rob.stop_moving()
 	
 	def check_r_rech(self):
 		return
-		
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-		

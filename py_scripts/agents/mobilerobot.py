@@ -139,9 +139,11 @@ class MobileRobot:
         msg:str = str(self.max_speed / 10) + '#' + str(deg)
         pool.starmap(hriros.rosrun_nodes, [(node, [msg])])
         print('Robot turning ' + str(deg) + 'rad left...')
-
-        while abs(_current_orientation - dest_orientation) >= epsilon:
-            _current_orientation = float(self.get_position().g)
+	
+        #TODO: fix
+        time.sleep(10)
+        #while abs(_current_orientation - dest_orientation) >= epsilon:
+        #    _current_orientation = float(self.get_position().g)
 
         print('Robot turning complete.')
 
@@ -160,9 +162,11 @@ class MobileRobot:
         msg:str = str(self.max_speed / 10) + '#' + str(deg)
         pool.starmap(hriros.rosrun_nodes, [(node, [msg])])
         print('Robot turning ' + str(deg) + 'rad right...')
-
-        while abs(_current_orientation - dest_orientation) >= epsilon:
-            _current_orientation = float(self.get_position().g)
+	
+        # TODO: fix
+        time.sleep(10)
+        #while abs(_current_orientation - dest_orientation) >= epsilon:
+        #    _current_orientation = float(self.get_position().g)
 
         print('Robot turning complete.')
 
@@ -170,8 +174,8 @@ class MobileRobot:
         start = self.get_position()
         pos = Point(start.x, start.y)
         rob_theta = round(start.g, 2)
-        print('Robot in: ' + str(pos) + ' current orientation: ' + str(rob_theta))
-        print('navigating to: ' + str(dest))
+        #print('Robot in: ' + str(pos) + ' current orientation: ' + str(rob_theta))
+        #print('navigating to: ' + str(dest))
 
         std_length = 10
         std_height = 3
