@@ -112,7 +112,7 @@ class Orchestrator:
 	def check_start(self):
 		if self.rob.get_charge() < self.RECHARGE_TH:
 			self.rob.stop_moving()
-			self.currOp = Operating_modes.ROBOT_RECH
+			self.currOp = Operating_Modes.ROBOT_RECH
 			self.curr_dest = const.VREP_RECH_STATION
 		else:
 			start = self.get_start_condition(self.humans[self.currH].ptrn)
