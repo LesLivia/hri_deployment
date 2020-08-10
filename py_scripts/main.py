@@ -4,7 +4,9 @@ import os
 import sys
 import rospy_utils.hrirosnode as hriros
 import vrep_utils.vrep as vrep
+import agents.navigation as nav
 from threading import Thread
+from multiprocessing import Pool
 from agents.mobilerobot import MobileRobot
 from agents.human import Human
 from agents.coordinates import Point
@@ -19,7 +21,7 @@ vrep.start_sim(vrep_sim)
 bill = Human(1, Pattern.HUM_FOLLOWER, 10, 1, 1)
 rob = MobileRobot(1, 10, 5)
 
-dest = [Point(22.0, 4.0)]
+dest = [Point(22.0, 10.5)]
 humans = [bill]
 patterns = []
 for hum in humans:
@@ -28,8 +30,10 @@ for hum in humans:
 mission = Mission(patterns, dest)	
 
 orch = Orchestrator(5, 1, rob, humans, mission)
+
 try:
 	# START ROS NODES THAT ACQUIRE DATA FROM SENSORS
+
 	bill.start_reading_data()
 	rob.start_reading_data()
 	time.sleep(7)
@@ -48,6 +52,16 @@ try:
 	
 	# START MISSION
 	time.sleep(3)
+	# plan trajectory
+	# traj = nav.plan_traj(rob.get_position(), dest[0], nav.init_walls())
+	# str_traj = ''
+	# for point in traj:
+	#	str_traj += str(point.x) + ',' + str(point.y)
+	#	if not traj.index(point)==len(traj)-1:
+	#		str_traj += '#'
+	# node = 'robTrajPub.py'
+	# pool = Pool()
+	# pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])
 
 	thread_m = Thread(target = orch.run_mission)
 	thread_m.start()
