@@ -21,29 +21,51 @@ def init_walls():
 			for y in numpy.arange(wall[0].y, wall[1].y, 0.25):
 				wall_pts.append(Point(wall[0].x, y))
 	return wall_pts
+
+def get_straight_line(start: Point, dest: Point):
+	traj = []
+	if not start.x-dest.x == 0:
+		m = (start.y - dest.y)/(start.x-dest.x)
+		q = start.y - m*(start.x)
+		for x in numpy.arange(start.x, dest.x, 0.75):
+			y = m*x + q
+			traj.append(Point(x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
+			vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))
+	else:
+		if start.y > dest.y:
+			for y in numpy.arange(start.y, dest.y, -0.75):
+				traj.append(Point(start.x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
+				vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
+	
+		else:		
+			for y in numpy.arange(start.y, dest.y, +0.75):
+				traj.append(Point(start.x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))	
+				vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
+	return traj
 	
 def plan_traj(start: Point, dest: Point, walls: List[Point]):
-	m = (start.y - dest.y)/(start.x-dest.x)
-	q = start.y - m*(start.x)
-	traj = []
 	crosses = False
-	for x in numpy.arange(start.x, dest.x, 0.75):
-		y = m*x + q
-		new_point = Point(x, y)
+	traj = []
+	straight_line = get_straight_line(start, dest)
+	for point in straight_line:
 		for wall_point in walls:
-			if new_point.distance_from(wall_point) < 0.5:
+			to_check = Point(point.x+const.VREP_X_OFFSET, point.y+const.VREP_Y_OFFSET)
+			if to_check.distance_from(wall_point) < 0.5:
 				print('Straight line crosses wall')
 				crosses = True
 				break
 		if crosses:
 			break
-		else:
-			traj.append(Point(x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
-			vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))
+
 	if crosses:
 		print('Calculate new trajectory')
-	else:
-		return traj
+		if dest.x > start.x:
+			horz_line = get_straight_line(start, Point(dest.x, start.y))
+			vert_line = get_straight_line(Point(dest.x, start.y), dest)
+			traj = horz_line + vert_line
+	else:	
+		traj = straight_line.copy()
+	return traj
 	
 
 def is_in_rectangle(pos: Point, dest: Point, length: float, height: float):

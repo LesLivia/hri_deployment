@@ -21,7 +21,7 @@ vrep.start_sim(vrep_sim)
 bill = Human(1, Pattern.HUM_FOLLOWER, 10, 1, 1)
 rob = MobileRobot(1, 10, 5)
 
-dest = [Point(22.0, 10.5)]
+dest = [Point(22.0, 4.0)]
 humans = [bill]
 patterns = []
 for hum in humans:
@@ -33,21 +33,21 @@ orch = Orchestrator(5, 1, rob, humans, mission)
 
 try:
 	# START ROS NODES THAT ACQUIRE DATA FROM SENSORS
-	#bill.start_reading_data()
+	bill.start_reading_data()
 	rob.start_reading_data()
 	time.sleep(7)
 	
 	# START MONITORING HUMAN SENSOR DATA LOGS
 	thread_h = Thread(target = bill.follow_position)
-	#thread_h.start()
+	thread_h.start()
 	thread_h_f = Thread(target = bill.follow_fatigue)
-	#thread_h_f.start()
+	thread_h_f.start()
 	
 	# START MONITORING ROBOT SENSOR DATA LOGS
 	thread_r = Thread(target=rob.follow_position)
 	thread_r.start()
 	thread_rb = Thread(target=rob.follow_charge)
-	#thread_rb.start()
+	thread_rb.start()
 	
 	# START MISSION
 	time.sleep(3)
@@ -62,8 +62,8 @@ try:
 	pool = Pool()
 	pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])
 
-	thread_m = Thread(target = orch.run_mission)
-	thread_m.start()
+	#thread_m = Thread(target = orch.run_mission)
+	#thread_m.start()
 	
 	# keep going as long as the mission is not over	
 	#while not mission.get_scs() and not mission.fail:
