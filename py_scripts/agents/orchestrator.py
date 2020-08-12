@@ -38,7 +38,7 @@ class Orchestrator:
 		self.FAIL_CHARGE = 1.0
 		
 		self.FAIL_FATIGUE = 0.97
-		self.STOP_FATIGUE = 0.75
+		self.STOP_FATIGUE = 0.5
 		self.RESUME_FATIGUE = 0.3;
 
 	def run_mission(self):

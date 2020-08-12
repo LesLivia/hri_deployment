@@ -39,7 +39,7 @@ def plan_traj(start: Point, dest: Point, walls: List[Point]):
 			break
 		else:
 			traj.append(Point(x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
-			#vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))
+			vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))
 	if crosses:
 		print('Calculate new trajectory')
 	else:
