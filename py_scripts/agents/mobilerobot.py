@@ -109,6 +109,7 @@ class MobileRobot:
     def start_moving(self, targetSpeed):
         node = 'robStatusPub.py'
         data = '1#'
+        print(data)
         if targetSpeed > 0:
             data = data + str(targetSpeed)
         # requested target speed is published to both robot motors,

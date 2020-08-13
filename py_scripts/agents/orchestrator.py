@@ -118,6 +118,8 @@ class Orchestrator:
 			if start:
 				print('Action can start, setting parameters...')
 				self.set_op_params(self.humans[self.currH].ptrn)
+				self.rob.start_moving(3.0)
+
 
 		return
 	
