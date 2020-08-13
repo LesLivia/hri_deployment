@@ -21,7 +21,7 @@ vrep.start_sim(vrep_sim)
 bill = Human(1, Pattern.HUM_FOLLOWER, 10, 1, 1)
 rob = MobileRobot(1, 10, 5)
 
-dest = [Point(22.0, 4.0)]
+dest = [Point(22.0, 18.0)]
 humans = [bill]
 patterns = []
 for hum in humans:
