@@ -107,19 +107,22 @@ class MobileRobot:
                 return
 	
     def start_moving(self, targetSpeed):
-        node = 'allMotorPub.py'
+        node = 'robStatusPub.py'
+        data = '1#'
+        if targetSpeed > 0:
+            data = data + str(targetSpeed)
         # requested target speed is published to both robot motors,
         # so that the robot starts moving straight
         pool = Pool()
-        pool.starmap(hriros.rosrun_nodes, [(node, [str(targetSpeed)])])
+        pool.starmap(hriros.rosrun_nodes, [(node, [data])])
         print('Robot moving forward...')
 
     def stop_moving(self):
-        node = 'allMotorPub.py'
-        targetSpeed = '0.0'
+        node = 'robStatusPub.py'
+        data = '0#0.0'
         # both motors speed is set to 0, so that the robot stops moving
         pool = Pool()
-        pool.starmap(hriros.rosrun_nodes, [(node, [str(targetSpeed)])])
+        pool.starmap(hriros.rosrun_nodes, [(node, [data])])
         print('Robot stopping...')
 
     def turn_left(self, deg: float):

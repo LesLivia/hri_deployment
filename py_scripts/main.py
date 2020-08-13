@@ -21,7 +21,7 @@ vrep.start_sim(vrep_sim)
 bill = Human(1, Pattern.HUM_FOLLOWER, 10, 1, 1)
 rob = MobileRobot(1, 10, 5)
 
-dest = [Point(22.0, 18.0)]
+dest = [Point(22.0, 4.0)]
 humans = [bill]
 patterns = []
 for hum in humans:
@@ -29,7 +29,7 @@ for hum in humans:
 		
 mission = Mission(patterns, dest)	
 
-orch = Orchestrator(5, 1, rob, humans, mission)
+orch = Orchestrator(3, 1, rob, humans, mission)
 
 try:
 	# START ROS NODES THAT ACQUIRE DATA FROM SENSORS
@@ -62,24 +62,24 @@ try:
 	pool = Pool()
 	pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])
 
-	#thread_m = Thread(target = orch.run_mission)
-	#thread_m.start()
+	thread_m = Thread(target = orch.run_mission)
+	thread_m.start()
 	
 	# keep going as long as the mission is not over	
-	#while not mission.get_scs() and not mission.fail:
-	#	pass
+	while not mission.get_scs() and not mission.fail:
+		pass
 
-	#if mission.get_scs():
-	#	print('Mission successfully completed.')
-	#if mission.fail:
-	#	print('Mission failed.')
+	if mission.get_scs():
+		print('Mission successfully completed.')
+	if mission.fail:
+		print('Mission failed.')
 
 	# when mission is over (either with success or failure),
 	# shut everything down
 	bill.set_sim_running(0)
-	#vrep.stop_sim(vrep_sim)
-	#print('Execution finished.')
-	#quit()
+	vrep.stop_sim(vrep_sim)
+	print('Execution finished.')
+	quit()
 
 except (KeyboardInterrupt, SystemExit):
 	rob.set_sim_running(0)

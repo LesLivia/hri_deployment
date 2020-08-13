@@ -44,7 +44,7 @@ class Orchestrator:
 	def run_mission(self):
 		print('Starting mission...')
 		while not self.check_scs() and not self.check_fail():
-			print('Checking actions...')
+			#print('Checking actions...')
 			self.check_actions()
 			time.sleep(self.t_int)
 
@@ -91,8 +91,7 @@ class Orchestrator:
 		position = self.humans[self.currH].get_position()
 		pos = Point(position.x, position.y)
 		human_robot_dist = self.get_human_robot_dist()
-		_min_dist = 2.0
-		#print('Currently going to: ' + str(dest.x) + ' ' + str(dest.y) + ' distance: ' + str(pos.distance_from(dest)))
+		_min_dist = 1.5
 		if pos.distance_from(dest) <= _min_dist and human_robot_dist <= _min_dist:
 			self.rob.stop_moving()
 			self.mission.set_served(self.currH)
@@ -128,7 +127,7 @@ class Orchestrator:
 		battery_charge_sufficient = self.rob.get_charge() >= self.RECHARGE_TH
 		human_fatigue_low = self.humans[self.currH].get_fatigue() <= self.STOP_FATIGUE
 
-		print('Robot charge sufficient: ' + str(battery_charge_sufficient) + ' Human fatigue low: ' + str(human_fatigue_low))
+		print('Robot charge sufficient: ' + str(battery_charge_sufficient) + ' Human fatigue low: ' + str(human_fatigue_low) + ' ' + str(human_robot_dist))
 
 		if p == Pattern.HUM_FOLLOWER:
 			return battery_charge_sufficient and human_fatigue_low and human_robot_dist < self.RESTART_DIST
@@ -175,9 +174,7 @@ class Orchestrator:
 	
 	def check_r_move(self):
 		stop = self.get_stop_condition(self.humans[self.currH].ptrn)
-		if not stop:
-			self.rob.navigate_to(self.curr_dest)
-		else:
+		if stop:
 			print('Action has to stop')
 			self.rob.stop_moving()
 	
