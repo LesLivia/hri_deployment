@@ -58,8 +58,6 @@ class Orchestrator:
 		if self.check_fail():
 			return
 
-		#self.rob.navigate_to(self.mission.dest[self.currH])
-
 		if self.currOp == Operating_Modes.ROBOT_IDLE:
 			self.check_start()
 		elif self.currOp == Operating_Modes.ROBOT_LEAD or self.currOp == Operating_Modes.ROBOT_CARR:
