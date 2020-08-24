@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 import time
 import rospy_utils.hriconstants as const
+import agents.navigation as nav
+import rospy_utils.hrirosnode as hriros
 from enum import Enum
 from typing import List
+from multiprocessing import Pool
 from agents.coordinates import Point
 from agents.mobilerobot import MobileRobot
 from agents.human import Human
@@ -64,8 +67,8 @@ class Orchestrator:
 			self.check_r_move()
 		elif self.currOp == Operating_Modes.ROBOT_RECH:
 			self.check_r_rech()
-		#elif self.currOp==5:
-			#check_h_move()
+		elif self.currOp==5:
+			check_h_move()
 
 		self.check_service_provided()
 
@@ -85,26 +88,30 @@ class Orchestrator:
 
 	# CHECK IF CURRENT SERVICE HAS BEEN PROVIDED, THUS THE MISSION CAN MOVE ON
 	def check_service_provided(self):
-		dest = self.mission.dest[self.currH]
-		position = self.humans[self.currH].get_position()
-		pos = Point(position.x, position.y)
-		human_robot_dist = self.get_human_robot_dist()
-		_min_dist = 1.5
-		if pos.distance_from(dest) <= _min_dist and human_robot_dist <= _min_dist:
-			self.rob.stop_moving()
-			self.mission.set_served(self.currH)
-			self.currH+=1
-			if self.currH < len(self.humans):
-				self.curr_dest = self.mission.dest[self.currH]
+		if self.humans[self.currH].ptrn == Pattern.HUM_FOLLOWER:
+			dest = self.mission.dest[self.currH]
+			position = self.humans[self.currH].get_position()
+			pos = Point(position.x, position.y)
+			human_robot_dist = self.get_human_robot_dist()
+			_min_dist = 1.5
+			if position is not None and pos.distance_from(dest) <= _min_dist and human_robot_dist <= _min_dist:
+				self.rob.stop_moving()
+				self.mission.set_served(self.currH)
+				self.currH+=1
+				if self.currH < len(self.humans):
+					self.curr_dest = self.mission.dest[self.currH]
 	
 	# METHODS TO CHECK WHETHER ACTION CAN START
 	def get_human_robot_dist(self):
 		human_pos = self.humans[self.currH].get_position()
 		robot_pos = self.rob.get_position()
-		human_coord = Point(human_pos.x, human_pos.y)
-		robot_coord = Point(robot_pos.x, robot_pos.y) 
-		human_robot_dist = robot_coord.distance_from(human_coord)    
-		return human_robot_dist
+		if human_pos is not None and robot_pos is not None:   
+			human_coord = Point(human_pos.x, human_pos.y)
+			robot_coord = Point(robot_pos.x, robot_pos.y) 
+			human_robot_dist = robot_coord.distance_from(human_coord) 
+			return human_robot_dist
+		else:
+			return 1000
 
 	def check_start(self):
 		if self.rob.get_charge() < self.RECHARGE_TH:
@@ -116,9 +123,18 @@ class Orchestrator:
 			if start:
 				print('Action can start, setting parameters...')
 				self.set_op_params(self.humans[self.currH].ptrn)
-				self.rob.start_moving(3.0)
-
-
+				# plan trajectory
+				traj = nav.plan_traj(self.rob.get_position(), self.curr_dest, nav.init_walls())
+				str_traj = ''
+				for point in traj:
+					str_traj += str(point.x) + ',' + str(point.y)
+					if not traj.index(point)==len(traj)-1:
+						str_traj += '#'
+				node = 'robTrajPub.py'
+				pool = Pool()
+				pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])
+				time.sleep(2)
+				self.rob.start_moving(5.0)
 		return
 	
 	def get_start_condition(self, p: int):	
@@ -131,8 +147,8 @@ class Orchestrator:
 
 		if p == Pattern.HUM_FOLLOWER:
 			return battery_charge_sufficient and human_fatigue_low and human_robot_dist < self.RESTART_DIST
-		#elif p == Pattern.HUM_LEADER:
-			#return hExe
+		elif p == Pattern.HUM_LEADER:
+			return self.humans[self.currH].is_moving()
 		elif p == Pattern.HUM_RECIPIENT:
 			return battery_charge_sufficient
 		else:
@@ -165,8 +181,8 @@ class Orchestrator:
 		if p == Pattern.HUM_FOLLOWER:
 			#stopHuman = humanFatigue[currH-1]>=stopFatigue
 			return battery_charge_insufficient or human_fatigue_high or human_robot_dist > self.STOP_DIST
-		#elif p == Pattern.HUM_LEADER: 
-			#return !hExe
+		elif p == Pattern.HUM_LEADER: 
+			return not self.humans[self.currH].is_moving()
 		#elif p == Pattern.HUM_RECIPIENT: 
 			#return robXinDestInterval && robYinDestInterval
 		else:
@@ -177,7 +193,16 @@ class Orchestrator:
 		if stop:
 			print('Action has to stop')
 			self.rob.stop_moving()
-	
+
+	def check_h_move(self):
+		stop = self.get_stop_condition(self.humans[self.currH].ptrn)
+		if stop:
+			print('Action has to stop')
+			self.rob.stop_moving()
+		else:
+			dX = humanPositionX[currH-1]
+			dY = humanPositionY[currH-1]
+
 	def check_r_rech(self):
 		return
 

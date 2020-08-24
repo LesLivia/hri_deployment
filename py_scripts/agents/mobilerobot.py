@@ -116,7 +116,7 @@ class MobileRobot:
         # so that the robot starts moving straight
         pool = Pool()
         pool.starmap(hriros.rosrun_nodes, [(node, [data])])
-        print('Robot moving forward...')
+        print('Robot moving...')
 
     def stop_moving(self):
         node = 'robStatusPub.py'
