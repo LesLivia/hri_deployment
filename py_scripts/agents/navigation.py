@@ -24,7 +24,7 @@ def init_walls():
 
 def get_straight_line(start: Point, dest: Point):
 	traj = []
-	if not start.x-dest.x == 0:
+	if abs(start.x-dest.x) > 0.5:
 		m = (start.y - dest.y)/(start.x-dest.x)
 		q = start.y - m*(start.x)
 		for x in numpy.arange(start.x, dest.x, 0.75):
