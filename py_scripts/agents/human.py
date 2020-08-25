@@ -57,6 +57,14 @@ class Human:
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, '')])
 
+		f = open('../scene_logs/humansServed.log', 'r+')
+		f.truncate(0)
+
+		node = 'humServiceSub.py'
+
+		pool = Pool()
+		pool.starmap(hriros.rosrun_nodes, [(node, '')])
+
 		self.set_sim_running(1)
 
 	def follow_position(self):

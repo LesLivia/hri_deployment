@@ -88,6 +88,7 @@ class Orchestrator:
 
 	# CHECK IF CURRENT SERVICE HAS BEEN PROVIDED, THUS THE MISSION CAN MOVE ON
 	def check_service_provided(self):
+		human_served = False
 		if self.humans[self.currH].ptrn == Pattern.HUM_FOLLOWER:
 			dest = self.mission.dest[self.currH]
 			position = self.humans[self.currH].get_position()
@@ -95,12 +96,23 @@ class Orchestrator:
 			human_robot_dist = self.get_human_robot_dist()
 			_min_dist = 1.5
 			if position is not None and pos.distance_from(dest) <= _min_dist and human_robot_dist <= _min_dist:
-				self.rob.stop_moving()
-				self.mission.set_served(self.currH)
-				self.currH+=1
-				if self.currH < len(self.humans):
-					self.curr_dest = self.mission.dest[self.currH]
-	
+				human_served = True
+		elif self.humans[self.currH].ptrn == Pattern.HUM_LEADER:
+			filename = '../scene_logs/humansServed.log'
+			f = open(filename, 'r')
+			lines = f.read().splitlines()
+			for line in lines:	
+				if line.find('human'+str(self.currH)+'served'):
+					print('HUMAN ' + str(self.currH) + ' SERVED.')
+					human_served = True
+					break
+		if human_served:
+			self.rob.stop_moving()
+			self.mission.set_served(self.currH)
+			self.currH+=1
+			if self.currH < len(self.humans):
+				self.curr_dest = self.mission.dest[self.currH]
+				
 	# METHODS TO CHECK WHETHER ACTION CAN START
 	def get_human_robot_dist(self):
 		human_pos = self.humans[self.currH].get_position()
