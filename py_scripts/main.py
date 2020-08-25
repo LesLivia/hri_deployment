@@ -52,7 +52,7 @@ try:
 	thread_rb.start()
 	
 	# START MISSION
-	time.sleep(3)
+	time.sleep(7)
 
 	thread_m = Thread(target = orch.run_mission)
 	thread_m.start()

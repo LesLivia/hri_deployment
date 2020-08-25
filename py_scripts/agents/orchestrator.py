@@ -67,8 +67,8 @@ class Orchestrator:
 			self.check_r_move()
 		elif self.currOp == Operating_Modes.ROBOT_RECH:
 			self.check_r_rech()
-		elif self.currOp==5:
-			check_h_move()
+		elif self.currOp == Operating_Modes.ROBOT_FOLL:
+			self.check_h_move()
 
 		self.check_service_provided()
 
@@ -113,6 +113,19 @@ class Orchestrator:
 		else:
 			return 1000
 
+	def plan_trajectory(self):
+		# plan trajectory
+		traj = nav.plan_traj(self.rob.get_position(), self.curr_dest, nav.init_walls())
+		str_traj = ''
+		for point in traj:
+			str_traj += str(point.x) + ',' + str(point.y)
+			if not traj.index(point)==len(traj)-1:
+				str_traj += '#'
+		if len(traj)>0:
+			node = 'robTrajPub.py'
+			pool = Pool()
+			pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])
+
 	def check_start(self):
 		if self.rob.get_charge() < self.RECHARGE_TH:
 			self.rob.stop_moving()
@@ -123,18 +136,8 @@ class Orchestrator:
 			if start:
 				print('Action can start, setting parameters...')
 				self.set_op_params(self.humans[self.currH].ptrn)
-				# plan trajectory
-				traj = nav.plan_traj(self.rob.get_position(), self.curr_dest, nav.init_walls())
-				str_traj = ''
-				for point in traj:
-					str_traj += str(point.x) + ',' + str(point.y)
-					if not traj.index(point)==len(traj)-1:
-						str_traj += '#'
-				node = 'robTrajPub.py'
-				pool = Pool()
-				pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])
-				time.sleep(2)
 				self.rob.start_moving(5.0)
+				self.plan_trajectory()
 		return
 	
 	def get_start_condition(self, p: int):	
@@ -148,7 +151,8 @@ class Orchestrator:
 		if p == Pattern.HUM_FOLLOWER:
 			return battery_charge_sufficient and human_fatigue_low and human_robot_dist < self.RESTART_DIST
 		elif p == Pattern.HUM_LEADER:
-			return self.humans[self.currH].is_moving()
+			return human_robot_dist >= self.RESTART_DIST
+			#return self.humans[self.currH].is_moving()
 		elif p == Pattern.HUM_RECIPIENT:
 			return battery_charge_sufficient
 		else:
@@ -159,11 +163,11 @@ class Orchestrator:
 			self.currOp = Operating_Modes.ROBOT_LEAD
 			self.curr_dest = self.mission.dest[self.currH]
 		elif p == Pattern.HUM_LEADER:
-			currOp = 5 
+			self.currOp = Operating_Modes.ROBOT_FOLL
 			curr_human_pos = self.humans[self.currH].get_position()
 			self.curr_dest = Point(curr_human_pos.x, curr_human_pos.y)
 		elif p == Pattern.HUM_RECIPIENT:
-			currOp = 4
+			currOp = Operating_Modes.ROBOT_CARR
 			recipientStages = 1
 			self.curr_dest = self.mission.dest[self.currH]
 		return
@@ -182,7 +186,8 @@ class Orchestrator:
 			#stopHuman = humanFatigue[currH-1]>=stopFatigue
 			return battery_charge_insufficient or human_fatigue_high or human_robot_dist > self.STOP_DIST
 		elif p == Pattern.HUM_LEADER: 
-			return not self.humans[self.currH].is_moving()
+			return human_robot_dist < self.RESTART_DIST
+			#return not self.humans[self.currH].is_moving()
 		#elif p == Pattern.HUM_RECIPIENT: 
 			#return robXinDestInterval && robYinDestInterval
 		else:
@@ -192,16 +197,20 @@ class Orchestrator:
 		stop = self.get_stop_condition(self.humans[self.currH].ptrn)
 		if stop:
 			print('Action has to stop')
+			self.currOp = Operating_Modes.ROBOT_IDLE
 			self.rob.stop_moving()
 
 	def check_h_move(self):
 		stop = self.get_stop_condition(self.humans[self.currH].ptrn)
 		if stop:
 			print('Action has to stop')
+			self.currOp = Operating_Modes.ROBOT_IDLE
 			self.rob.stop_moving()
 		else:
-			dX = humanPositionX[currH-1]
-			dY = humanPositionY[currH-1]
+			human_pos = self.humans[self.currH].get_position()
+			human_pt = Point(human_pos.x, human_pos.y)
+			if self.curr_dest.distance_from(human_pt) > 2.0:
+				self.curr_dest = Point(human_pos.x, human_pos.y)
 
 	def check_r_rech(self):
 		return
