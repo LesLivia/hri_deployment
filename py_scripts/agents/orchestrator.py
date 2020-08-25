@@ -163,7 +163,12 @@ class Orchestrator:
 		if p == Pattern.HUM_FOLLOWER:
 			return battery_charge_sufficient and human_fatigue_low and human_robot_dist < self.RESTART_DIST
 		elif p == Pattern.HUM_LEADER:
-			return human_robot_dist >= self.RESTART_DIST
+			robot_pos = self.rob.get_position()
+			if robot_pos is not None:
+				robot_pt = Point(robot_pos.x, robot_pos.y)
+				return human_robot_dist >= self.RESTART_DIST or robot_pt.distance_from(self.curr_dest) > 2.0
+			else:
+				return human_robot_dist >= self.RESTART_DIST
 			#return self.humans[self.currH].is_moving()
 		elif p == Pattern.HUM_RECIPIENT:
 			return battery_charge_sufficient
@@ -198,7 +203,9 @@ class Orchestrator:
 			#stopHuman = humanFatigue[currH-1]>=stopFatigue
 			return battery_charge_insufficient or human_fatigue_high or human_robot_dist > self.STOP_DIST
 		elif p == Pattern.HUM_LEADER: 
-			return human_robot_dist < self.RESTART_DIST
+			robot_pos = self.rob.get_position()
+			robot_pt = Point(robot_pos.x, robot_pos.y)
+			return robot_pt.distance_from(self.curr_dest) <= 1.0 or human_robot_dist < self.RESTART_DIST
 			#return not self.humans[self.currH].is_moving()
 		#elif p == Pattern.HUM_RECIPIENT: 
 			#return robXinDestInterval && robYinDestInterval
@@ -218,11 +225,11 @@ class Orchestrator:
 			print('Action has to stop')
 			self.currOp = Operating_Modes.ROBOT_IDLE
 			self.rob.stop_moving()
-		else:
-			human_pos = self.humans[self.currH].get_position()
-			human_pt = Point(human_pos.x, human_pos.y)
-			if self.curr_dest.distance_from(human_pt) > 2.0:
-				self.curr_dest = Point(human_pos.x, human_pos.y)
+		#else:
+		#	human_pos = self.humans[self.currH].get_position()
+		#	human_pt = Point(human_pos.x, human_pos.y)
+		#	if self.curr_dest.distance_from(human_pt) > 2.0:
+		#		self.curr_dest = Point(human_pos.x, human_pos.y)
 
 	def check_r_rech(self):
 		return
