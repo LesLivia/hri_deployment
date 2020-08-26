@@ -36,7 +36,7 @@ class Orchestrator:
 		self.STOP_DIST = 4.0
 		self.RESTART_DIST = 2.0
 
-		self.RECHARGE_TH = 10.0
+		self.RECHARGE_TH = 40.0
 		self.STOP_RECHARGE = 50.0
 		self.FAIL_CHARGE = 1.0
 		
@@ -143,6 +143,8 @@ class Orchestrator:
 			self.rob.stop_moving()
 			self.currOp = Operating_Modes.ROBOT_RECH
 			self.curr_dest = const.VREP_RECH_STATION
+			self.plan_trajectory()
+			self.rob.start_moving(5.0)
 		else:
 			start = self.get_start_condition(self.humans[self.currH].ptrn)
 			if start:
@@ -169,7 +171,6 @@ class Orchestrator:
 				return human_robot_dist >= self.RESTART_DIST or robot_pt.distance_from(self.curr_dest) > 2.0
 			else:
 				return human_robot_dist >= self.RESTART_DIST
-			#return self.humans[self.currH].is_moving()
 		elif p == Pattern.HUM_RECIPIENT:
 			return battery_charge_sufficient
 		else:
@@ -200,13 +201,11 @@ class Orchestrator:
 			print('!!HUMAN FATIGUE TOO HIGH!!')
 
 		if p == Pattern.HUM_FOLLOWER:
-			#stopHuman = humanFatigue[currH-1]>=stopFatigue
 			return battery_charge_insufficient or human_fatigue_high or human_robot_dist > self.STOP_DIST
 		elif p == Pattern.HUM_LEADER: 
 			robot_pos = self.rob.get_position()
 			robot_pt = Point(robot_pos.x, robot_pos.y)
 			return robot_pt.distance_from(self.curr_dest) <= 1.0 or human_robot_dist < self.RESTART_DIST
-			#return not self.humans[self.currH].is_moving()
 		#elif p == Pattern.HUM_RECIPIENT: 
 			#return robXinDestInterval && robYinDestInterval
 		else:
@@ -225,12 +224,18 @@ class Orchestrator:
 			print('Action has to stop')
 			self.currOp = Operating_Modes.ROBOT_IDLE
 			self.rob.stop_moving()
-		#else:
-		#	human_pos = self.humans[self.currH].get_position()
-		#	human_pt = Point(human_pos.x, human_pos.y)
-		#	if self.curr_dest.distance_from(human_pt) > 2.0:
-		#		self.curr_dest = Point(human_pos.x, human_pos.y)
+			human_pos = self.humans[self.currH].get_position()
+			human_pt = Point(human_pos.x, human_pos.y)
+			self.curr_dest = Point(human_pos.x, human_pos.y)
 
 	def check_r_rech(self):
+		robot_pos = self.rob.get_position()
+		robot_pt = Point(robot_pos.x, robot_pos.y)
+		if robot_pt.distance_from(self.curr_dest) < 0.5:
+			self.rob.stop_moving()			
+		
+		if self.rob.get_charge() >= self.STOP_RECHARGE:
+			self.currOp = Operating_Modes.ROBOT_IDLE
+			
 		return
 

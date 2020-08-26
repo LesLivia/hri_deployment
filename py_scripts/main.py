@@ -18,11 +18,11 @@ print('Launching application...')
 vrep_sim = vrep.connect(19999)
 vrep.start_sim(vrep_sim)
 
-bill = Human(1, Pattern.HUM_LEADER, 10, 1, 1)
+bill = Human(1, Pattern.HUM_FOLLOWER, 10, 1, 1)
 rob = MobileRobot(1, 10, 5)
 
-dest = [None]
-#dest = [Point(22.0, 5.0)]
+#dest = [None]
+dest = [Point(22.0, 5.0)]
 humans = [bill]
 
 patterns = []
@@ -31,7 +31,7 @@ for hum in humans:
 		
 mission = Mission(patterns, dest)	
 
-orch = Orchestrator(3, 1, rob, humans, mission)
+orch = Orchestrator(1, 0.5, rob, humans, mission)
 
 try:
 	# START ROS NODES THAT ACQUIRE DATA FROM SENSORS

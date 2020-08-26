@@ -27,20 +27,29 @@ def get_straight_line(start: Point, dest: Point):
 	if abs(start.x-dest.x) > 0.5:
 		m = (start.y - dest.y)/(start.x-dest.x)
 		q = start.y - m*(start.x)
-		for x in numpy.arange(start.x, dest.x, 0.75):
-			y = m*x + q
-			traj.append(Point(x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
-			#vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))
+		print('M: ' + str(m) + ' Q: ' + str(q))
+		if start.x > dest.x:
+			for x in numpy.arange(start.x, dest.x, -0.5):
+				y = m*x + q
+				traj.append(Point(x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
+				#vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))
+		else:
+			for x in numpy.arange(start.x, dest.x, 0.5):
+				y = m*x + q
+				traj.append(Point(x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
+				#vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))			
 	else:
 		if start.y > dest.y:
-			for y in numpy.arange(start.y, dest.y, -0.75):
+			for y in numpy.arange(start.y, dest.y, -0.5):
 				traj.append(Point(start.x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
 				#vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
 	
 		else:		
-			for y in numpy.arange(start.y, dest.y, +0.75):
+			for y in numpy.arange(start.y, dest.y, +0.5):
 				traj.append(Point(start.x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))	
 				#vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
+	traj.append(Point(dest.x-const.VREP_X_OFFSET, dest.y-const.VREP_Y_OFFSET))
+	vrep.draw_point(const.VREP_CLIENT_ID, Point(dest.x, dest.y))		
 	return traj
 	
 def plan_traj(start: Point, dest: Point, walls: List[Point]):
