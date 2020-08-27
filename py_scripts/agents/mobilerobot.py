@@ -14,6 +14,7 @@ class MobileRobot:
         self.rob_id = rob_id
         self.max_speed = max_speed
         self.max_accel = max_accel
+        self.curr_speed = 0.0
         self.sim_running = 0
 
     def set_position(self, position: Position):
@@ -116,6 +117,7 @@ class MobileRobot:
         # so that the robot starts moving straight
         pool = Pool()
         pool.starmap(hriros.rosrun_nodes, [(node, [data])])
+        self.curr_speed = targetSpeed
         print('Robot moving...')
 
     def stop_moving(self):
@@ -124,6 +126,7 @@ class MobileRobot:
         # both motors speed is set to 0, so that the robot stops moving
         pool = Pool()
         pool.starmap(hriros.rosrun_nodes, [(node, [data])])
+        self.curr_speed = 0.0
         print('Robot stopping...')
 
     def turn_left(self, deg: float):

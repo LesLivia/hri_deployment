@@ -140,6 +140,7 @@ class Orchestrator:
 
 	def check_start(self):
 		if self.rob.get_charge() < self.RECHARGE_TH:
+			print('ROBOT CHARGE TOO LOW')
 			self.rob.stop_moving()
 			self.currOp = Operating_Modes.ROBOT_RECH
 			self.curr_dest = const.VREP_RECH_STATION
@@ -160,7 +161,11 @@ class Orchestrator:
 		battery_charge_sufficient = self.rob.get_charge() >= self.RECHARGE_TH
 		human_fatigue_low = self.humans[self.currH].get_fatigue() <= self.STOP_FATIGUE
 
-		print('Robot charge sufficient: ' + str(battery_charge_sufficient) + ' Human fatigue low: ' + str(human_fatigue_low) + ' ' + str(human_robot_dist))
+		if not battery_charge_sufficient:
+			print('ROBOT CHARGE TOO LOW')
+		if not human_fatigue_low:
+			print('HUMAN FATIGUE TOO HIGH')
+		print('HUMAN-ROBOT DISTANCE: ' + str(human_robot_dist))
 
 		if p == Pattern.HUM_FOLLOWER:
 			return battery_charge_sufficient and human_fatigue_low and human_robot_dist < self.RESTART_DIST
@@ -231,7 +236,7 @@ class Orchestrator:
 	def check_r_rech(self):
 		robot_pos = self.rob.get_position()
 		robot_pt = Point(robot_pos.x, robot_pos.y)
-		if robot_pt.distance_from(self.curr_dest) < 0.5:
+		if robot_pt.distance_from(self.curr_dest) < 0.5 and self.rob.curr_speed > 0.0:
 			self.rob.stop_moving()			
 		
 		if self.rob.get_charge() >= self.STOP_RECHARGE:
