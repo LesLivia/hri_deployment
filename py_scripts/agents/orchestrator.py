@@ -96,6 +96,7 @@ class Orchestrator:
 			human_robot_dist = self.get_human_robot_dist()
 			_min_dist = 1.5
 			if position is not None and pos.distance_from(dest) <= _min_dist and human_robot_dist <= _min_dist:
+				print('HUMAN ' + str(self.currH) + ' SERVED.')
 				human_served = True
 		elif self.humans[self.currH].ptrn == Pattern.HUM_LEADER:
 			filename = '../scene_logs/humansServed.log'
@@ -111,6 +112,7 @@ class Orchestrator:
 			self.mission.set_served(self.currH)
 			self.currH+=1
 			if self.currH < len(self.humans):
+				self.currOp = Operating_Modes.ROBOT_IDLE
 				self.curr_dest = self.mission.dest[self.currH]
 				
 	# METHODS TO CHECK WHETHER ACTION CAN START
@@ -145,13 +147,13 @@ class Orchestrator:
 			self.currOp = Operating_Modes.ROBOT_RECH
 			self.curr_dest = const.VREP_RECH_STATION
 			self.plan_trajectory()
-			self.rob.start_moving(5.0)
+			self.rob.start_moving(self.rob.max_speed)
 		else:
 			start = self.get_start_condition(self.humans[self.currH].ptrn)
 			if start:
 				print('Action can start, setting parameters...')
 				self.set_op_params(self.humans[self.currH].ptrn)
-				self.rob.start_moving(5.0)
+				self.rob.start_moving(self.rob.max_speed)
 				self.plan_trajectory()
 		return
 	
