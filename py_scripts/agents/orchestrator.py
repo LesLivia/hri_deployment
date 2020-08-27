@@ -94,6 +94,8 @@ class Orchestrator:
 	# CHECK IF CURRENT SERVICE HAS BEEN PROVIDED, THUS THE MISSION CAN MOVE ON
 	def check_service_provided(self):
 		human_served = False
+		# If human is a follower, service is provided when 
+		# both human and robot are close to the destination
 		if self.humans[self.currH].ptrn == Pattern.HUM_FOLLOWER:
 			dest = self.mission.dest[self.currH]
 			position = self.humans[self.currH].get_position()
@@ -103,6 +105,8 @@ class Orchestrator:
 			if position is not None and pos.distance_from(dest) <= _min_dist and human_robot_dist <= _min_dist:
 				print('HUMAN ' + str(self.currH) + ' SERVED.')
 				human_served = True
+		# If human is leading, service is provided when 
+		# human player says so
 		elif self.humans[self.currH].ptrn == Pattern.HUM_LEADER:
 			filename = '../scene_logs/humansServed.log'
 			f = open(filename, 'r')
@@ -112,13 +116,16 @@ class Orchestrator:
 					print('HUMAN ' + str(self.currH) + ' SERVED.')
 					human_served = True
 					break
+
+		# In any case, if current service has been completed,
+		# robot stops and human index increases, and robot goes back
+		# to idle if the human that was just served was not the last one
 		if human_served:
 			self.rob.stop_moving()
 			self.mission.set_served(self.currH)
 			self.currH+=1
 			if self.currH < len(self.humans):
 				self.currOp = Operating_Modes.ROBOT_IDLE
-				#self.curr_dest = self.mission.dest[self.currH]
 				
 	# METHODS TO CHECK WHETHER ACTION CAN START
 	def get_human_robot_dist(self):
@@ -132,8 +139,8 @@ class Orchestrator:
 		else:
 			return 1000
 
+	# PLAN (AND PUBLISH) TRAJECTORY FROM CURRENT POS TO CURRENT DESTINATION
 	def plan_trajectory(self):
-		# plan trajectory
 		traj = nav.plan_traj(self.rob.get_position(), self.curr_dest, nav.init_walls())
 		str_traj = ''
 		for point in traj:
@@ -145,7 +152,10 @@ class Orchestrator:
 			pool = Pool()
 			pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])
 
+	# CHECK WHETHER CURRENT ACTION SHOULD START
 	def check_start(self):
+		# If battery charge is getting low, 
+		# robot switches to charging mode
 		if self.rob.get_charge() < self.RECHARGE_TH:
 			print('ROBOT CHARGE TOO LOW')
 			self.rob.stop_moving()
@@ -153,6 +163,7 @@ class Orchestrator:
 			self.curr_dest = const.VREP_RECH_STATION
 			self.plan_trajectory()
 			self.rob.start_moving(self.rob.max_speed)
+		# otherwise the start condition depends on the pattern
 		else:
 			start = self.get_start_condition(self.humans[self.currH].ptrn)
 			if start:
@@ -162,9 +173,9 @@ class Orchestrator:
 				self.plan_trajectory()
 		return
 	
+	# GET START CONDITION BASED ON CURRENT PATTERN
 	def get_start_condition(self, p: int):	
 		human_robot_dist = self.get_human_robot_dist()  
-
 		battery_charge_sufficient = self.rob.get_charge() >= self.RECHARGE_TH
 		human_fatigue_low = self.humans[self.currH].get_fatigue() <= self.STOP_FATIGUE
 
@@ -173,9 +184,12 @@ class Orchestrator:
 		if not human_fatigue_low:
 			print('HUMAN FATIGUE TOO HIGH')
 		print('HUMAN-ROBOT DISTANCE: ' + str(human_robot_dist))
-
+		# If human is a follower, the action can start if the battery charge is sufficient,
+		# if human fatigue is low, and if robot and human are close to each other
 		if p == Pattern.HUM_FOLLOWER:
 			return battery_charge_sufficient and human_fatigue_low and human_robot_dist < self.RESTART_DIST
+		# If human is a leader, the action can start 
+		# if the robot is distant from current destination (human position)
 		elif p == Pattern.HUM_LEADER:
 			robot_pos = self.rob.get_position()
 			if robot_pos is not None:
@@ -183,19 +197,24 @@ class Orchestrator:
 				return human_robot_dist >= self.RESTART_DIST or robot_pt.distance_from(self.curr_dest) > 2.0
 			else:
 				return human_robot_dist >= self.RESTART_DIST
+		# If human is a recipient, the action can start if
+		# battery charge is sufficient and human fatigue is low
 		elif p == Pattern.HUM_RECIPIENT:
-			return battery_charge_sufficient
+			return battery_charge_sufficient and human_fatigue_low
 		else:
 			return False
 
 	def set_op_params(self, p: int):
+		# Human follower -> destination = prescribed destination
 		if p == Pattern.HUM_FOLLOWER:
 			self.currOp = Operating_Modes.ROBOT_LEAD
 			self.curr_dest = self.mission.dest[self.currH]
+		# Human leader -> destination = current human position
 		elif p == Pattern.HUM_LEADER:
 			self.currOp = Operating_Modes.ROBOT_FOLL
 			curr_human_pos = self.humans[self.currH].get_position()
 			self.curr_dest = Point(curr_human_pos.x, curr_human_pos.y)
+		# Human recipient -> (stage1) dest = prescribed dest, (stage2) dest = current human position
 		elif p == Pattern.HUM_RECIPIENT:
 			currOp = Operating_Modes.ROBOT_CARR
 			recipientStages = 1
@@ -212,12 +231,17 @@ class Orchestrator:
 		if human_fatigue_high:
 			print('!!HUMAN FATIGUE TOO HIGH!!')
 
+		# Human Follower -> action must stop if battery charge is too low, fatigue is too high
+		# or human and robot are excessively far from each other
 		if p == Pattern.HUM_FOLLOWER:
 			return battery_charge_insufficient or human_fatigue_high or human_robot_dist > self.STOP_DIST
+		# Human Leader -> action must stop if current destination has been reached or robot is already
+		# sufficiently close to human
 		elif p == Pattern.HUM_LEADER: 
 			robot_pos = self.rob.get_position()
 			robot_pt = Point(robot_pos.x, robot_pos.y)
 			return robot_pt.distance_from(self.curr_dest) <= 1.0 or human_robot_dist < self.RESTART_DIST
+		# TODO
 		#elif p == Pattern.HUM_RECIPIENT: 
 			#return robXinDestInterval && robYinDestInterval
 		else:
@@ -243,11 +267,11 @@ class Orchestrator:
 	def check_r_rech(self):
 		robot_pos = self.rob.get_position()
 		robot_pt = Point(robot_pos.x, robot_pos.y)
+		# While the robot is in recharging mode, motion must stop if 
+		# charging dock has already been reached
 		if robot_pt.distance_from(self.curr_dest) < 0.5 and self.rob.curr_speed > 0.0:
 			self.rob.stop_moving()			
 		
 		if self.rob.get_charge() >= self.STOP_RECHARGE:
 			self.currOp = Operating_Modes.ROBOT_IDLE
-			
-		return
 
