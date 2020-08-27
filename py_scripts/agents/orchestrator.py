@@ -30,7 +30,12 @@ class Orchestrator:
 		self.rob = rob
 		self.humans = hum
 		self.mission = m
-		self.curr_dest = m.dest[self.currH]
+		if self.mission.p[self.currH] == Pattern.HUM_LEADER:
+			human_pos = self.humans[self.currH].get_position()
+			human_coord = Point(human_pos.x, human_pos.y)
+			self.curr_dest = human_coord
+		else:
+			self.curr_dest = m.dest[self.currH]
 
 		# THRESHOLDS
 		self.STOP_DIST = 4.0
@@ -103,7 +108,7 @@ class Orchestrator:
 			f = open(filename, 'r')
 			lines = f.read().splitlines()
 			for line in lines:	
-				if line.find('human'+str(self.currH)+'served'):
+				if line == 'human'+str(self.currH+1)+'served':
 					print('HUMAN ' + str(self.currH) + ' SERVED.')
 					human_served = True
 					break
@@ -113,7 +118,7 @@ class Orchestrator:
 			self.currH+=1
 			if self.currH < len(self.humans):
 				self.currOp = Operating_Modes.ROBOT_IDLE
-				self.curr_dest = self.mission.dest[self.currH]
+				#self.curr_dest = self.mission.dest[self.currH]
 				
 	# METHODS TO CHECK WHETHER ACTION CAN START
 	def get_human_robot_dist(self):
