@@ -21,6 +21,12 @@ def stop_sim(clientID):
 	if result != vrep.simx_return_ok:
 		print('Simulation stopped.')
 
+def check_connection(clientID):
+	result = vrep.simxGetConnectionId(clientID)
+	if result == -1:
+		print('Connection lost')
+	return result
+
 def draw_point(clientID, pos: Point):
 	vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'draw_point', [], [pos.x-const.VREP_X_OFFSET, pos.y-const.VREP_Y_OFFSET], '', '', vrep.simx_opmode_blocking)
 

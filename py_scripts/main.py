@@ -22,8 +22,8 @@ bill = Human(1, Pattern.HUM_RECIPIENT, 10, 1, 1)
 rob = MobileRobot(1, 15.0, 5.0)
 
 #dest = [None]
-dest = [Point(22.0, 15.0)] #, Point(2.0, 10.0)]
-humans = [bill]
+dest = [Point(22.0, 15.0), Point(2.0, 10.0)]
+humans = [bill, bill]
 
 patterns = []
 for hum in humans:

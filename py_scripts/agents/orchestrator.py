@@ -3,6 +3,7 @@ import time
 import rospy_utils.hriconstants as const
 import agents.navigation as nav
 import rospy_utils.hrirosnode as hriros
+import vrep_utils.vrep as vrep
 from enum import Enum
 from typing import List
 from multiprocessing import Pool
@@ -84,6 +85,9 @@ class Orchestrator:
 
 	# CHECK IF MISSION HAS FAILED DUE TO BATTERY CHARGE TOO LOW, OR FATIGUE TOO HIGH
 	def check_fail(self):
+		if vrep.check_connection(const.VREP_CLIENT_ID)==-1:
+			self.mission.fail = True
+
 		if self.rob.get_charge()<=self.FAIL_CHARGE:
 			self.mission.fail = True
 		
@@ -112,8 +116,8 @@ class Orchestrator:
 			filename = '../scene_logs/humansServed.log'
 			f = open(filename, 'r')
 			lines = f.read().splitlines()
-			for line in lines:	
-				if line == 'human'+str(self.currH+1)+'served':
+			for line in lines:
+				if line == 'human'+ str(self.humans[self.currH].hum_id) + 'served':
 					print('HUMAN ' + str(self.currH) + ' SERVED.')
 					human_served = True
 					break
@@ -125,6 +129,7 @@ class Orchestrator:
 			self.rob.stop_moving()
 			self.mission.set_served(self.currH)
 			self.currH+=1
+			self.rec_stages = 1
 			if self.currH < len(self.humans):
 				self.currOp = Operating_Modes.ROBOT_IDLE
 				
