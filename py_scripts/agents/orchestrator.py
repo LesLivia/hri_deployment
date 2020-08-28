@@ -30,6 +30,7 @@ class Orchestrator:
 		self.rob = rob
 		self.humans = hum
 		self.mission = m
+		self.rec_stages = 1
 		if self.mission.p[self.currH] == Pattern.HUM_LEADER:
 			human_pos = self.humans[self.currH].get_position()
 			human_coord = Point(human_pos.x, human_pos.y)
@@ -107,7 +108,7 @@ class Orchestrator:
 				human_served = True
 		# If human is leading, service is provided when 
 		# human player says so
-		elif self.humans[self.currH].ptrn == Pattern.HUM_LEADER:
+		elif self.humans[self.currH].ptrn == Pattern.HUM_LEADER	or (self.humans[self.currH].ptrn == Pattern.HUM_RECIPIENT and self.rec_stages == 2):
 			filename = '../scene_logs/humansServed.log'
 			f = open(filename, 'r')
 			lines = f.read().splitlines()
@@ -116,7 +117,7 @@ class Orchestrator:
 					print('HUMAN ' + str(self.currH) + ' SERVED.')
 					human_served = True
 					break
-
+			
 		# In any case, if current service has been completed,
 		# robot stops and human index increases, and robot goes back
 		# to idle if the human that was just served was not the last one
@@ -200,7 +201,12 @@ class Orchestrator:
 		# If human is a recipient, the action can start if
 		# battery charge is sufficient and human fatigue is low
 		elif p == Pattern.HUM_RECIPIENT:
-			return battery_charge_sufficient and human_fatigue_low
+			if self.rec_stages == 1:
+				return battery_charge_sufficient 
+			else:	
+				robot_pos = self.rob.get_position()
+				robot_pt = Point(robot_pos.x, robot_pos.y)
+				return human_robot_dist >= self.RESTART_DIST or robot_pt.distance_from(self.curr_dest) > 2.0
 		else:
 			return False
 
@@ -216,9 +222,12 @@ class Orchestrator:
 			self.curr_dest = Point(curr_human_pos.x, curr_human_pos.y)
 		# Human recipient -> (stage1) dest = prescribed dest, (stage2) dest = current human position
 		elif p == Pattern.HUM_RECIPIENT:
-			currOp = Operating_Modes.ROBOT_CARR
-			recipientStages = 1
-			self.curr_dest = self.mission.dest[self.currH]
+			self.currOp = Operating_Modes.ROBOT_CARR
+			if self.rec_stages == 1:
+				self.curr_dest = self.mission.dest[self.currH]
+			else:
+				curr_human_pos = self.humans[self.currH].get_position()
+				self.curr_dest = Point(curr_human_pos.x, curr_human_pos.y)				
 		return
  	
 	# METHODS TO CHECK WHETHER ACTION HAS TO STOP
@@ -242,8 +251,13 @@ class Orchestrator:
 			robot_pt = Point(robot_pos.x, robot_pos.y)
 			return robot_pt.distance_from(self.curr_dest) <= 1.0 or human_robot_dist < self.RESTART_DIST
 		# TODO
-		#elif p == Pattern.HUM_RECIPIENT: 
-			#return robXinDestInterval && robYinDestInterval
+		elif p == Pattern.HUM_RECIPIENT: 
+			robot_pos = self.rob.get_position()
+			robot_pt = Point(robot_pos.x, robot_pos.y)
+			if self.rec_stages == 1:
+				return battery_charge_insufficient or robot_pt.distance_from(self.curr_dest) <= 1.0
+			else:
+				return robot_pt.distance_from(self.curr_dest) <= 1.0 or human_robot_dist < self.RESTART_DIST
 		else:
 			return False
 	
@@ -253,6 +267,8 @@ class Orchestrator:
 			print('Action has to stop')
 			self.currOp = Operating_Modes.ROBOT_IDLE
 			self.rob.stop_moving()
+			if self.humans[self.currH].ptrn == Pattern.HUM_RECIPIENT and self.rec_stages==1:
+				self.rec_stages = 2
 
 	def check_h_move(self):
 		stop = self.get_stop_condition(self.humans[self.currH].ptrn)
