@@ -32,6 +32,7 @@ class Orchestrator:
 		self.humans = hum
 		self.mission = m
 		self.rec_stages = 1
+		self.stopped_human = False
 		if self.mission.p[self.currH] == Pattern.HUM_LEADER:
 			human_pos = self.humans[self.currH].get_position()
 			human_coord = Point(human_pos.x, human_pos.y)
@@ -48,7 +49,7 @@ class Orchestrator:
 		self.FAIL_CHARGE = 1.0
 		
 		self.FAIL_FATIGUE = 0.97
-		self.STOP_FATIGUE = 0.85
+		self.STOP_FATIGUE = 0.7
 		self.RESUME_FATIGUE = 0.3;
 
 	def run_mission(self):
@@ -101,7 +102,7 @@ class Orchestrator:
 		human_served = False
 		# If human is a follower, service is provided when 
 		# both human and robot are close to the destination
-		if self.humans[self.currH].ptrn == Pattern.HUM_FOLLOWER:
+		if self.mission.p[self.currH] == Pattern.HUM_FOLLOWER:
 			dest = self.mission.dest[self.currH]
 			position = self.humans[self.currH].get_position()
 			pos = Point(position.x, position.y)
@@ -112,14 +113,15 @@ class Orchestrator:
 				human_served = True
 		# If human is leading, service is provided when 
 		# human player says so
-		elif self.humans[self.currH].ptrn == Pattern.HUM_LEADER	or (self.humans[self.currH].ptrn == Pattern.HUM_RECIPIENT and self.rec_stages == 2):
+		elif self.mission.p[self.currH] == Pattern.HUM_LEADER or (self.mission.p[self.currH] == Pattern.HUM_RECIPIENT and self.rec_stages == 2):
 			filename = '../scene_logs/humansServed.log'
-			f = open(filename, 'r')
+			f = open(filename, 'r+')
 			lines = f.read().splitlines()
 			for line in lines:
 				if line == 'human'+ str(self.humans[self.currH].hum_id) + 'served':
 					print('HUMAN ' + str(self.currH) + ' SERVED.')
 					human_served = True
+					f.truncate(0)
 					break
 			
 		# In any case, if current service has been completed,
@@ -171,10 +173,10 @@ class Orchestrator:
 			self.rob.start_moving(self.rob.max_speed)
 		# otherwise the start condition depends on the pattern
 		else:
-			start = self.get_start_condition(self.humans[self.currH].ptrn)
+			start = self.get_start_condition(self.mission.p[self.currH])
 			if start:
 				print('Action can start, setting parameters...')
-				self.set_op_params(self.humans[self.currH].ptrn)
+				self.set_op_params(self.mission.p[self.currH])
 				self.rob.start_moving(self.rob.max_speed)
 				self.plan_trajectory()
 		return
@@ -183,17 +185,20 @@ class Orchestrator:
 	def get_start_condition(self, p: int):	
 		human_robot_dist = self.get_human_robot_dist()  
 		battery_charge_sufficient = self.rob.get_charge() >= self.RECHARGE_TH
-		human_fatigue_low = self.humans[self.currH].get_fatigue() <= self.STOP_FATIGUE
+		human_fatigue_low = self.humans[self.currH].get_fatigue() <= self.RESUME_FATIGUE
 
 		if not battery_charge_sufficient:
 			print('ROBOT CHARGE TOO LOW')
-		if not human_fatigue_low:
-			print('HUMAN FATIGUE TOO HIGH')
+		if human_fatigue_low and self.stopped_human:
+			self.stopped_human = False
+			print('HUMAN FATIGUE SUFFICIENTLY LOW')
+			self.mission.publish_status('DFTG#' + str(self.currH+1))
+			
 		print('HUMAN-ROBOT DISTANCE: ' + str(human_robot_dist))
 		# If human is a follower, the action can start if the battery charge is sufficient,
 		# if human fatigue is low, and if robot and human are close to each other
 		if p == Pattern.HUM_FOLLOWER:
-			return battery_charge_sufficient and human_fatigue_low and human_robot_dist < self.RESTART_DIST
+			return battery_charge_sufficient and ((self.stopped_human and human_fatigue_low) or not self.stopped_human) and human_robot_dist < self.RESTART_DIST
 		# If human is a leader, the action can start 
 		# if the robot is distant from current destination (human position)
 		elif p == Pattern.HUM_LEADER:
@@ -243,6 +248,8 @@ class Orchestrator:
 		if battery_charge_insufficient:
 			print('!!ROBOT BATTERY CHARGE TOO LOW!!')
 		if human_fatigue_high:
+			self.mission.publish_status('FTG#' + str(self.currH+1))
+			self.stopped_human = True
 			print('!!HUMAN FATIGUE TOO HIGH!!')
 
 		# Human Follower -> action must stop if battery charge is too low, fatigue is too high
@@ -255,7 +262,7 @@ class Orchestrator:
 			robot_pos = self.rob.get_position()
 			robot_pt = Point(robot_pos.x, robot_pos.y)
 			return robot_pt.distance_from(self.curr_dest) <= 1.0 or human_robot_dist < self.RESTART_DIST
-		# TODO
+		# Human Recipient -> action must stop if battery charge is too low or destination has already been reached
 		elif p == Pattern.HUM_RECIPIENT: 
 			robot_pos = self.rob.get_position()
 			robot_pt = Point(robot_pos.x, robot_pos.y)
@@ -267,16 +274,16 @@ class Orchestrator:
 			return False
 	
 	def check_r_move(self):
-		stop = self.get_stop_condition(self.humans[self.currH].ptrn)
+		stop = self.get_stop_condition(self.mission.p[self.currH])
 		if stop:
 			print('Action has to stop')
 			self.currOp = Operating_Modes.ROBOT_IDLE
 			self.rob.stop_moving()
-			if self.humans[self.currH].ptrn == Pattern.HUM_RECIPIENT and self.rec_stages==1:
+			if self.mission.p[self.currH] == Pattern.HUM_RECIPIENT and self.rec_stages==1:
 				self.rec_stages = 2
 
 	def check_h_move(self):
-		stop = self.get_stop_condition(self.humans[self.currH].ptrn)
+		stop = self.get_stop_condition(self.mission.p[self.currH])
 		if stop:
 			print('Action has to stop')
 			self.currOp = Operating_Modes.ROBOT_IDLE

@@ -5,7 +5,7 @@ setup(
     scripts=['scripts/leftMotorPub.py', 'scripts/rightMotorPub.py', 'scripts/allMotorPub.py',
 		'scripts/humSensorsSub.py', 'scripts/robSensorsSub.py', 'scripts/robBatterySub.py', 
 		'scripts/humFtgSub.py', 'scripts/robTrajPub.py', 'scripts/robStatusPub.py', 
-		'scripts/humServiceSub.py'],
+		'scripts/humServiceSub.py', 'scripts/missionStatusPub.py'],
     packages=['hri_scenarios'],
     package_dir={'': 'src'}
 )

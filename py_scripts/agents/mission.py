@@ -2,6 +2,10 @@
 from enum import Enum
 from typing import List
 from agents.coordinates import Point
+from multiprocessing import Pool
+import rospy_utils.hrirosnode as hriros
+import rospy_utils.hriconstants as const
+
 
 class Pattern(Enum):
 	HUM_FOLLOWER = 0
@@ -25,4 +29,13 @@ class Mission:
 
 	def set_served(self, index: int):
 		self.served[index] = True
+		msg = 'SVD#' + str(index+1)
+		self.publish_status(msg)
+		
+	def publish_status(self, msg):
+		node = 'missionStatusPub.py'
+		pool = Pool()
+		pool.starmap(hriros.rosrun_nodes, [(node, [msg])])
+		print('Robot stopping...')
+
 
