@@ -267,6 +267,8 @@ class Orchestrator:
 			robot_pos = self.rob.get_position()
 			robot_pt = Point(robot_pos.x, robot_pos.y)
 			if self.rec_stages == 1:
+				if robot_pt.distance_from(self.curr_dest) <= 1.0:
+					self.rec_stages = 2
 				return battery_charge_insufficient or robot_pt.distance_from(self.curr_dest) <= 1.0
 			else:
 				return robot_pt.distance_from(self.curr_dest) <= 1.0 or human_robot_dist < self.RESTART_DIST
@@ -279,8 +281,8 @@ class Orchestrator:
 			print('Action has to stop')
 			self.currOp = Operating_Modes.ROBOT_IDLE
 			self.rob.stop_moving()
-			if self.mission.p[self.currH] == Pattern.HUM_RECIPIENT and self.rec_stages==1:
-				self.rec_stages = 2
+			#if self.mission.p[self.currH] == Pattern.HUM_RECIPIENT and self.rec_stages==1:
+				#self.rec_stages = 2
 
 	def check_h_move(self):
 		stop = self.get_stop_condition(self.mission.p[self.currH])

@@ -18,17 +18,13 @@ print('Launching application...')
 vrep_sim = vrep.connect(19999)
 vrep.start_sim(vrep_sim)
 
-bill = Human(1, Pattern.HUM_FOLLOWER, 10, 1, 1)
+bill = Human(1, 10, 1, 1)
 rob = MobileRobot(1, 15.0, 5.0)
 
-#dest = [None]
-dest = [Point(22.0, 15.0), None, Point(2.0, 10.0)]
-humans = [bill, bill, bill]
+dest = [Point(22.0, 15.0)]
+humans = [bill]
 
-patterns = [Pattern.HUM_FOLLOWER, Pattern.HUM_LEADER, Pattern.HUM_RECIPIENT]
-#for hum in humans:
-#	patterns.append(hum.ptrn)
-		
+patterns = [Pattern.HUM_FOLLOWER]		
 mission = Mission(patterns, dest)	
 
 try:
