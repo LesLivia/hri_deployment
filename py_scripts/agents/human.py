@@ -7,9 +7,8 @@ from agents.position import Position
 from agents.coordinates import Point
 
 class Human:
-	def __init__(self, hum_id, ptrn, speed, ftg_profile, fw_profile):
+	def __init__(self, hum_id, speed, ftg_profile, fw_profile):
 		self.hum_id = hum_id
-		self.ptrn = ptrn
 		self.speed = speed
 		self.ftg_profile = ftg_profile
 		self.fw_profile = fw_profile
