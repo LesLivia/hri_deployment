@@ -95,10 +95,10 @@ def follow_position(hums: List[Human]):
 					_cached_pt = Point(_cached_pos.x, _cached_pos.y)
 					new_pt = Point(new_position.x, new_position.y)
 					if hum.is_moving() and new_pt.distance_from(_cached_pt) < 0.5:
-						print('Human is idle')
+						# print('Human is idle')
 						hum.set_is_moving(False)
 					elif not hum.is_moving() and new_pt.distance_from(_cached_pt) >= 0.5:
-						print('Human is moving')
+						# print('Human is moving')
 						hum.set_is_moving(True)
 
 			_cached_stamp = stamp
