@@ -13,13 +13,18 @@ PI = 3.14
 
 def init_walls():
 	wall_pts = []
+	density = 0.5
 	for wall in const.WALLS:
 		if wall[0].y == wall[1].y:
-			for x in numpy.arange(wall[0].x, wall[1].x, 0.25):
+			for x in numpy.arange(wall[0].x, wall[1].x, density):
 				wall_pts.append(Point(x, wall[0].y))
 		elif wall[0].x == wall[1].x:
-			for y in numpy.arange(wall[0].y, wall[1].y, 0.25):
+			for y in numpy.arange(wall[0].y, wall[1].y, density):
 				wall_pts.append(Point(wall[0].x, y))
+	# f = open("../scene_logs/walls.txt", "a")
+	# for point in wall_pts:
+    	#	 f.write("\n" + str(point))
+	# f.close()
 	return wall_pts
 
 def get_straight_line(start: Point, dest: Point):
