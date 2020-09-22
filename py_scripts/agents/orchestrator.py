@@ -55,9 +55,11 @@ class Orchestrator:
 	def run_mission(self):
 		print('Starting mission...')
 		while not self.check_scs() and not self.check_fail():
-			#print('Checking actions...')
-			self.check_actions()
+			# opchk.op			
 			time.sleep(self.t_int)
+			self.check_actions()
+			# opchk.chk
+			time.sleep(self.t_proc)
 
 		self.rob.set_sim_running(0)
 		return
