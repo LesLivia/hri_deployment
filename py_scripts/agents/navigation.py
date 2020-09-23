@@ -63,7 +63,7 @@ def get_straight_line(start: Point, dest: Point):
 				traj.append(Point(start.x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))	
 				# vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
 	traj.append(Point(dest.x-const.VREP_X_OFFSET, dest.y-const.VREP_Y_OFFSET))
-	#vrep.draw_point(const.VREP_CLIENT_ID, Point(dest.x, dest.y))		
+	# vrep.draw_point(const.VREP_CLIENT_ID, Point(dest.x, dest.y))		
 	return traj
 	
 def plan_traj(start: Point, dest: Point, walls: List[Point]):

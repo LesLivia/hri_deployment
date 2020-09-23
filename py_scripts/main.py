@@ -10,7 +10,7 @@ from multiprocessing import Pool
 from agents.mobilerobot import MobileRobot
 from agents.human import Human, start_reading_data, follow_position, follow_fatigue
 from agents.coordinates import Point
-from agents.orchestrator import Orchestrator
+from agents.orchestrator import Orchestrator, OpChk
 from agents.mission import *
 
 print('Launching application...')
@@ -22,10 +22,10 @@ bill = Human(1, 10, 1, 1)
 alice = Human(2, 10, 1, 1)
 rob = MobileRobot(1, 15.0, 5.0)
 
-dest = [Point(22.0, 15.0), Point(32.0, 6.0)]
+dest = [Point(10.0, 10.0), Point(23.0, 5.0)]
 humans = [bill, alice]
 
-patterns = [Pattern.HUM_FOLLOWER, Pattern.HUM_LEADER]		
+patterns = [Pattern.HUM_FOLLOWER, Pattern.HUM_FOLLOWER]		
 mission = Mission(patterns, dest)	
 
 try:
@@ -48,12 +48,13 @@ try:
 	
 	# START MISSION
 	time.sleep(7)
-	orch = Orchestrator(1, 0.5, rob, humans, mission)
+	opchk = OpChk(1, 0.5, rob, humans, mission)
+	orch = Orchestrator(opchk)
 	thread_m = Thread(target = orch.run_mission)
 	thread_m.start()
 	
 	# keep going as long as the mission is not over	
-	while not mission.get_scs() and not mission.fail:
+	while rob.is_sim_running():
 		pass
 
 	if mission.get_scs():

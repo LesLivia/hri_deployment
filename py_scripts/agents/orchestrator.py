@@ -19,8 +19,14 @@ class Operating_Modes(Enum):
 	ROBOT_CARR = 4
 	ROBOT_FOLL = 5
 	
-class Orchestrator:
+class OpChk:
 	def __init__(self, t_int: int, t_proc: int, rob: MobileRobot, hum: List[Human], m: Mission):
+		# AUTOMATON
+		self.LOCATION = "off"
+		self.scs = False
+		self.fail = False
+		self.stop = False
+
 		# PARAMS
 		self.t_int = t_int
 		self.t_proc = t_proc
@@ -45,30 +51,40 @@ class Orchestrator:
 		self.RESTART_DIST = 2.0
 
 		self.RECHARGE_TH = 40.0
-		self.STOP_RECHARGE = 50.0
+		self.STOP_RECHARGE = 100.0
 		self.FAIL_CHARGE = 1.0
 		
 		self.FAIL_FATIGUE = 0.97
 		self.STOP_FATIGUE = 0.7
 		self.RESUME_FATIGUE = 0.3;
 
-	def run_mission(self):
-		print('Starting mission...')
-		while not self.check_scs() and not self.check_fail():
-			# opchk.op			
-			time.sleep(self.t_int)
-			self.check_actions()
-			# opchk.chk
-			time.sleep(self.t_proc)
+	def initialize(self):
+		self.stop = False
+		self.scs = False
+		self.fail = False
 
-		self.rob.set_sim_running(0)
+	def start(self):
+		self.initialize()
+
+		self.LOCATION = 'op'
+		while not self.scs and not self.fail and not self.stop:
+			time.sleep(self.t_int)
+			# t_act >= T_int			
+			self.check_actions()
+			self.LOCATION = 'chk'
+			time.sleep(self.t_proc)
+			# t_act >= T_proc
+
+		self.LOCATION = 'off'
 		return
 
 	def check_actions(self):
-		if self.check_scs():
+		self.check_scs()
+		if self.scs:
 			return 
 
-		if self.check_fail():
+		self.check_fail()
+		if self.fail:
 			return
 
 		if self.currOp == Operating_Modes.ROBOT_IDLE:
@@ -84,7 +100,7 @@ class Orchestrator:
 
 	# CHECK IF ALL SERVICES HAVE BEEN PROVIDED, THUS MISSION HAS BEEN SUCCESSFULLY COMPLETED 
 	def check_scs(self):
-		return self.mission.get_scs()
+		self.scs = self.mission.get_scs()
 
 	# CHECK IF MISSION HAS FAILED DUE TO BATTERY CHARGE TOO LOW, OR FATIGUE TOO HIGH
 	def check_fail(self):
@@ -96,8 +112,8 @@ class Orchestrator:
 		
 		if self.humans[self.currH].get_fatigue()>=self.FAIL_FATIGUE:
 			self.mission.fail = True
-			
-		return self.mission.fail
+		
+		self.fail = self.mission.fail
 
 	# CHECK IF CURRENT SERVICE HAS BEEN PROVIDED, THUS THE MISSION CAN MOVE ON
 	def check_service_provided(self):
@@ -130,7 +146,7 @@ class Orchestrator:
 		# robot stops and human index increases, and robot goes back
 		# to idle if the human that was just served was not the last one
 		if human_served:
-			self.rob.stop_moving()
+			self.stop = True
 			self.mission.set_served(self.currH)
 			self.currH+=1
 			self.rec_stages = 1
@@ -168,19 +184,18 @@ class Orchestrator:
 		# robot switches to charging mode
 		if self.rob.get_charge() < self.RECHARGE_TH:
 			print('ROBOT CHARGE TOO LOW')
-			self.rob.stop_moving()
-			self.currOp = Operating_Modes.ROBOT_RECH
+			self.stop = True
+			self.currOp = Operating_Modes.ROBOT_LEAD
 			self.curr_dest = const.VREP_RECH_STATION
 			self.plan_trajectory()
-			self.rob.start_moving(self.rob.max_speed)
 		# otherwise the start condition depends on the pattern
 		else:
 			start = self.get_start_condition(self.mission.p[self.currH])
 			if start:
 				print('Action can start, setting parameters...')
 				self.set_op_params(self.mission.p[self.currH])
-				self.rob.start_moving(self.rob.max_speed)
 				self.plan_trajectory()
+				self.stop = True
 		return
 	
 	# GET START CONDITION BASED ON CURRENT PATTERN
@@ -225,7 +240,7 @@ class Orchestrator:
 	def set_op_params(self, p: int):
 		# Human follower -> destination = prescribed destination
 		if p == Pattern.HUM_FOLLOWER:
-			self.currOp = Operating_Modes.ROBOT_LEAD
+			self.currOp = Operating_Modes.ROBOT_CARR
 			self.curr_dest = self.mission.dest[self.currH]
 		# Human leader -> destination = current human position
 		elif p == Pattern.HUM_LEADER:
@@ -278,20 +293,20 @@ class Orchestrator:
 			return False
 	
 	def check_r_move(self):
-		stop = self.get_stop_condition(self.mission.p[self.currH])
-		if stop:
+		self.stop = self.get_stop_condition(self.mission.p[self.currH])
+		if self.stop:
 			print('Action has to stop')
-			self.currOp = Operating_Modes.ROBOT_IDLE
-			self.rob.stop_moving()
+			self.stop = True
 			#if self.mission.p[self.currH] == Pattern.HUM_RECIPIENT and self.rec_stages==1:
 				#self.rec_stages = 2
 
 	def check_h_move(self):
-		stop = self.get_stop_condition(self.mission.p[self.currH])
-		if stop:
+		self.stop = self.get_stop_condition(self.mission.p[self.currH])
+		if self.stop:
 			print('Action has to stop')
-			self.currOp = Operating_Modes.ROBOT_IDLE
-			self.rob.stop_moving()
+			self.stop = True
+			# self.currOp = Operating_Modes.ROBOT_IDLE
+			# self.rob.stop_moving()
 			human_pos = self.humans[self.currH].get_position()
 			human_pt = Point(human_pos.x, human_pos.y)
 			self.curr_dest = Point(human_pos.x, human_pos.y)
@@ -306,4 +321,75 @@ class Orchestrator:
 		
 		if self.rob.get_charge() >= self.STOP_RECHARGE:
 			self.currOp = Operating_Modes.ROBOT_IDLE
+
+
+class Orchestrator:
+	def __init__(self, opchk: OpChk):
+		self.opchk = opchk
+		self.LOCATION = 'o_init'
+
+		self.rob = opchk.rob
+		self.humans = opchk.humans
+		self.mission = opchk.mission
+
+	def run_mission(self):
+		print('Starting mission...')
+		while not self.LOCATION=='o_fail_1' and not self.LOCATION=='o_fail_2' and not self.LOCATION=='o_scs':
+			self.opchk.start()
+			self.LOCATION = 'idle'			
+			if self.opchk.stop:
+				self.LOCATION = 'r_start'
+				self.rob.start_moving(self.rob.max_speed)
+				self.LOCATION = 'h_start' 
+				# no effect, we cannot control the human
+				self.LOCATION = 'x_move'
+				self.opchk.start()
+				self.rob.stop_moving()
+				self.LOCATION = 'stopping'
+				rob_to_rech = self.opchk.currOp == Operating_Modes.ROBOT_LEAD
+				rob_leading = self.opchk.currOp == Operating_Modes.ROBOT_CARR
+				hum_recipient = self.mission.p[(self.opchk.currH)-1] == Pattern.HUM_RECIPIENT
+				if self.opchk.stop and not (rob_to_rech or (rob_leading and hum_recipient)):
+					# stopHuman or not, we cannot control the human
+					self.opchk.currOp = Operating_Modes.ROBOT_IDLE
+					self.LOCATION = 'o_init'
+				elif self.opchk.stop and (rob_to_rech or (rob_leading and hum_recipient)):
+					self.LOCATION = 'to_2nd_task'
+					if rob_to_rech:	
+						# recharging starts when robot is close to the dock
+						self.LOCATION = 'starting_2'
+						self.opchk.currOp = Operating_Modes.ROBOT_RECH
+						self.LOCATION = 'r_rech'
+						self.opchk.start()
+						self.LOCATION = 'stopping_2'
+						if self.opchk.stop:
+							self.opchk.currOp = Operating_Modes.ROBOT_IDLE
+							self.LOCATION = 'o_init'							
+					elif rob_leading and hum_recipient:
+						# cannot control human sync
+						self.LOCATION = 'delivering'
+						self.LOCATION = 'o_init'
+				elif self.opchk.scs:
+					self.LOCATION = 'o_scs'
+				elif self.opchk.fail:
+					self.LOCATION = 'o_fail_2'	
+			elif self.opchk.scs:
+				self.rob.stop_moving()
+				self.LOCATION = 'o_scs'
+			elif self.opchk.fail:
+				self.rob.stop_moving()
+				self.LOCATION = 'o_fail_1'			
+
+		self.rob.set_sim_running(0)
+		return
+
+	
+
+
+
+
+
+
+
+
 
