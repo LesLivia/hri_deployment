@@ -7,6 +7,7 @@ import agents.navigation as nav
 from multiprocessing import Pool
 from agents.position import Position
 from agents.coordinates import Point
+from datetime import datetime
 
 
 class MobileRobot:
@@ -100,6 +101,10 @@ class MobileRobot:
 
                     last_line = lines[-1]
                     new_charge = float(last_line)
+                    
+                    now = datetime.now()
+                    current_time = now.strftime("%H:%M:%S")
+                    print("Current Time =", current_time)
 
                     self.set_charge(new_charge)
                     _cached_stamp = stamp

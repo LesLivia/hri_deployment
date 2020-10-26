@@ -66,8 +66,8 @@ class OpChk:
 	def start(self):
 		self.initialize()
 
-		self.LOCATION = 'op'
 		while not self.scs and not self.fail and not self.stop:
+			self.LOCATION = 'op'
 			time.sleep(self.t_int)
 			# t_act >= T_int			
 			self.check_actions()

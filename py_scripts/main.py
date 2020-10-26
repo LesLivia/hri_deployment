@@ -22,10 +22,10 @@ bill = Human(1, 10, 1, 1)
 alice = Human(2, 10, 1, 1)
 rob = MobileRobot(1, 15.0, 5.0)
 
-dest = [Point(10.0, 10.0), Point(23.0, 5.0)]
+dest = [Point(22.0, 18.0)]
 humans = [bill, alice]
 
-patterns = [Pattern.HUM_FOLLOWER, Pattern.HUM_FOLLOWER]		
+patterns = [Pattern.HUM_FOLLOWER]	
 mission = Mission(patterns, dest)	
 
 try:
