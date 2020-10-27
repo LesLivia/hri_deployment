@@ -22,17 +22,17 @@ bill = Human(1, 10, 1, 1)
 alice = Human(2, 10, 1, 1)
 rob = MobileRobot(1, 15.0, 5.0)
 
-dest = [Point(22.0, 18.0)]
+dest = [Point(22.0, 18.0), Point(22.0, 4.0)]
 humans = [bill, alice]
 
-patterns = [Pattern.HUM_FOLLOWER]	
+patterns = [Pattern.HUM_FOLLOWER, Pattern.HUM_LEADER]	
 mission = Mission(patterns, dest)	
 
 try:
 	# START ROS NODES THAT ACQUIRE DATA FROM SENSORS
 	start_reading_data(humans)
 	rob.start_reading_data()
-	time.sleep(7)
+	time.sleep(10)
 	
 	# START MONITORING HUMAN SENSOR DATA LOGS
 	thread_h = Thread(target = follow_position, args=[humans])
@@ -47,7 +47,7 @@ try:
 	thread_rb.start()
 	
 	# START MISSION
-	time.sleep(7)
+	time.sleep(10)
 	opchk = OpChk(1, 0.5, rob, humans, mission)
 	orch = Orchestrator(opchk)
 	thread_m = Thread(target = orch.run_mission)

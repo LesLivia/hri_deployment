@@ -104,7 +104,7 @@ class MobileRobot:
                     
                     now = datetime.now()
                     current_time = now.strftime("%H:%M:%S")
-                    print("Current Time =", current_time)
+                    # print("Current Time =", current_time)
 
                     self.set_charge(new_charge)
                     _cached_stamp = stamp
