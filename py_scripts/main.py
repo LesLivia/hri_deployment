@@ -15,7 +15,7 @@ from agents.mission import *
 
 print('Launching application...')
 
-vrep_sim = vrep.connect(19999)
+vrep_sim = vrep.connect(19997)
 vrep.start_sim(vrep_sim)
 
 bill = Human(1, 10, 1, 1)

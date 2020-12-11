@@ -50,7 +50,7 @@ class OpChk:
 		self.STOP_DIST = 4.0
 		self.RESTART_DIST = 2.0
 
-		self.RECHARGE_TH = 40.0
+		self.RECHARGE_TH = 0.0
 		self.STOP_RECHARGE = 100.0
 		self.FAIL_CHARGE = 1.0
 		
