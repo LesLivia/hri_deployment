@@ -80,9 +80,9 @@ def follow_position(hums: List[Human]):
 			lines = f.read().splitlines()
 			new_lines = lines[_last_read_line:]
 			for line in new_lines:
-				humId = int((line.split(':')[0]).replace('hum', ''))
+				humId = int((line.split(':')[1]).replace('hum', ''))
 				hum = hums[humId-1]
-				pos_str = line.split(':')[1]
+				pos_str = line.split(':')[2]
 				if hum.get_position():
 					_cached_pos = hum.get_position()
 				new_position = Position.parse_position(pos_str)
@@ -116,9 +116,9 @@ def follow_fatigue(hums: List[Human]):
 			lines = f.read().splitlines()
 			new_lines = lines[_last_read_line:]
 			for line in new_lines:
-				humId = int((line.split('#')[1]).replace('hum', ''))
+				humId = int((line.split(':')[1]).replace('hum', ''))
 				hum = hums[humId-1]
-				new_ftg = float(line.split('#')[2])
+				new_ftg = float(line.split(':')[2])
 				hum.set_fatigue(new_ftg)
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
