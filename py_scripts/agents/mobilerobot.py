@@ -72,7 +72,7 @@ class MobileRobot:
                     lines = f.read().splitlines()
 
                     last_line = lines[-1]
-                    newPos = Position.parse_position(last_line)
+                    newPos = Position.parse_position(last_line.split(':')[1])
 
                     # VRep layout origin is different from the
                     # one in the Uppaal model: translation is necessary
@@ -100,7 +100,7 @@ class MobileRobot:
                     lines = f.read().splitlines()
 
                     last_line = lines[-1]
-                    new_charge = float(last_line)
+                    new_charge = float(last_line.split(':')[1])
                     
                     now = datetime.now()
                     current_time = now.strftime("%H:%M:%S")
