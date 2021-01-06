@@ -5,9 +5,12 @@ import sys
 from std_msgs.msg import String
 
 def callback(data):
-    f = open("../scene_logs/humanFatigue.log", "a")
-    f.write("\n" + data.data)
-    f.close()
+    try:
+        f = open("../scene_logs/humanFatigue.log", "a")
+        f.write("\n" + data.data)
+        f.close()
+    except IOError:
+        print(data.data)
         
 def listener():
     rospy.init_node('humFtgSub', anonymous=False)
