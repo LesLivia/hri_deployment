@@ -24,6 +24,7 @@ class Human:
 		self.moving = False
 		self.position = None
 		self.emg = []
+		self.lambdas = []
 
 	def set_position(self, position: Position):
 		self.position = position
@@ -42,6 +43,12 @@ class Human:
 
 	def get_emg_signal(self):
 		return self.emg
+
+	def set_lambdas(self, l: float):
+		self.lambdas.append(l)
+
+	def get_lambdas(self):
+		return self.lambdas
 
 	def set_sim_running(self, run):
         	self.sim_running = run
@@ -138,29 +145,44 @@ def emg_to_ftg(hum: Human, initial_guess=None, cf=0):
 	    			print('error in division')
 
 		# First, design the Buterworth filter
-		N = 3  # Filter order
-		Wn = 0.3  # Cutoff frequency
-		B, A = signal.butter(N, Wn, output='ba')
-		smooth_data = signal.filtfilt(B, A, mean_freq_data)
-		mean_freq_data = [i * (1 - cf * index) for (index, i) in enumerate(smooth_data)]
+		# N = 3  # Filter order
+		# Wn = 0.3  # Cutoff frequency
+		# B, A = signal.butter(N, Wn, output='ba')
+		# smooth_data = signal.filtfilt(B, A, mean_freq_data)
+		mean_freq_data = [i * (1 - cf * index) for (index, i) in enumerate(mean_freq_data)]
 
 		bursts = b_e / SAMPLING_RATE
 		q, m, x, est_values = emg_mgr.mnf_lin_reg(mean_freq_data, bursts)
 		if m < 0:
 			est_lambda = math.fabs(m)
-			MET = math.log(1 - 0.05) / -est_lambda
-			print('ESTIMATED RATE: {:.6f}, MET: {:.2f}min'.format(est_lambda, MET))
 		else:
 			est_lambda = initial_guess
+		MET = math.log(1 - 0.05) / -est_lambda
+		# print('ESTIMATED RATE: {:.6f}, MET: {:.2f}min'.format(est_lambda, MET))
 	except ValueError:
-		print('Insufficient EMG bursts')
+		# print('Insufficient EMG bursts ({})'.format(len(b_s)))
 		est_lambda = initial_guess
+		MET = math.log(1 - 0.05) / -est_lambda
+		# print('ESTIMATED RATE: {:.6f}, MET: {:.2f}min'.format(est_lambda, MET))
 
+	hum.set_lambdas(est_lambda)
 	t = len(signal_mv)/SAMPLING_RATE
-	F = 1 - math.exp(-est_lambda * t)
+	all_lambdas = hum.get_lambdas()
+	avg_lambda = sum(all_lambdas)/len(all_lambdas)
+	# print('avg lambda so far: {}'.format(avg_lambda))
+	F = 1 - math.exp(-avg_lambda * t)
+	filename = '../scene_logs/emg_to_ftg.log'
+	f = open(filename, 'a')
+	f.write(str(F)+'\n')
+	f.close()
 	return F
 
 def follow_fatigue(hums: List[Human]):
+	filename = '../scene_logs/emg_to_ftg.log'
+	f = open(filename, 'w')
+	f.truncate()
+	f.close()	
+
 	filename = '../scene_logs/humanFatigue.log'
 	_cached_stamp = 0
 	_last_read_line = 1
@@ -176,7 +198,7 @@ def follow_fatigue(hums: List[Human]):
 				new_emg_pts = line.split(':')[2].split('#')
 				new_emg_pts = [float(pt) for pt in new_emg_pts[:len(new_emg_pts)-2]]
 				hum.set_emg_signal(new_emg_pts)
-				new_ftg = emg_to_ftg(hum, 0.0005)
+				new_ftg = emg_to_ftg(hum, 0.0005, 0.0001)
 				hum.set_fatigue(new_ftg)
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
