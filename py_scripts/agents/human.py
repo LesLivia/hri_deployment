@@ -159,7 +159,6 @@ def follow_position(hums: List[Human]):
 
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
-		time.sleep(1)
 
 def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 	SAMPLING_RATE = 1080
@@ -217,6 +216,7 @@ def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 def follow_fatigue(hums: List[Human]):
 	filename = '../scene_logs/humanFatigue.log'
 	_cached_stamp = 0
+	_cached_status = False
 	_last_read_line = 1
 	while hums[0].is_sim_running():
 		stamp = os.stat(filename).st_mtime
@@ -227,13 +227,13 @@ def follow_fatigue(hums: List[Human]):
 			for line in new_lines:
 				humId = int((line.split(':')[1]).replace('hum', ''))
 				hum = hums[humId-1]
-				_cached_status = hum.is_moving()
 				new_status = True if line.split(':')[2]=='m' else False
 				if new_status!=_cached_status:
 					print('human switched to {} {}'.format(new_status, line.split(':')[2]))
 					hum.set_f_o(hum.get_fatigue())
 					hum.set_is_moving(new_status)	
-					hum.set_last_switch(float(line.split(':')[0]))			
+					hum.set_last_switch(float(line.split(':')[0]))	
+					_cached_status = new_status		
 				new_emg_pts = line.split(':')[3].split('#')
 				new_emg_pts = [float(pt) for pt in new_emg_pts[:len(new_emg_pts)-2]]
 				hum.set_emg_signal(line.split(':')[2], new_emg_pts)
@@ -241,5 +241,4 @@ def follow_fatigue(hums: List[Human]):
 				hum.set_fatigue(new_ftg)
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
-		time.sleep(1)
 

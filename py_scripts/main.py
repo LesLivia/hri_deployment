@@ -48,7 +48,7 @@ try:
 	
 	# START MISSION
 	time.sleep(10)
-	opchk = OpChk(1, 0.5, rob, humans, mission)
+	opchk = OpChk(0.5, 0.0, rob, humans, mission)
 	orch = Orchestrator(opchk)
 	thread_m = Thread(target = orch.run_mission)
 	thread_m.start()
