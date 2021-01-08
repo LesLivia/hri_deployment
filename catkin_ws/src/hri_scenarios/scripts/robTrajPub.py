@@ -6,7 +6,7 @@ from std_msgs.msg import String
 def robTrajPub(points):
     pub = rospy.Publisher('robotTraj', String, queue_size=10)
     rospy.init_node('robotTraj', anonymous=False)
-    rospy.loginfo(points)
+    # rospy.loginfo(points)
     rate = rospy.Rate(10)
     count = 0
     while count < 3:

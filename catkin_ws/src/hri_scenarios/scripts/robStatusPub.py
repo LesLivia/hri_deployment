@@ -6,7 +6,7 @@ from std_msgs.msg import String
 def robotStatusPub(data):
     pub = rospy.Publisher('robotMove', String, queue_size=10)
     rospy.init_node('robotStatus', anonymous=False)
-    rospy.loginfo(data)
+    # rospy.loginfo(data)
     rate = rospy.Rate(10)
     count = 0
     while count < 3:

@@ -8,7 +8,7 @@ def rosrun_nodes(node: str, args: List[str]):
 	command = "rosrun " + const.HRI_ROS_PCKG + " " + node 
 	for arg in args:
 		command += " " + arg
-	print(command)
+	# print(command)
 	subprocess.Popen(command, shell=True)
 
 def roskill_nodes(node: str):

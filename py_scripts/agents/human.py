@@ -26,7 +26,9 @@ class Human:
 		self.position = None
 		self.fatigue = 0.0
 		self.f_0 = 0
-		self.emg = []
+		self.last_switch = 0.0
+		self.emg_walk = []
+		self.emg_rest = []
 		self.lambdas = []
 		self.mus = []
 
@@ -48,14 +50,20 @@ class Human:
 	def get_f_o(self):
 		return self.f_0
 
-	def clear_emg_signal(self):
-		self.emg = []
+	def set_last_switch(self, t: float):
+		self.last_switch = t
 
-	def set_emg_signal(self, emg: List[float]):
-		self.emg += emg
+	def get_last_switch(self):
+		return self.last_switch
 
-	def get_emg_signal(self):
-		return self.emg
+	def set_emg_signal(self, state: str, emg: List[float]):
+		if state=='m':
+			self.emg_walk += emg
+		else:
+			self.emg_rest += emg
+
+	def get_emg_signal(self, state: str):
+		return self.emg_walk if state=='m' else self.emg_rest
 
 	def set_lambdas(self, l: float):
 		self.lambdas.append(l)
@@ -155,8 +163,9 @@ def follow_position(hums: List[Human]):
 
 def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 	SAMPLING_RATE = 1080
-	signal_mv = hum.get_emg_signal()
-	if hum.is_moving:
+	state = 'm' if hum.is_moving() else 'r'
+	signal_mv = hum.get_emg_signal(state)
+	if hum.is_moving():
 		est_rate = hum.get_lambdas()[-1] if len(hum.get_lambdas())>0 else def_lambda
 	else:  
 		est_rate = hum.get_mus()[-1] if len(hum.get_mus())>0 else def_mu
@@ -178,9 +187,9 @@ def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 
 		bursts = b_e / SAMPLING_RATE
 		q, m, x, est_values = emg_mgr.mnf_lin_reg(mean_freq_data, bursts)
-		if (hum.is_moving() and m<0) or (not hum.is_moving and m>=0):		
+		if (hum.is_moving() and m<0) or (not hum.is_moving() and m>0):		
 			est_rate = math.fabs(m)
-		print('ESTIMATED RATE: {:.6f}'.format(est_rate))
+		# print('ESTIMATED RATE: {:.6f}'.format(est_rate))
 	except ValueError:
 		print('Insufficient EMG bursts ({})'.format(len(b_s)))		
 		# print('ESTIMATED RATE: {:.6f}, MET: {:.2f}min'.format(est_lambda, MET))
@@ -190,17 +199,19 @@ def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 	else:
 		hum.set_mus(est_rate)
 
-	t = len(signal_mv)/SAMPLING_RATE
+	t = len(signal_mv)/SAMPLING_RATE - hum.get_last_switch()
 
 	all_rates = hum.get_lambdas() if hum.is_moving() else hum.get_mus()
 	avg_rate = sum(all_rates)/len(all_rates)
-	# print('avg rate so far: {}'.format(avg_rate))
+	print('avg rate so far ({}): {}'.format(state, avg_rate))
 	F_0 = hum.get_f_o()
-	F = 1 - (1-F_0)*math.exp(-avg_rate*t) if hum.is_moving else F_0*math.exp(-avg_rate*t)
+	F = 1 - (1-F_0)*math.exp(-avg_rate*t) if hum.is_moving() else F_0*math.exp(-avg_rate*t)
+
 	filename = '../scene_logs/emg_to_ftg.log'
 	f = open(filename, 'a')
 	f.write(str(F)+'\n')
 	f.close()
+
 	return F
 
 def follow_fatigue(hums: List[Human]):
@@ -219,13 +230,14 @@ def follow_fatigue(hums: List[Human]):
 				_cached_status = hum.is_moving()
 				new_status = True if line.split(':')[2]=='m' else False
 				if new_status!=_cached_status:
-					hum.clear_emg_signal()
+					print('human switched to {} {}'.format(new_status, line.split(':')[2]))
 					hum.set_f_o(hum.get_fatigue())
-					hum.set_is_moving(new_status)				
+					hum.set_is_moving(new_status)	
+					hum.set_last_switch(float(line.split(':')[0]))			
 				new_emg_pts = line.split(':')[3].split('#')
 				new_emg_pts = [float(pt) for pt in new_emg_pts[:len(new_emg_pts)-2]]
-				hum.set_emg_signal(new_emg_pts)
-				new_ftg = emg_to_ftg(hum, def_lambda=0.0005, def_mu=0.0005, cf=0)
+				hum.set_emg_signal(line.split(':')[2], new_emg_pts)
+				new_ftg = emg_to_ftg(hum, def_lambda=0.0005, def_mu=0.0005, cf=0.0001)
 				hum.set_fatigue(new_ftg)
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
