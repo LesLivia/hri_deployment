@@ -65,6 +65,7 @@ class Human:
 def start_reading_data(humans: List[Human]):
 	f = open('../scene_logs/humanPosition.log', 'r+')
 	f.truncate(0)
+	f.close()
 
 	node = 'humSensorsSub.py'
 
@@ -73,6 +74,7 @@ def start_reading_data(humans: List[Human]):
 
 	f = open('../scene_logs/humanFatigue.log', 'r+')
 	f.truncate(0)
+	f.close()
 
 	node = 'humFtgSub.py'
 
@@ -81,11 +83,16 @@ def start_reading_data(humans: List[Human]):
 
 	f = open('../scene_logs/humansServed.log', 'r+')
 	f.truncate(0)
+	f.close()
 
 	node = 'humServiceSub.py'
 
 	pool = Pool()
 	pool.starmap(hriros.rosrun_nodes, [(node, '')])
+
+	f = open('../scene_logs/emg_to_ftg.log', 'r+')
+	f.truncate(0)
+	f.close()	
 
 	for hum in humans:	
 		hum.set_sim_running(1)
@@ -178,11 +185,6 @@ def emg_to_ftg(hum: Human, initial_guess=None, cf=0):
 	return F
 
 def follow_fatigue(hums: List[Human]):
-	filename = '../scene_logs/emg_to_ftg.log'
-	f = open(filename, 'w')
-	f.truncate()
-	f.close()	
-
 	filename = '../scene_logs/humanFatigue.log'
 	_cached_stamp = 0
 	_last_read_line = 1
