@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import time
 import rospy_utils.hrirosnode as hriros
 import rospy_utils.hriconstants as const
 import agents.mgrs.emg_mgr as emg_mgr
@@ -23,8 +24,11 @@ class Human:
 		self.fw_profile = fw_profile
 		self.moving = False
 		self.position = None
+		self.fatigue = 0.0
+		self.f_0 = 0
 		self.emg = []
 		self.lambdas = []
+		self.mus = []
 
 	def set_position(self, position: Position):
 		self.position = position
@@ -38,6 +42,15 @@ class Human:
 	def get_fatigue(self):
 		return self.fatigue
 
+	def set_f_o(self, f_0: float):
+		self.f_0 = f_0
+
+	def get_f_o(self):
+		return self.f_0
+
+	def clear_emg_signal(self):
+		self.emg = []
+
 	def set_emg_signal(self, emg: List[float]):
 		self.emg += emg
 
@@ -49,6 +62,12 @@ class Human:
 
 	def get_lambdas(self):
 		return self.lambdas
+
+	def set_mus(self, m: float):
+		self.mus.append(m)
+
+	def get_mus(self):
+		return self.mus
 
 	def set_sim_running(self, run):
         	self.sim_running = run
@@ -132,11 +151,15 @@ def follow_position(hums: List[Human]):
 
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
+		time.sleep(1)
 
-def emg_to_ftg(hum: Human, initial_guess=None, cf=0):
+def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 	SAMPLING_RATE = 1080
 	signal_mv = hum.get_emg_signal()
-	est_lambdas = initial_guess
+	if hum.is_moving:
+		est_rate = hum.get_lambdas()[-1] if len(hum.get_lambdas())>0 else def_lambda
+	else:  
+		est_rate = hum.get_mus()[-1] if len(hum.get_mus())>0 else def_mu
 
 	b_s, b_e = emg_mgr.get_bursts(signal_mv, SAMPLING_RATE)
 	try:
@@ -151,33 +174,29 @@ def emg_to_ftg(hum: Human, initial_guess=None, cf=0):
 			except ZeroDivisionError:
 	    			print('error in division')
 
-		# First, design the Buterworth filter
-		# N = 3  # Filter order
-		# Wn = 0.3  # Cutoff frequency
-		# B, A = signal.butter(N, Wn, output='ba')
-		# smooth_data = signal.filtfilt(B, A, mean_freq_data)
 		mean_freq_data = [i * (1 - cf * index) for (index, i) in enumerate(mean_freq_data)]
 
 		bursts = b_e / SAMPLING_RATE
 		q, m, x, est_values = emg_mgr.mnf_lin_reg(mean_freq_data, bursts)
-		if m < 0:
-			est_lambda = math.fabs(m)
-		else:
-			est_lambda = initial_guess
-		MET = math.log(1 - 0.05) / -est_lambda
-		# print('ESTIMATED RATE: {:.6f}, MET: {:.2f}min'.format(est_lambda, MET))
+		if (hum.is_moving() and m<0) or (not hum.is_moving and m>=0):		
+			est_rate = math.fabs(m)
+		print('ESTIMATED RATE: {:.6f}'.format(est_rate))
 	except ValueError:
-		# print('Insufficient EMG bursts ({})'.format(len(b_s)))
-		est_lambda = initial_guess
-		MET = math.log(1 - 0.05) / -est_lambda
+		print('Insufficient EMG bursts ({})'.format(len(b_s)))		
 		# print('ESTIMATED RATE: {:.6f}, MET: {:.2f}min'.format(est_lambda, MET))
 
-	hum.set_lambdas(est_lambda)
+	if hum.is_moving():
+		hum.set_lambdas(est_rate)
+	else:
+		hum.set_mus(est_rate)
+
 	t = len(signal_mv)/SAMPLING_RATE
-	all_lambdas = hum.get_lambdas()
-	avg_lambda = sum(all_lambdas)/len(all_lambdas)
-	# print('avg lambda so far: {}'.format(avg_lambda))
-	F = 1 - math.exp(-avg_lambda * t)
+
+	all_rates = hum.get_lambdas() if hum.is_moving() else hum.get_mus()
+	avg_rate = sum(all_rates)/len(all_rates)
+	# print('avg rate so far: {}'.format(avg_rate))
+	F_0 = hum.get_f_o()
+	F = 1 - (1-F_0)*math.exp(-avg_rate*t) if hum.is_moving else F_0*math.exp(-avg_rate*t)
 	filename = '../scene_logs/emg_to_ftg.log'
 	f = open(filename, 'a')
 	f.write(str(F)+'\n')
@@ -197,11 +216,18 @@ def follow_fatigue(hums: List[Human]):
 			for line in new_lines:
 				humId = int((line.split(':')[1]).replace('hum', ''))
 				hum = hums[humId-1]
-				new_emg_pts = line.split(':')[2].split('#')
+				_cached_status = hum.is_moving()
+				new_status = True if line.split(':')[2]=='m' else False
+				if new_status!=_cached_status:
+					hum.clear_emg_signal()
+					hum.set_f_o(hum.get_fatigue())
+					hum.set_is_moving(new_status)				
+				new_emg_pts = line.split(':')[3].split('#')
 				new_emg_pts = [float(pt) for pt in new_emg_pts[:len(new_emg_pts)-2]]
 				hum.set_emg_signal(new_emg_pts)
-				new_ftg = emg_to_ftg(hum, 0.0005, 0.0001)
+				new_ftg = emg_to_ftg(hum, def_lambda=0.0005, def_mu=0.0005, cf=0)
 				hum.set_fatigue(new_ftg)
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
+		time.sleep(1)
 
