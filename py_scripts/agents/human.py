@@ -201,6 +201,7 @@ def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 
 	t = (len(hum.get_emg_signal('m'))+len(hum.get_emg_signal('r')))/(SAMPLING_RATE*T_POLL) - hum.get_last_switch()
 	print(str(hum.get_last_switch()) + ' ' + str(t))
+	t = max(0.0, t)
 
 	all_rates = hum.get_lambdas() if hum.is_moving() else hum.get_mus()
 	avg_rate = sum(all_rates)/len(all_rates)
@@ -245,7 +246,7 @@ def follow_fatigue(hums: List[Human]):
 				new_emg_pts = line.split(':')[3].split('#')
 				new_emg_pts = [float(pt) for pt in new_emg_pts[:len(new_emg_pts)-2]]
 				hum.set_emg_signal(line.split(':')[2], new_emg_pts)
-				new_ftg = emg_to_ftg(hum, def_lambda=0.0005, def_mu=0.0005, cf=0)
+				new_ftg = emg_to_ftg(hum, def_lambda=0.0005, def_mu=0.0002, cf=0)
 				hum.set_fatigue(new_ftg)
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
