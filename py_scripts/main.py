@@ -32,7 +32,7 @@ try:
 	# START ROS NODES THAT ACQUIRE DATA FROM SENSORS
 	start_reading_data(humans)
 	rob.start_reading_data()
-	time.sleep(10)
+	time.sleep(5)
 	
 	# START MONITORING HUMAN SENSOR DATA LOGS
 	thread_h = Thread(target = follow_position, args=[humans])
