@@ -104,7 +104,7 @@ class OpChk:
 
 	# CHECK IF MISSION HAS FAILED DUE TO BATTERY CHARGE TOO LOW, OR FATIGUE TOO HIGH
 	def check_fail(self):
-		if vrep.check_connection(const.VREP_CLIENT_ID)==-1:
+		if vrep.check_connection(const.VREP_CLIENT_ID)!=0:
 			self.mission.fail = True
 
 		if self.rob.get_charge()<=self.FAIL_CHARGE:

@@ -46,24 +46,24 @@ def get_straight_line(start: Point, dest: Point):
 			for x in numpy.arange(start.x, dest.x, -density):
 				y = m*x + q
 				traj.append(Point(x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
-				# vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))
+				vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))
 		else:
 			for x in numpy.arange(start.x, dest.x, +density):
 				y = m*x + q
 				traj.append(Point(x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
-				# vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))			
+				vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))			
 	else:
 		if start.y >= dest.y:
 			for y in numpy.arange(start.y, dest.y, -density):
 				traj.append(Point(start.x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
-				# vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
+				vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
 	
 		else:		
 			for y in numpy.arange(start.y, dest.y, +density):
 				traj.append(Point(start.x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))	
-				# vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
+				vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
 	traj.append(Point(dest.x-const.VREP_X_OFFSET, dest.y-const.VREP_Y_OFFSET))
-	# vrep.draw_point(const.VREP_CLIENT_ID, Point(dest.x, dest.y))		
+	vrep.draw_point(const.VREP_CLIENT_ID, Point(dest.x, dest.y))		
 	return traj
 	
 def plan_traj(start: Point, dest: Point, walls: List[Point]):
@@ -85,7 +85,7 @@ def plan_traj(start: Point, dest: Point, walls: List[Point]):
 			_dist_to_closest_turn = 1000.0
 			for point in const.TURN_POINTS:
 				dist = _curr.distance_from(point)
-				if dist < _dist_to_closest_turn and not point in _visited:
+				if dist < _dist_to_closest_turn and point not in _visited:
 					_dist_to_closest_turn = dist
 					_closest_turn = point
 					_visited.append(point)
@@ -97,7 +97,6 @@ def plan_traj(start: Point, dest: Point, walls: List[Point]):
 				crosses = close_to_wall(Point(point.x+const.VREP_X_OFFSET, point.y+const.VREP_Y_OFFSET), walls)
 				if crosses:
 					print('Straight line crosses wall')
-					break
 
 		new_segment = get_straight_line(_curr, dest)
 		traj = traj + new_segment

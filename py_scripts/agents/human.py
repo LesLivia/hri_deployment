@@ -200,7 +200,7 @@ def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 		hum.set_mus(est_rate)
 
 	t = (len(hum.get_emg_signal('m'))+len(hum.get_emg_signal('r')))/(SAMPLING_RATE*T_POLL) - hum.get_last_switch()
-	print(str(hum.get_last_switch()) + ' ' + str(t))
+	# print(str(hum.get_last_switch()) + ' ' + str(t))
 	t = max(0.0, t)
 
 	all_rates = hum.get_lambdas() if hum.is_moving() else hum.get_mus()
@@ -211,7 +211,7 @@ def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 
 	filename = '../scene_logs/emg_to_ftg.log'
 	f = open(filename, 'a')
-	f.write('({}, {:.4f}, {:.4f}, {:.2f}) {:.4f}\n'.format(state, avg_rate, F_0, t, F))
+	f.write('({}, {:.6f}, {:.6f}, {:.4f}) {:.6f}\n'.format(state, avg_rate, F_0, t, F))
 	f.close()
 
 	return F
@@ -239,7 +239,7 @@ def follow_fatigue(hums: List[Human]):
 				if new_status is not None and new_status!=_cached_status:
 					print('human switched to {} {} at {}'.format(new_status, line.split(':')[2], line.split(':')[0]))
 					print('{} {}'.format(len(hum.get_emg_signal('m')), len(hum.get_emg_signal('r'))))
-					print(line[:500])
+					# print(line[:500])
 					hum.set_f_o(hum.get_fatigue())
 					hum.set_is_moving(new_status)	
 					hum.set_last_switch(float(line.split(':')[0])-T_POLL)	
