@@ -10,6 +10,7 @@ def callback(data):
         f.write("\n" + data.data)
         f.close()
     except IOError:
+	rospy.loginfo(data.data[:50])
         print(data.data)
         
 def listener():

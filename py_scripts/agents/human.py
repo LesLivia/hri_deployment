@@ -117,9 +117,10 @@ def start_reading_data(humans: List[Human]):
 	pool = Pool()
 	pool.starmap(hriros.rosrun_nodes, [(node, '')])
 
-	f = open('../scene_logs/emg_to_ftg.log', 'r+')
-	f.truncate(0)
-	f.close()	
+	for hum in humans:
+		f = open('../scene_logs/emg_to_ftg{}.log'.format(hum.hum_id), 'r+')
+		f.truncate(0)
+		f.close()	
 
 	for hum in humans:	
 		hum.set_sim_running(1)
@@ -160,6 +161,7 @@ def follow_position(hums: List[Human]):
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
 
+
 def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 	SAMPLING_RATE = 1080
 	T_POLL = 2
@@ -199,28 +201,29 @@ def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 	else:
 		hum.set_mus(est_rate)
 
-	t = (len(hum.get_emg_signal('m'))+len(hum.get_emg_signal('r')))/(SAMPLING_RATE*T_POLL) - hum.get_last_switch()
-	# print(str(hum.get_last_switch()) + ' ' + str(t))
+	t = SIM_T - hum.get_last_switch()
 	t = max(0.0, t)
 
 	all_rates = hum.get_lambdas() if hum.is_moving() else hum.get_mus()
 	avg_rate = sum(all_rates)/len(all_rates)
-	# print('avg rate so far ({}): {}'.format(state, avg_rate))
 	F_0 = hum.get_f_o()
 	F = 1 - (1-F_0)*math.exp(-avg_rate*t) if hum.is_moving() else F_0*math.exp(-avg_rate*t)
 
-	filename = '../scene_logs/emg_to_ftg.log'
+	filename = '../scene_logs/emg_to_ftg{}.log'.format(hum.hum_id)
 	f = open(filename, 'a')
-	f.write('({}, {:.6f}, {:.6f}, {:.4f}) {:.6f}\n'.format(state, avg_rate, F_0, t, F))
+	f.write('hum{}: ({}, {:.6f}, {:.6f}, {:.4f}) {:.6f}\n'.format(hum.hum_id, state, avg_rate, F_0, t, F))
 	f.close()
 
 	return F
 
+
 def follow_fatigue(hums: List[Human]):
 	T_POLL = 2.0
+	global SIM_T
+	SIM_T = 0.0
 	filename = '../scene_logs/humanFatigue.log'
 	_cached_stamp = 0
-	_cached_status = False
+	_cached_status = [False]*len(hums)
 	_last_read_line = 1
 	while hums[0].is_sim_running():
 		stamp = os.stat(filename).st_mtime
@@ -229,6 +232,7 @@ def follow_fatigue(hums: List[Human]):
 			lines = f.read().splitlines()
 			new_lines = lines[_last_read_line:]
 			for line in new_lines:
+				SIM_T = float(line.split(':')[0])
 				humId = int((line.split(':')[1]).replace('hum', ''))
 				hum = hums[humId-1]
 				new_status = None
@@ -236,14 +240,12 @@ def follow_fatigue(hums: List[Human]):
 					new_status = True 
 				elif line.split(':')[2]=='r': 
 					new_status = False
-				if new_status is not None and new_status!=_cached_status:
+				if new_status is not None and new_status!=_cached_status[humId-1]:
 					print('human switched to {} {} at {}'.format(new_status, line.split(':')[2], line.split(':')[0]))
-					print('{} {}'.format(len(hum.get_emg_signal('m')), len(hum.get_emg_signal('r'))))
-					# print(line[:500])
 					hum.set_f_o(hum.get_fatigue())
 					hum.set_is_moving(new_status)	
 					hum.set_last_switch(float(line.split(':')[0])-T_POLL)	
-					_cached_status = new_status		
+					_cached_status[humId-1] = new_status		
 				new_emg_pts = line.split(':')[3].split('#')
 				new_emg_pts = [float(pt) for pt in new_emg_pts[:len(new_emg_pts)-2]]
 				hum.set_emg_signal(line.split(':')[2], new_emg_pts)
