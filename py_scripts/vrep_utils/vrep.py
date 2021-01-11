@@ -22,7 +22,6 @@ def stop_sim(clientID):
 		print('Simulation stopped.')
 
 def check_connection(clientID):
-	# result = vrep.simxGetConnectionId(clientID)
 	state = vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'sim_state', [], [], '', '', vrep.simx_opmode_blocking)
 	if state[0] != 0:
 		print('Connection lost')

@@ -31,7 +31,7 @@ def init_walls():
 
 def close_to_wall(to_check: Point, walls: List[Point]):
 	for point in walls:
-		if to_check.distance_from(point) < 0.5:
+		if to_check.distance_from(point) < 0.6:
 			print(str(to_check.distance_from(point)))
 			return True
 	return False
@@ -46,24 +46,24 @@ def get_straight_line(start: Point, dest: Point):
 			for x in numpy.arange(start.x, dest.x, -density):
 				y = m*x + q
 				traj.append(Point(x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
-				vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))
+				# vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))
 		else:
 			for x in numpy.arange(start.x, dest.x, +density):
 				y = m*x + q
 				traj.append(Point(x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
-				vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))			
+				# vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))			
 	else:
 		if start.y >= dest.y:
 			for y in numpy.arange(start.y, dest.y, -density):
 				traj.append(Point(start.x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
-				vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
+				# vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
 	
 		else:		
 			for y in numpy.arange(start.y, dest.y, +density):
 				traj.append(Point(start.x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))	
-				vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
+				# vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
 	traj.append(Point(dest.x-const.VREP_X_OFFSET, dest.y-const.VREP_Y_OFFSET))
-	vrep.draw_point(const.VREP_CLIENT_ID, Point(dest.x, dest.y))		
+	# vrep.draw_point(const.VREP_CLIENT_ID, Point(dest.x, dest.y))		
 	return traj
 	
 def plan_traj(start: Point, dest: Point, walls: List[Point]):
@@ -97,6 +97,7 @@ def plan_traj(start: Point, dest: Point, walls: List[Point]):
 				crosses = close_to_wall(Point(point.x+const.VREP_X_OFFSET, point.y+const.VREP_Y_OFFSET), walls)
 				if crosses:
 					print('Straight line crosses wall')
+					break
 
 		new_segment = get_straight_line(_curr, dest)
 		traj = traj + new_segment
