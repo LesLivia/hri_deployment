@@ -147,15 +147,15 @@ def follow_position(hums: List[Human]):
 
 				hum.set_position(new_position)
 
-				if _cached_pos is not None:
-					_cached_pt = Point(_cached_pos.x, _cached_pos.y)
-					new_pt = Point(new_position.x, new_position.y)
-					if hum.is_moving() and new_pt.distance_from(_cached_pt) < 0.5:
+				# if _cached_pos is not None:
+					# _cached_pt = Point(_cached_pos.x, _cached_pos.y)
+					# new_pt = Point(new_position.x, new_position.y)
+					# if hum.is_moving() and new_pt.distance_from(_cached_pt) < 0.5:
 						# print('Human is idle')
-						hum.set_is_moving(False)
-					elif not hum.is_moving() and new_pt.distance_from(_cached_pt) >= 0.5:
+					#	hum.set_is_moving(False)
+					# elif not hum.is_moving() and new_pt.distance_from(_cached_pt) >= 0.5:
 						# print('Human is moving')
-						hum.set_is_moving(True)
+					#	hum.set_is_moving(True)
 
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
@@ -217,6 +217,7 @@ def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 	return F
 
 def follow_fatigue(hums: List[Human]):
+	T_POLL = 2.0
 	filename = '../scene_logs/humanFatigue.log'
 	_cached_stamp = 0
 	_cached_status = False
@@ -241,7 +242,7 @@ def follow_fatigue(hums: List[Human]):
 					print(line[:500])
 					hum.set_f_o(hum.get_fatigue())
 					hum.set_is_moving(new_status)	
-					hum.set_last_switch(float(line.split(':')[0]))	
+					hum.set_last_switch(float(line.split(':')[0])-T_POLL)	
 					_cached_status = new_status		
 				new_emg_pts = line.split(':')[3].split('#')
 				new_emg_pts = [float(pt) for pt in new_emg_pts[:len(new_emg_pts)-2]]
