@@ -31,6 +31,10 @@ class Human:
 		self.emg_rest = []
 		self.lambdas = []
 		self.mus = []
+		self.def_bursts_mov = []
+		self.def_bursts_rest = []
+		self.cand_bursts_mov = []
+		self.cand_bursts_rest = []
 
 	def set_position(self, position: Position):
 		self.position = position
@@ -162,6 +166,16 @@ def follow_position(hums: List[Human]):
 			_last_read_line = len(lines)-1
 
 
+def overlaps(burst: List[float], prevs: List[List[float]]):
+    for cand in prevs:
+        if cand[0] > burst[1]:
+            continue
+        else:
+            return cand
+
+    return None
+
+
 def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 	SAMPLING_RATE = 1080
 	T_POLL = 2
@@ -169,43 +183,46 @@ def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 	signal_mv = hum.get_emg_signal(state)
 	if hum.is_moving():
 		est_rate = hum.get_lambdas()[-1] if len(hum.get_lambdas())>0 else def_lambda
+		definitive_bursts = hum.def_bursts_mov
+		candidate_bursts = hum.cand_bursts_mov
 	else:  
 		est_rate = hum.get_mus()[-1] if len(hum.get_mus())>0 else def_mu
+		definitive_bursts = hum.def_bursts_rest
+		candidate_bursts = hum.cand_bursts_rest
 
-	b_s, b_e = emg_mgr.get_bursts(signal_mv, SAMPLING_RATE)
+	start = definitive_bursts[len(definitive_bursts) - 1][1] if len(definitive_bursts) > 0 else 0
+	sig = signal_mv[start:]
 	try:
-		mean_freq_data = []
-		for (index, start) in enumerate(b_s):
-			emg_pts = signal_mv[start: b_e[index]]
-			freqs, power = periodogram(emg_pts, fs=SAMPLING_RATE)
-			# MNF
-			try:
-	    			mnf = sum(freqs * power) / sum(power)
-	    			mean_freq_data.append(math.log(mnf))
-			except ZeroDivisionError:
-	    			print('error in division')
+		b_s, b_e = emg_mgr.get_bursts(sig, SAMPLING_RATE)
+		for (index, b) in enumerate(b_s):
+			adj_burst = [b + start, b_e[index] + start]
+			best_fit = overlaps(adj_burst, candidate_bursts)
+			if best_fit is None:
+				candidate_bursts.append(adj_burst)
+			elif best_fit is not None:
+				definitive_bursts.append(adj_burst)
+				candidate_bursts.remove(best_fit)
 
-		mean_freq_data = [i * (1 - cf * index) for (index, i) in enumerate(mean_freq_data)]
-
-		bursts = b_e / SAMPLING_RATE
-		q, m, x, est_values = emg_mgr.mnf_lin_reg(mean_freq_data, bursts)
-		if (hum.is_moving() and m<0) or (not hum.is_moving() and m>0):		
-			est_rate = math.fabs(m)
-		# print('ESTIMATED RATE: {:.6f}'.format(est_rate))
+		bursts_start = [burst[0] for burst in definitive_bursts]
+		bursts_end = [burst[1] for burst in definitive_bursts]
+		mnf = emg_mgr.calculate_mnf(signal_mv, SAMPLING_RATE, cf=cf, b_s=bursts_start, b_e=bursts_end)
+		q, m, x, est_values = emg_mgr.mnf_lin_reg(mnf, [x / SAMPLING_RATE for x in bursts_end])
+		if (hum.is_moving() and m >= 0) or ((not hum.is_moving()) and m <= 0):
+		    raise ValueError
+		print('EST RATE: {}'.format(math.fabs(m)))
+		if hum.is_moving():
+			hum.set_lambdas(math.fabs(m))
+		else:
+			hum.set_mus(math.fabs(m))
 	except ValueError:
-		print('Insufficient EMG bursts ({})'.format(len(b_s)))		
-		# print('ESTIMATED RATE: {:.6f}, MET: {:.2f}min'.format(est_lambda, MET))
+		pass
 
-	if hum.is_moving():
-		hum.set_lambdas(est_rate)
-	else:
-		hum.set_mus(est_rate)
+	print(definitive_bursts)
+	all_rates = hum.get_lambdas() if hum.is_moving() else hum.get_mus()
+	avg_rate = sum(all_rates)/len(all_rates) if len(all_rates)>0 else est_rate
 
 	t = SIM_T - hum.get_last_switch()
 	t = max(0.0, t)
-
-	all_rates = hum.get_lambdas() if hum.is_moving() else hum.get_mus()
-	avg_rate = sum(all_rates)/len(all_rates)
 	F_0 = hum.get_f_o()
 	F = 1 - (1-F_0)*math.exp(-avg_rate*t) if hum.is_moving() else F_0*math.exp(-avg_rate*t)
 

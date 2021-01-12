@@ -13,8 +13,9 @@ def get_bursts(emg_data: List[float], sr: int):
     return bsnb.detect_emg_activations(emg_data, sr)[:2]
 
 
-def calculate_mnf(emg_data: List[float], sr: int, cf=0):
-    b_s, b_e = get_bursts(emg_data, sr)
+def calculate_mnf(emg_data: List[float], sr: int, cf=0, b_s=None, b_e=None):
+    if b_s is None and b_e is None:
+        b_s, b_e = get_bursts(emg_data, sr)
     mean_freq_data = []
     for (index, start) in enumerate(b_s):
         emg_pts = emg_data[start: b_e[index]]

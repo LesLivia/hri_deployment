@@ -85,7 +85,6 @@ def plan_traj(start: Point, dest: Point, walls: List[Point]):
 	cmp_items_py3 = cmp_to_key(dist_cmp)
 	turn_pts = const.TURN_POINTS.copy()
 	turn_pts.sort(key=cmp_items_py3)
-	[print(pt) for pt in turn_pts]
 	if crosses:
 		print('Calculate new trajectory')
 		_curr = Point(start.x, start.y)
@@ -108,7 +107,6 @@ def plan_traj(start: Point, dest: Point, walls: List[Point]):
 				if crosses:
 					print('Straight line crosses wall')
 					break
-		print('{} {}'.format(crosses, _visited))
 		new_segment = get_straight_line(_curr, dest, 1.5)
 		traj = traj + new_segment
 	else:	
