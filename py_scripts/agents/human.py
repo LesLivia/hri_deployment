@@ -29,8 +29,8 @@ class Human:
 		self.last_switch = 0.0
 		self.emg_walk = []
 		self.emg_rest = []
-		self.lambdas = []
-		self.mus = []
+		self.lambdas = [0.0005]
+		self.mus = [0.0005]
 		self.def_bursts_mov = []
 		self.def_bursts_rest = []
 		self.cand_bursts_mov = []
@@ -215,20 +215,30 @@ def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 		else:
 			hum.set_mus(math.fabs(m))
 	except ValueError:
-		pass
+		if hum.is_moving():
+			hum.set_lambdas(est_rate)
+		else:
+			hum.set_mus(est_rate)
 
-	print(definitive_bursts)
 	all_rates = hum.get_lambdas() if hum.is_moving() else hum.get_mus()
 	avg_rate = sum(all_rates)/len(all_rates) if len(all_rates)>0 else est_rate
 
 	t = SIM_T - hum.get_last_switch()
 	t = max(0.0, t)
 	F_0 = hum.get_f_o()
-	F = 1 - (1-F_0)*math.exp(-avg_rate*t) if hum.is_moving() else F_0*math.exp(-avg_rate*t)
+	x = np.arange(0.0, t, T_POLL)
+	if hum.is_moving():
+		y = [1 - (1-F_0)*math.exp(-avg_rate*i) for i in x]
+	else:
+		y = [F_0*math.exp(-avg_rate*i) for i in x]
+	F = y[-1] if len(y)>0 else F_0
 
 	filename = '../scene_logs/emg_to_ftg{}.log'.format(hum.hum_id)
 	f = open(filename, 'a')
-	f.write('hum{}: ({}, {:.6f}, {:.6f}, {:.4f}) {:.6f}\n'.format(hum.hum_id, state, avg_rate, F_0, t, F))
+	ftg_str = ''
+	for i in y:
+		ftg_str += '{:.4f}#'.format(i)
+	f.write('hum{}: ({}, {:.6f}, {:.6f}, {:.4f}) {}\n'.format(hum.hum_id, state, avg_rate, F_0, t, ftg_str))
 	f.close()
 
 	return F
@@ -266,7 +276,7 @@ def follow_fatigue(hums: List[Human]):
 				new_emg_pts = line.split(':')[3].split('#')
 				new_emg_pts = [float(pt) for pt in new_emg_pts[:len(new_emg_pts)-2]]
 				hum.set_emg_signal(line.split(':')[2], new_emg_pts)
-				new_ftg = emg_to_ftg(hum, def_lambda=0.0005, def_mu=0.0002, cf=0)
+				new_ftg = emg_to_ftg(hum, def_lambda=0.0005, def_mu=0.0005, cf=0)
 				hum.set_fatigue(new_ftg)
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
