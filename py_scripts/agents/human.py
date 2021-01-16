@@ -4,17 +4,33 @@ import time
 import rospy_utils.hrirosnode as hriros
 import rospy_utils.hriconstants as const
 import agents.mgrs.emg_mgr as emg_mgr
-from typing import List
-from multiprocessing import Pool
-from agents.position import Position
-from agents.coordinates import Point
 import math
 import biosignalsnotebooks as bsnb
 import numpy as np
 import scipy.io
 from scipy import signal
 from scipy.signal import periodogram
+from typing import List
+from multiprocessing import Pool
+from agents.position import Position
+from agents.coordinates import Point
+from enum import Enum
 
+class FatigueProfile(Enum):
+	YOUNG_HEALTHY = 1
+	YOUNG_SICK = 2
+	ELDERLY_HEALTHY = 3
+	ELDERLY_SICK = 4
+
+	def get_def_rates(self):
+		if self==FatigueProfile.YOUNG_HEALTHY:
+			return [0.0004, 0.0005]
+		elif self==FatigueProfile.YOUNG_SICK:
+			return [0.004, 0.005]
+		elif self==FatigueProfile.ELDERLY_HEALTHY:
+			return [0.0005, 0.0004]
+		elif self==FatigueProfile.ELDERLY_SICK:
+			return [0.005, 0.004]
 
 class Human:
 	def __init__(self, hum_id, speed, ftg_profile, fw_profile):
@@ -176,7 +192,7 @@ def overlaps(burst: List[float], prevs: List[List[float]]):
     return None
 
 
-def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
+def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None):
 	SAMPLING_RATE = 1080
 	T_POLL = 2
 	state = 'm' if hum.is_moving() else 'r'
@@ -189,6 +205,8 @@ def emg_to_ftg(hum: Human, def_lambda=None, def_mu=None, cf=0):
 		est_rate = hum.get_mus()[-1] if len(hum.get_mus())>0 else def_mu
 		definitive_bursts = hum.def_bursts_rest
 		candidate_bursts = hum.cand_bursts_rest
+
+	cf = 0.0001 if hum.ftg_profile in [1, 3] else 0.001
 
 	start = definitive_bursts[len(definitive_bursts) - 1][1] if len(definitive_bursts) > 0 else 0
 	sig = signal_mv[start:]
@@ -276,7 +294,8 @@ def follow_fatigue(hums: List[Human]):
 				new_emg_pts = line.split(':')[3].split('#')
 				new_emg_pts = [float(pt) for pt in new_emg_pts[:len(new_emg_pts)-2]]
 				hum.set_emg_signal(line.split(':')[2], new_emg_pts)
-				new_ftg = emg_to_ftg(hum, def_lambda=0.0005, def_mu=0.0005, cf=0)
+				default_rates = hum.ftg_profile.get_def_rates()
+				new_ftg = emg_to_ftg(hum, def_lambda=default_rates[0], def_mu=default_rates[1])
 				hum.set_fatigue(new_ftg)
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
