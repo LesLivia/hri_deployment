@@ -19,11 +19,11 @@ def init_walls():
 		if wall[0].y == wall[1].y:
 			for x in numpy.arange(wall[0].x, wall[1].x, density):
 				wall_pts.append(Point(x, wall[0].y))
-				#vrep.draw_point(const.VREP_CLIENT_ID, Point(x, wall[0].y))
+				# vrep.draw_point(const.VREP_CLIENT_ID, Point(x, wall[0].y))
 		elif wall[0].x == wall[1].x:
 			for y in numpy.arange(wall[0].y, wall[1].y, density):
 				wall_pts.append(Point(wall[0].x, y))
-				#vrep.draw_point(const.VREP_CLIENT_ID, Point(wall[0].x, y))
+				# vrep.draw_point(const.VREP_CLIENT_ID, Point(wall[0].x, y))
 	return wall_pts
 
 def close_to_wall(to_check: Point, walls: List[Point]):
@@ -42,22 +42,22 @@ def get_straight_line(start: Point, dest: Point, density=1.5):
 			for x in numpy.arange(start.x, dest.x, -density):
 				y = m*x + q
 				traj.append(Point(x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
-				#vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))
+				# vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))
 		else:
 			for x in numpy.arange(start.x, dest.x, +density):
 				y = m*x + q
 				traj.append(Point(x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
-				#vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))			
+				# vrep.draw_point(const.VREP_CLIENT_ID, Point(x, y))			
 	else:
 		if start.y >= dest.y:
 			for y in numpy.arange(start.y, dest.y, -density):
 				traj.append(Point(start.x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))
-				#vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
+				#  vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
 	
 		else:		
 			for y in numpy.arange(start.y, dest.y, +density):
 				traj.append(Point(start.x-const.VREP_X_OFFSET, y-const.VREP_Y_OFFSET))	
-				#vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
+				# vrep.draw_point(const.VREP_CLIENT_ID, Point(start.x, y))
 	traj.append(Point(dest.x-const.VREP_X_OFFSET, dest.y-const.VREP_Y_OFFSET))
 	# vrep.draw_point(const.VREP_CLIENT_ID, Point(dest.x, dest.y))		
 	return traj
@@ -84,6 +84,8 @@ def plan_traj(start: Point, dest: Point, walls: List[Point]):
 	dest_pt = dest
 	cmp_items_py3 = cmp_to_key(dist_cmp)
 	turn_pts = const.TURN_POINTS.copy()
+	if 24<dest.x<30 and 2.8<dest.y<17.7:
+		turn_pts += const.DOORS.copy()
 	turn_pts.sort(key=cmp_items_py3)
 	if crosses:
 		print('Calculate new trajectory')

@@ -278,7 +278,9 @@ class OpChk:
 		elif p == Pattern.HUM_LEADER: 
 			robot_pos = self.rob.get_position()
 			robot_pt = Point(robot_pos.x, robot_pos.y)
-			return robot_pt.distance_from(self.curr_dest) <= 1.0 or human_robot_dist < self.RESTART_DIST
+			hum_pos = self.humans[self.currH].get_position()
+			hum_pt = Point(hum_pos.x, hum_pos.y)
+			return robot_pt.distance_from(self.curr_dest) <= 1.0 or human_robot_dist < self.RESTART_DIST or hum_pt.distance_from(self.curr_dest) > 2.0
 		# Human Recipient -> action must stop if battery charge is too low or destination has already been reached
 		elif p == Pattern.HUM_RECIPIENT: 
 			robot_pos = self.rob.get_position()
