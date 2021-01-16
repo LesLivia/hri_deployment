@@ -29,7 +29,7 @@ def init_walls():
 def close_to_wall(to_check: Point, walls: List[Point]):
 	for point in walls:
 		if to_check.distance_from(point) < 0.5:
-			print(str(to_check.distance_from(point)))
+			# print(str(to_check.distance_from(point)))
 			return True
 	return False
 
@@ -84,7 +84,7 @@ def plan_traj(start: Point, dest: Point, walls: List[Point]):
 	dest_pt = dest
 	cmp_items_py3 = cmp_to_key(dist_cmp)
 	turn_pts = const.TURN_POINTS.copy()
-	if 24<dest.x<30 and 2.8<dest.y<17.7:
+	if (24<dest.x<30 and 2.8<dest.y<17.7) or (24<start.x<30 and 2.8<start.y<17.7):
 		turn_pts += const.DOORS.copy()
 	turn_pts.sort(key=cmp_items_py3)
 	if crosses:

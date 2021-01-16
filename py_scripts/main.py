@@ -20,12 +20,12 @@ vrep.start_sim(vrep_sim)
 
 bill = Human(1, 10, 1, 1)
 alice = Human(2, 10, 1, 1)
-rob = MobileRobot(1, 15.0, 5.0)
+rob = MobileRobot(1, 10.0, 5.0)
 
-dest = [Point(27.0, 10.5), Point(22.0, 4.0)]
-humans = [bill, alice]
+dest = [Point(24.0, 10.5), Point(22.0, 4.0), Point(15.0, 7.0), Point(15.0, 11.0)]
+humans = [bill, alice, bill, bill]
 
-patterns = [Pattern.HUM_FOLLOWER, Pattern.HUM_LEADER]	
+patterns = [Pattern.HUM_FOLLOWER, Pattern.HUM_LEADER, Pattern.HUM_LEADER, Pattern.HUM_FOLLOWER]	
 mission = Mission(patterns, dest)	
 
 try:
