@@ -27,6 +27,12 @@ def check_connection(clientID):
 		print('Connection lost')
 	return state[0]
 
+def set_trajectory(clientID, strTraj: str):
+	vrep.simxCallScriptFunction(clientID, 'MobileRobot', vrep.sim_scripttype_childscript, 'setTraj', [], [], [strTraj], '', vrep.simx_opmode_blocking)
+
+def set_state(clientID, strState: str):
+	vrep.simxCallScriptFunction(clientID, 'MobileRobot', vrep.sim_scripttype_childscript, 'setRobotState', [], [], [strState], '', vrep.simx_opmode_blocking)
+
 def draw_point(clientID, pos: Point):
 	vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'draw_point', [], [pos.x-const.VREP_X_OFFSET, pos.y-const.VREP_Y_OFFSET], '', '', vrep.simx_opmode_blocking)
 

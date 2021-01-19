@@ -4,6 +4,7 @@ import time
 import rospy_utils.hrirosnode as hriros
 import rospy_utils.hriconstants as const
 import agents.navigation as nav
+import vrep_utils.vrep as vrep
 from multiprocessing import Pool
 from agents.position import Position
 from agents.coordinates import Point
@@ -120,6 +121,7 @@ class MobileRobot:
 		print(data)
 		if targetSpeed > 0:
 		    data = data + str(targetSpeed)
+		vrep.set_state(const.VREP_CLIENT_ID, data)
 		# requested target speed is published to both robot motors,
 		# so that the robot starts moving straight
 		pool = Pool()
@@ -130,6 +132,7 @@ class MobileRobot:
 	def stop_moving(self):
 		node = 'robStatusPub.py'
 		data = '0#0.0'
+		vrep.set_state(const.VREP_CLIENT_ID, data)
 		# both motors speed is set to 0, so that the robot stops moving
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, [data])])

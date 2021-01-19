@@ -174,9 +174,11 @@ class OpChk:
 			if not traj.index(point)==len(traj)-1:
 				str_traj += '#'
 		if len(traj)>0:
-			node = 'robTrajPub.py'
-			pool = Pool()
-			pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])
+			# print(str_traj)
+			vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)
+			# node = 'robTrajPub.py'
+			# pool = Pool()
+			# pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])
 
 	# CHECK WHETHER CURRENT ACTION SHOULD START
 	def check_start(self):
@@ -280,7 +282,8 @@ class OpChk:
 			robot_pt = Point(robot_pos.x, robot_pos.y)
 			hum_pos = self.humans[self.currH].get_position()
 			hum_pt = Point(hum_pos.x, hum_pos.y)
-			return robot_pt.distance_from(self.curr_dest) <= 1.0 or human_robot_dist < self.RESTART_DIST or hum_pt.distance_from(self.curr_dest) > 2.0
+			return human_robot_dist < self.RESTART_DIST
+			# return robot_pt.distance_from(self.curr_dest) <= 1.0 or human_robot_dist < self.RESTART_DIST or hum_pt.distance_from(self.curr_dest) > 4.0
 		# Human Recipient -> action must stop if battery charge is too low or destination has already been reached
 		elif p == Pattern.HUM_RECIPIENT: 
 			robot_pos = self.rob.get_position()
@@ -309,9 +312,12 @@ class OpChk:
 			self.stop = True
 			# self.currOp = Operating_Modes.ROBOT_IDLE
 			# self.rob.stop_moving()
+		else:
 			human_pos = self.humans[self.currH].get_position()
-			human_pt = Point(human_pos.x, human_pos.y)
-			self.curr_dest = Point(human_pos.x, human_pos.y)
+			hum_pt = Point(human_pos.x, human_pos.y)
+			if hum_pt.distance_from(self.curr_dest) > 3.0:
+				self.curr_dest = Point(human_pos.x, human_pos.y)
+				self.plan_trajectory()
 
 	def check_r_rech(self):
 		robot_pos = self.rob.get_position()
