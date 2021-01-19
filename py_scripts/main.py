@@ -22,7 +22,7 @@ bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 10.0, 5.0)
 
-dest = [Point(24.0, 10.5), Point(22.0, 4.0), Point(15.0, 7.0), Point(15.0, 11.0)]
+dest = [Point(24.0, 10.5), Point(22.0, 4.0), Point(11.0, 7.0), Point(11.0, 11.0)]
 humans = [bill, carl, bill, bill]
 
 patterns = [Pattern.HUM_FOLLOWER, Pattern.HUM_LEADER, Pattern.HUM_LEADER, Pattern.HUM_FOLLOWER]	
