@@ -92,28 +92,24 @@ class MobileRobot:
 		filename = '../scene_logs/robotBattery.log'
 		_cached_stamp = 0
 		while self.is_sim_running():
-			try:
-				# when a new line is written to log file,
-				# robot charge attribute is updated as well
-				# -> this needs to be continuously running in a
-				# parallel thread
-				stamp = os.stat(filename).st_mtime
-				if stamp != _cached_stamp:
-					f = open(filename, 'r')
-					lines = f.read().splitlines()
+			# when a new line is written to log file,
+			# robot charge attribute is updated as well
+			# -> this needs to be continuously running in a
+			# parallel thread
+			stamp = os.stat(filename).st_mtime
+			if stamp != _cached_stamp:
+				f = open(filename, 'r')
+				lines = f.read().splitlines()
 
-					last_line = lines[-1]
-					new_charge = float(last_line.split(':')[1])
+				last_line = lines[-1]
+				new_charge = float(last_line.split(':')[1])
 
-					now = datetime.now()
-					current_time = now.strftime("%H:%M:%S")
-					# print("Current Time =", current_time)
+				now = datetime.now()
+				current_time = now.strftime("%H:%M:%S")
+				# print("Current Time =", current_time)
 
-					self.set_charge(new_charge)
-					_cached_stamp = stamp
-			except (KeyboardInterrupt, SystemExit):
-				print('Stopping robot battery charge monitoring...')
-				return
+				self.set_charge(new_charge)
+				_cached_stamp = stamp
 	
 	def start_moving(self, targetSpeed):
 		node = 'robStatusPub.py'

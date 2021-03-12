@@ -23,15 +23,10 @@ carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 8.0, 5.0)
 
 # Alternative A
-dest = [Point(24.0, 10.5)]
-humans = [bill]
-patterns = [Pattern.HUM_FOLLOWER]	
-
-# Alternative B
-# dest = [Point(10.0, 11.0), Point(22.0, 4.0)]
-# humans = [bill, carl]
-# patterns = [Pattern.HUM_FOLLOWER, Pattern.HUM_LEADER]	
-
+dest = [Point(24.0, 10.5), Point(10.0, 11)]
+unique_humans = [bill]
+humans = [bill, bill]
+patterns = [Pattern.HUM_FOLLOWER, Pattern.HUM_FOLLOWER]	
 
 mission = Mission(patterns, dest)	
 
@@ -42,9 +37,9 @@ try:
 	time.sleep(7)
 	
 	# START MONITORING HUMAN SENSOR DATA LOGS
-	thread_h = Thread(target = follow_position, args=[humans])
+	thread_h = Thread(target = follow_position, args=[unique_humans])
 	thread_h.start()
-	thread_h_f = Thread(target = follow_fatigue, args=[humans])
+	thread_h_f = Thread(target = follow_fatigue, args=[unique_humans])
 	thread_h_f.start()
 	
 	# START MONITORING ROBOT SENSOR DATA LOGS
