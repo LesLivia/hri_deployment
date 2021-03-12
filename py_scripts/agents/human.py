@@ -167,17 +167,6 @@ def follow_position(hums: List[Human]):
 				new_position.y += const.VREP_Y_OFFSET
 
 				hum.set_position(new_position)
-
-				# if _cached_pos is not None:
-					# _cached_pt = Point(_cached_pos.x, _cached_pos.y)
-					# new_pt = Point(new_position.x, new_position.y)
-					# if hum.is_moving() and new_pt.distance_from(_cached_pt) < 0.5:
-						# print('Human is idle')
-					#	hum.set_is_moving(False)
-					# elif not hum.is_moving() and new_pt.distance_from(_cached_pt) >= 0.5:
-						# print('Human is moving')
-					#	hum.set_is_moving(True)
-
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
 

@@ -23,9 +23,9 @@ carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 8.0, 5.0)
 
 # Alternative A
-dest = [Point(24.0, 10.5), Point(22.0, 4.0), Point(11.0, 7.0), Point(11.0, 11.0)]
-humans = [bill, carl, bill, bill]
-patterns = [Pattern.HUM_FOLLOWER, Pattern.HUM_LEADER, Pattern.HUM_LEADER, Pattern.HUM_FOLLOWER]	
+dest = [Point(24.0, 10.5)]
+humans = [bill]
+patterns = [Pattern.HUM_FOLLOWER]	
 
 # Alternative B
 # dest = [Point(10.0, 11.0), Point(22.0, 4.0)]
@@ -39,7 +39,7 @@ try:
 	# START ROS NODES THAT ACQUIRE DATA FROM SENSORS
 	start_reading_data(humans)
 	rob.start_reading_data()
-	time.sleep(5)
+	time.sleep(7)
 	
 	# START MONITORING HUMAN SENSOR DATA LOGS
 	thread_h = Thread(target = follow_position, args=[humans])
@@ -54,7 +54,7 @@ try:
 	thread_rb.start()
 	
 	# START MISSION
-	time.sleep(5)
+	time.sleep(7)
 	opchk = OpChk(0.5, 0.0, rob, humans, mission)
 	orch = Orchestrator(opchk)
 	thread_m = Thread(target = orch.run_mission)
