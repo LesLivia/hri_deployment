@@ -23,10 +23,10 @@ carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 8.0, 5.0)
 
 # Alternative A
-dest = [Point(24.0, 10.5), Point(10.0, 11)]
+dest = [Point(24.0, 10.5)]
 unique_humans = [bill]
 humans = [bill, bill]
-patterns = [Pattern.HUM_FOLLOWER, Pattern.HUM_FOLLOWER]	
+patterns = [Pattern.HUM_FOLLOWER]	
 
 mission = Mission(patterns, dest)	
 
