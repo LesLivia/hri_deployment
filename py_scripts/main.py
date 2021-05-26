@@ -12,7 +12,7 @@ from agents.human import Human, start_reading_data, follow_position, follow_fati
 from agents.coordinates import Point
 from agents.orchestrator import Orchestrator, OpChk
 from agents.mission import *
-# test commit
+
 print('Launching application...')
 
 vrep_sim = vrep.connect(19997)
@@ -35,26 +35,26 @@ try:
 	start_reading_data(humans)
 	rob.start_reading_data()
 	time.sleep(7)
-	
+
 	# START MONITORING HUMAN SENSOR DATA LOGS
 	thread_h = Thread(target = follow_position, args=[unique_humans])
 	thread_h.start()
 	thread_h_f = Thread(target = follow_fatigue, args=[unique_humans])
 	thread_h_f.start()
-	
+
 	# START MONITORING ROBOT SENSOR DATA LOGS
 	thread_r = Thread(target=rob.follow_position)
 	thread_r.start()
 	thread_rb = Thread(target=rob.follow_charge)
 	thread_rb.start()
-	
+
 	# START MISSION
 	time.sleep(7)
 	opchk = OpChk(0.5, 0.0, rob, humans, mission)
 	orch = Orchestrator(opchk)
 	thread_m = Thread(target = orch.run_mission)
 	thread_m.start()
-	
+
 	# keep going as long as the mission is not over	
 	while rob.is_sim_running():
 		pass
