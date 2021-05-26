@@ -12,7 +12,7 @@ from agents.human import Human, start_reading_data, follow_position, follow_fati
 from agents.coordinates import Point
 from agents.orchestrator import Orchestrator, OpChk
 from agents.mission import *
-
+# test commit
 print('Launching application...')
 
 vrep_sim = vrep.connect(19997)
