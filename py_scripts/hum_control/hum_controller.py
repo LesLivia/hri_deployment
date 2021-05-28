@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import time
+import random
 import vrep_utils.vrep as vrep
 import agents.navigation as nav
 import rospy_utils.hriconstants as const
@@ -39,6 +40,7 @@ class HumanController:
 		self.served = [False]*len(h)
 		self.debug = debug
 		self.m = None
+		self.freeWillTh = 95
 		# SHA-graph variables
 		self.LOC = Loc.INIT
 
@@ -99,6 +101,13 @@ class HumanController:
 	def stop_h_action(self):
 		self.set_loc(Loc.IDLE)
 		vrep.stop_human(self.clientID, self.h[self.currH].hum_id)
+
+	def free_will(self):
+		random.seed()
+		freeWill = random.randint(0, 100)
+		if freeWill >= self.freeWillTh:
+			print('AUTONOMOUS ACTION')
+		return freeWill >= self.freeWillTh
 		
 	def run_follower(self):
 		self.set_loc(Loc.IDLE)
@@ -108,7 +117,8 @@ class HumanController:
 			rob_pos = self.read_data('ROB_POS')
 			dist_to_rob = pos.distance_from(rob_pos)
 
-			if not self.served[self.currH] or dist_to_rob>2.0:
+			free_start = self.LOC == Loc.IDLE and self.free_will()
+			if not self.served[self.currH] or dist_to_rob > 2.0 or free_start:
 				self.plan_trajectory(pos, rob_pos)
 				self.start_h_action()
 
@@ -121,8 +131,12 @@ class HumanController:
 				print('DIST TO DEST: {:.5f}'.format(dist_to_dest))
 				print('DIST TO ROB: {:.5f}'.format(dist_to_rob))
 
-			if self.served[self.currH] or dist_to_rob<1.0:
+			free_stop = self.LOC == Loc.BUSY and self.free_will()
+			if self.served[self.currH] or dist_to_rob < 1.0 or free_stop:
+				if free_stop:
+					time.sleep(10)
 				self.stop_h_action()
+
 		print('Human {} successfully served'.format(self.h[self.currH].hum_id))
 		self.currH+=1
 

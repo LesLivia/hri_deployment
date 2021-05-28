@@ -23,7 +23,7 @@ carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 12.0, 5.0)
 
 # Alternative A
-dest = [Point(22.5, 15)]
+dest = [Point(28, 10)]
 unique_humans = [bill]
 humans = [bill, bill]
 patterns = [Pattern.HUM_FOLLOWER]	
