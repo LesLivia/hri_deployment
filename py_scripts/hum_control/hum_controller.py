@@ -2,6 +2,7 @@
 import time
 import vrep_utils.vrep as vrep
 import agents.navigation as nav
+import rospy_utils.hriconstants as const
 from typing import List
 from enum import Enum
 from agents.human import Human, FatigueProfile
@@ -62,9 +63,11 @@ class HumanController:
 		if log == 'FTG':
 			return float(last_line.split(':')[2])
 		elif log=='HUM_POS':
-			return Point.parse_point(last_line.split(':')[2])
+			read = Point.parse_point(last_line.split(':')[2])
+			return Point(read.x+const.VREP_X_OFFSET, read.y+const.VREP_Y_OFFSET)
 		else:
-			return Point.parse_point(last_line.split(':')[1])
+			read = Point.parse_point(last_line.split(':')[1])
+			return Point(read.x+const.VREP_X_OFFSET, read.y+const.VREP_Y_OFFSET)
 
 	# PLAN (AND PUBLISH) TRAJECTORY FROM CURRENT POS TO CURRENT DESTINATION
 	def plan_trajectory(self, start: Point, dest: Point):
@@ -99,15 +102,14 @@ class HumanController:
 		
 	def run_follower(self):
 		self.set_loc(Loc.IDLE)
-		while not self.served[self.currH]:
+		while not self.served[self.currH] and not vrep.check_connection(self.clientID):
 			ftg = self.read_data('FTG')
-			pos = self.read_data('POS')
+			pos = self.read_data('HUM_POS')
 			rob_pos = self.read_data('ROB_POS')
 			dist_to_rob = pos.distance_from(rob_pos)
-			if dist_to_rob > 2.0:
-				self.plan_trajectory(pos, rob_pos)
 
 			if not self.served[self.currH] or dist_to_rob>2.0:
+				self.plan_trajectory(pos, rob_pos)
 				self.start_h_action()
 
 			time.sleep(self.Tpoll)
@@ -117,6 +119,7 @@ class HumanController:
 			if self.debug:
 				print('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
 				print('DIST TO DEST: {:.5f}'.format(dist_to_dest))
+				print('DIST TO ROB: {:.5f}'.format(dist_to_rob))
 
 			if self.served[self.currH] or dist_to_rob<1.0:
 				self.stop_h_action()
