@@ -5,4 +5,4 @@ scene_logs/
 __pycache__/
 .idea/
 VRep_Scenes/emg_traces/
-py_scripts/run_sim.sh
+py_scripts/outfile.txt
