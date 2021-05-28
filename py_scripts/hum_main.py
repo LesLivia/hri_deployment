@@ -19,9 +19,9 @@ bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 8.0, 5.0)
 
-dest = [Point(24.0, 10.5)]
+dest = [Point(16.0, -1.1)]
 unique_humans = [bill]
-humans = [bill, bill]
+humans = [bill]
 patterns = [Pattern.HUM_FOLLOWER]	
 
 mission = Mission(patterns, dest)	
@@ -31,7 +31,7 @@ debug = bool(sys.argv[1]) if len(sys.argv)>1 else False
 contr = HumanController(humans, vrep_sim, debug)
 
 try:
-	time.sleep(7)
+	time.sleep(15)
 	print('(Human Controller) Execution starting...')
 
 	contr.run(mission)	
