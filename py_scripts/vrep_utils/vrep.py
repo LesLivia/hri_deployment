@@ -51,11 +51,9 @@ def draw_rectangle(clientID, pos1: Point, pos2: Point, pos3: Point, pos4: Point)
 
 # FUNCTIONS FOR AUTOMATED HUMAN CONTROL
 def start_human(clientID, humID: int):
-	print('starting Human{}'.format(humID))
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'start_walking', [], [], [], '', vrep.simx_opmode_blocking)
 
 def stop_human(clientID, humID: int):
-	print('stopping Human{}'.format(humID))
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'stop_walking', [], [], [], '', vrep.simx_opmode_blocking)
 
 def turn_left(clientID, humID: int):
