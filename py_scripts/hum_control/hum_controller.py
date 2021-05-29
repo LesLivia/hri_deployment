@@ -15,6 +15,9 @@ POS_LOG = '../scene_logs/humanPosition.log'
 FTG_LOG = '../scene_logs/humanFatigue.log'
 ROB_POS_LOG = '../scene_logs/robotPosition.log'
 
+DOOR_POS = Point(17.0+const.VREP_X_OFFSET, -1.0+const.VREP_Y_OFFSET)
+CHAIR_POS = Point(18.6+const.VREP_X_OFFSET, 4.67+const.VREP_Y_OFFSET)
+
 class Loc(Enum):
 	INIT = -1
 	IDLE = 0
@@ -40,7 +43,7 @@ class HumanController:
 		self.served = [False]*len(h)
 		self.debug = debug
 		self.m = None
-		self.freeWillTh = 95
+		self.freeWillTh = 100
 		# SHA-graph variables
 		self.LOC = Loc.INIT
 
@@ -73,7 +76,15 @@ class HumanController:
 
 	# PLAN (AND PUBLISH) TRAJECTORY FROM CURRENT POS TO CURRENT DESTINATION
 	def plan_trajectory(self, start: Point, dest: Point):
-		traj = nav.plan_traj(start, dest, nav.init_walls())
+		if dest!=CHAIR_POS:
+			traj = nav.plan_traj(start, dest, nav.init_walls())
+		else:
+			point_1 = Point(DOOR_POS.x-const.VREP_X_OFFSET, DOOR_POS.y-const.VREP_Y_OFFSET)
+			point_2 = Point(18.6, -1.1)
+			point_3 = Point(18.6, 0.0)
+			point_4 = Point(18.6, 2.0)
+			point_5 = Point(CHAIR_POS.x-const.VREP_X_OFFSET, CHAIR_POS.y-const.VREP_Y_OFFSET)
+			traj = [point_1, point_2, point_3, point_4, point_5]
 		str_traj = ''
 		for point in traj:
 			str_traj += str(point.x) + ',' + str(point.y)
@@ -102,15 +113,33 @@ class HumanController:
 		self.set_loc(Loc.IDLE)
 		vrep.stop_human(self.clientID, self.h[self.currH].hum_id)
 
+	def send_sit_cmd(self):
+		self.set_loc(Loc.IDLE)
+		vrep.sit(self.clientID, self.h[self.currH].hum_id)
+
+	def send_stand_cmd(self):
+		self.set_loc(Loc.IDLE)
+		vrep.stand(self.clientID, self.h[self.currH].hum_id)
+
 	def free_will(self):
 		random.seed()
 		freeWill = random.randint(0, 100)
 		if freeWill >= self.freeWillTh:
 			print('AUTONOMOUS ACTION')
 		return freeWill >= self.freeWillTh
-		
+
+	def free_sit(self, hum_pos: Point):
+		dist_to_door = hum_pos.distance_from(DOOR_POS)
+		if dist_to_door < 5.0:
+			needs_chair = True #random.randint(0, 100) >= 50
+			return needs_chair
+		else:
+			return False
+
 	def run_follower(self):
 		self.set_loc(Loc.IDLE)
+		SIT_ONCE = True
+		will_sit = False
 		while not self.served[self.currH] and not vrep.check_connection(self.clientID):
 			ftg = self.read_data('FTG')
 			pos = self.read_data('HUM_POS')
@@ -119,23 +148,36 @@ class HumanController:
 
 			free_start = self.LOC == Loc.IDLE and self.free_will()
 			if not self.served[self.currH] or dist_to_rob > 2.0 or free_start:
-				self.plan_trajectory(pos, rob_pos)
+				if will_sit and not SIT_ONCE:
+					self.send_stand_cmd()
+				if will_sit:
+					self.plan_trajectory(pos, CHAIR_POS)
+				else:
+					self.plan_trajectory(pos, rob_pos)
 				self.start_h_action()
 
 			time.sleep(self.Tpoll)
+			
+			will_sit = self.free_sit(pos) if SIT_ONCE else False
+			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
 
-			dist_to_dest = pos.distance_from(self.m.dest[self.currH])
-			self.served[self.currH] = dist_to_dest < 1.0
+			dist_to_dest = pos.distance_from(dest)
+			self.served[self.currH] = dist_to_dest < 1.0 and not will_sit
 			if self.debug:
 				print('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
 				print('DIST TO DEST: {:.5f}'.format(dist_to_dest))
 				print('DIST TO ROB: {:.5f}'.format(dist_to_rob))
 
 			free_stop = self.LOC == Loc.BUSY and self.free_will()
-			if self.served[self.currH] or dist_to_rob < 1.0 or free_stop:
-				if free_stop:
-					time.sleep(10)
+			if self.served[self.currH] or dist_to_rob < 1.0 or free_stop or (will_sit and dist_to_dest < 2.0):
 				self.stop_h_action()
+				rest_time = random.randint(8, 20)
+				if will_sit and dist_to_dest < 2.0:
+					SIT_ONCE = False
+					self.send_sit_cmd()
+					time.sleep(20)
+				elif free_stop:
+					time.sleep(rest_time)
 
 		print('Human {} successfully served'.format(self.h[self.currH].hum_id))
 		self.currH+=1

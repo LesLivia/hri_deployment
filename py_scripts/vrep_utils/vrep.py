@@ -62,6 +62,12 @@ def turn_left(clientID, humID: int):
 def turn_right(clientID, humID: int):
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'turn_right', [], [], [], '', vrep.simx_opmode_blocking)
 
+def sit(clientID, humID: int):
+	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'sit_cmd', [], [], [], '', vrep.simx_opmode_blocking)
+
+def stand(clientID, humID: int):
+	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'stand_cmd', [], [], [], '', vrep.simx_opmode_blocking)
+
 def set_hum_trajectory(clientID, humID:int, strTraj: str):
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'setTraj', [], [], [strTraj], '', vrep.simx_opmode_blocking)
 
