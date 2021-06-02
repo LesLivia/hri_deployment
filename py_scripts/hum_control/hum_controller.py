@@ -22,6 +22,8 @@ class Loc(Enum):
 	INIT = -1
 	IDLE = 0
 	BUSY = 1
+	SIT = 2
+	RUN = 3
 	PASSED_OUT = 99
 
 	def __str__(self):
@@ -91,19 +93,7 @@ class HumanController:
 			if not traj.index(point)==len(traj)-1:
 				str_traj += '#'
 		if len(traj)>0:
-			vrep.set_hum_trajectory(const.VREP_CLIENT_ID, self.currH+1, str_traj)
-
-	def turn_left(self):
-		self.set_loc(Loc.BUSY)
-		vrep.turn_left(self.clientID, self.h[self.currH].hum_id)
-
-	def turn_right(self):
-		self.set_loc(Loc.BUSY)
-		vrep.turn_right(self.clientID, self.h[self.currH].hum_id)
-
-	def start_h_action(self):
-		self.set_loc(Loc.BUSY)
-		vrep.start_human(self.clientID, self.h[self.currH].hum_id)
+			vrep.set_hum_trajectory(const.VREP_CLIENT_ID, self.h[self.currH].hum_id, str_traj)
 
 	def start_h_action(self):
 		self.set_loc(Loc.BUSY)
@@ -114,12 +104,20 @@ class HumanController:
 		vrep.stop_human(self.clientID, self.h[self.currH].hum_id)
 
 	def send_sit_cmd(self):
-		self.set_loc(Loc.IDLE)
+		self.set_loc(Loc.SIT)
 		vrep.sit(self.clientID, self.h[self.currH].hum_id)
 
 	def send_stand_cmd(self):
 		self.set_loc(Loc.IDLE)
 		vrep.stand(self.clientID, self.h[self.currH].hum_id)
+
+	def send_run_cmd(self):
+		self.set_loc(Loc.RUN)
+		vrep.run_cmd(self.clientID, self.h[self.currH].hum_id)
+
+	def send_served_cmd(self):
+		self.set_loc(Loc.RUN)
+		vrep.served_cmd(self.clientID, self.h[self.currH].hum_id)
 
 	def free_will(self):
 		random.seed()
@@ -131,7 +129,7 @@ class HumanController:
 	def free_sit(self, hum_pos: Point):
 		dist_to_door = hum_pos.distance_from(DOOR_POS)
 		if dist_to_door < 5.0:
-			needs_chair = True #random.randint(0, 100) >= 50
+			needs_chair = random.randint(0, 100) >= 50
 			return needs_chair
 		else:
 			return False
@@ -147,8 +145,9 @@ class HumanController:
 			dist_to_rob = pos.distance_from(rob_pos)
 
 			free_start = self.LOC == Loc.IDLE and self.free_will()
-			if not self.served[self.currH] or dist_to_rob > 2.0 or free_start:
+			if (not self.served[self.currH] and dist_to_rob > 2.0) or free_start:
 				if will_sit and not SIT_ONCE:
+					will_sit = False
 					self.send_stand_cmd()
 				if will_sit:
 					self.plan_trajectory(pos, CHAIR_POS)
@@ -158,7 +157,8 @@ class HumanController:
 
 			time.sleep(self.Tpoll)
 			
-			will_sit = self.free_sit(pos) if SIT_ONCE else False
+			if SIT_ONCE and not will_sit:
+				will_sit = self.free_sit(pos) 
 			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
 
 			dist_to_dest = pos.distance_from(dest)
@@ -183,24 +183,58 @@ class HumanController:
 		self.currH+=1
 
 	def run_leader(self):
-		pass
+		self.set_loc(Loc.IDLE)
+		running = False
+		while not self.served[self.currH] and not vrep.check_connection(self.clientID):
+			ftg = self.read_data('FTG')
+			pos = self.read_data('HUM_POS')
+			rob_pos = self.read_data('ROB_POS')
+			dist_to_rob = pos.distance_from(rob_pos)
+			dest = self.m.dest[self.currH]
+			self.plan_trajectory(pos, dest)
+			in_office = 1.0+const.VREP_X_OFFSET<=pos.x<=11+const.VREP_X_OFFSET and 1.4+const.VREP_Y_OFFSET<=pos.y<=9.5+const.VREP_Y_OFFSET
+			if in_office or running:
+				running = True
+				self.send_run_cmd()
+			else:
+				self.start_h_action()
+
+			time.sleep(self.Tpoll)
+			
+			dist_to_dest = pos.distance_from(dest)
+			self.served[self.currH] = dist_to_dest < 1.0 
+			if self.debug:
+				print('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
+				print('DIST TO DEST: {:.5f}'.format(dist_to_dest))
+				print('DIST TO ROB: {:.5f}'.format(dist_to_rob))
+
+			if self.served[self.currH] or dist_to_rob < 1.0 or dist_to_rob > 8.0:
+				self.stop_h_action()
+				if self.served[self.currH]:
+					time.sleep(random.randint(10, 20))
+					running = False
+					self.send_served_cmd()
+
+		if self.served[self.currH]:
+			print('Human {} successfully served'.format(self.h[self.currH].hum_id))
+		self.currH+=1
 
 	def run_recipient(self):
 		pass
 
 	def run(self, m: Mission):
 		self.m = m
-		if m.p[self.currH] == Pattern.HUM_FOLLOWER:
-			print('FOLLOWER starting...')
-			self.run_follower()
-		elif m.p[self.currH] == Pattern.HUM_LEADER:
-			# TODO
-			self.run_leader()
-		elif m.p[self.currH] == Pattern.HUM_RECIPIENT:
-			# TODO
-			self.run_recipient()
-		else:
-			print('No pattern found.')
+		while not self.served[-1]:
+			if m.p[self.currH] == Pattern.HUM_FOLLOWER:
+				print('FOLLOWER starting...')
+				self.run_follower()
+			elif m.p[self.currH] == Pattern.HUM_LEADER:
+				self.run_leader()
+			elif m.p[self.currH] == Pattern.HUM_RECIPIENT:
+				# TODO
+				self.run_recipient()
+			else:
+				print('No pattern found.')
 
 	
 
