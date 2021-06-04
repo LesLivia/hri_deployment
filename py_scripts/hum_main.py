@@ -22,7 +22,16 @@ rob = MobileRobot(1, 8.0, 5.0)
 dest = [Point(22.0, 15.0), Point(5.0, 10.0)]
 unique_humans = [bill]
 humans = [bill, bill]
-patterns = [Pattern.HUM_LEADER, Pattern.HUM_LEADER]	
+
+patterns = []
+f = open('mission.txt', 'r')
+lines = f.readlines()
+for line in lines:
+	if line.replace('\n', '') == 'LEADER':
+		patterns.append(Pattern.HUM_LEADER)
+	else:
+		patterns.append(Pattern.HUM_FOLLOWER)
+f.close()
 
 mission = Mission(patterns, dest)	
 

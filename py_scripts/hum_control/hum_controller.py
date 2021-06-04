@@ -180,36 +180,57 @@ class HumanController:
 					time.sleep(rest_time)
 
 		print('Human {} successfully served'.format(self.h[self.currH].hum_id))
-		self.currH+=1
+		if self.currH < len(self.h) - 1:
+			self.currH+=1
 
 	def run_leader(self):
 		self.set_loc(Loc.IDLE)
 		running = False
+		SIT_ONCE = True
+		will_sit = False
 		while not self.served[self.currH] and not vrep.check_connection(self.clientID):
 			ftg = self.read_data('FTG')
 			pos = self.read_data('HUM_POS')
 			rob_pos = self.read_data('ROB_POS')
 			dist_to_rob = pos.distance_from(rob_pos)
-			dest = self.m.dest[self.currH]
-			self.plan_trajectory(pos, dest)
-			in_office = 1.0+const.VREP_X_OFFSET<=pos.x<=11+const.VREP_X_OFFSET and 1.4+const.VREP_Y_OFFSET<=pos.y<=9.5+const.VREP_Y_OFFSET
-			if in_office or running:
-				running = True
-				self.send_run_cmd()
-			else:
-				self.start_h_action()
+
+			if SIT_ONCE and not will_sit:
+				will_sit = self.free_sit(pos) 
+			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
+
+			if (not self.served[self.currH] and dist_to_rob > 2.0):
+				in_office = 1.0+const.VREP_X_OFFSET<=pos.x<=11+const.VREP_X_OFFSET and 1.4+const.VREP_Y_OFFSET<=pos.y<=9.5+const.VREP_Y_OFFSET
+				if will_sit and not SIT_ONCE:
+					will_sit = False
+					self.send_stand_cmd()
+				if will_sit:
+					self.plan_trajectory(pos, CHAIR_POS)
+				else:
+					self.plan_trajectory(pos, dest)
+
+				if in_office or running:
+					running = True
+					self.send_run_cmd()
+				else:
+					self.start_h_action()
 
 			time.sleep(self.Tpoll)
 			
 			dist_to_dest = pos.distance_from(dest)
-			self.served[self.currH] = dist_to_dest < 1.0 
+			self.served[self.currH] = dist_to_dest < 1.0  if dest==self.m.dest[self.currH] else False
 			if self.debug:
 				print('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
 				print('DIST TO DEST: {:.5f}'.format(dist_to_dest))
 				print('DIST TO ROB: {:.5f}'.format(dist_to_rob))
 
-			if self.served[self.currH] or dist_to_rob < 1.0 or dist_to_rob > 8.0:
+			if self.served[self.currH] or dist_to_rob < 1.0 or dist_to_rob > 8.0 or (will_sit and dist_to_dest < 2.0):
 				self.stop_h_action()
+				rest_time = random.randint(8, 20)
+				if will_sit and dist_to_dest < 2.0:
+					SIT_ONCE = False
+					self.send_sit_cmd()
+					time.sleep(20)
+
 				if self.served[self.currH]:
 					time.sleep(random.randint(10, 20))
 					running = False
@@ -217,14 +238,15 @@ class HumanController:
 
 		if self.served[self.currH]:
 			print('Human {} successfully served'.format(self.h[self.currH].hum_id))
-		self.currH+=1
+		if self.currH < len(self.h) - 1:
+			self.currH+=1
 
 	def run_recipient(self):
 		pass
 
 	def run(self, m: Mission):
 		self.m = m
-		while not self.served[-1]:
+		while not self.served[-1] and not vrep.check_connection(self.clientID):
 			if m.p[self.currH] == Pattern.HUM_FOLLOWER:
 				print('FOLLOWER starting...')
 				self.run_follower()
@@ -235,6 +257,8 @@ class HumanController:
 				self.run_recipient()
 			else:
 				print('No pattern found.')
+		vrep.stop_sim(self.clientID)
+
 
 	
 

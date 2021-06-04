@@ -23,10 +23,19 @@ carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 12.0, 5.0)
 
 # Alternative A
-dest = [Point(22.5, 4.0), Point(10.0, 4.0)]
+dest = [Point(22.5, 4.0), Point(5.0, 10.0)]
 unique_humans = [bill]
 humans = [bill, bill]
-patterns = [Pattern.HUM_LEADER, Pattern.HUM_LEADER]	
+
+patterns = []
+f = open('mission.txt', 'r')
+lines = f.readlines()
+for line in lines:
+	if line.replace('\n', '') == 'LEADER':
+		patterns.append(Pattern.HUM_LEADER)
+	else:
+		patterns.append(Pattern.HUM_FOLLOWER)
+f.close()
 
 mission = Mission(patterns, dest)	
 
