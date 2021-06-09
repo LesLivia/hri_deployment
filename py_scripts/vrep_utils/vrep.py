@@ -71,4 +71,6 @@ def served_cmd(clientID, humID: int):
 def set_hum_trajectory(clientID, humID:int, strTraj: str):
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'setTraj', [], [], [strTraj], '', vrep.simx_opmode_blocking)
 
+def set_hum_state(clientID, humID:int, state: int):
+	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'set_state_cmd', [state], [], [], '', vrep.simx_opmode_blocking)
 

@@ -95,8 +95,12 @@ class HumanController:
 		if len(traj)>0:
 			vrep.set_hum_trajectory(const.VREP_CLIENT_ID, self.h[self.currH].hum_id, str_traj)
 
+	def set_state(self, state:int):
+		vrep.set_hum_state(self.clientID, self.h[self.currH].hum_id, state)
+
 	def start_h_action(self):
 		self.set_loc(Loc.BUSY)
+		self.set_state(1)
 		vrep.start_human(self.clientID, self.h[self.currH].hum_id)
 
 	def stop_h_action(self):
@@ -105,15 +109,18 @@ class HumanController:
 
 	def send_sit_cmd(self):
 		self.set_loc(Loc.SIT)
-		vrep.sit(self.clientID, self.h[self.currH].hum_id)
+		self.set_state(2)
+		# vrep.sit(self.clientID, self.h[self.currH].hum_id)
 
 	def send_stand_cmd(self):
 		self.set_loc(Loc.IDLE)
-		vrep.stand(self.clientID, self.h[self.currH].hum_id)
+		self.set_state(0)
+		# vrep.stand(self.clientID, self.h[self.currH].hum_id)
 
 	def send_run_cmd(self):
 		self.set_loc(Loc.RUN)
-		vrep.run_cmd(self.clientID, self.h[self.currH].hum_id)
+		self.set_state(3)
+		# vrep.run_cmd(self.clientID, self.h[self.currH].hum_id)
 
 	def send_served_cmd(self):
 		self.set_loc(Loc.RUN)
@@ -129,7 +136,7 @@ class HumanController:
 	def free_sit(self, hum_pos: Point):
 		dist_to_door = hum_pos.distance_from(DOOR_POS)
 		if dist_to_door < 5.0:
-			needs_chair = random.randint(0, 100) >= 50
+			needs_chair = random.randint(0, 100) >= self.freeWillTh
 			return needs_chair
 		else:
 			return False
@@ -159,9 +166,14 @@ class HumanController:
 			
 			if SIT_ONCE and not will_sit:
 				will_sit = self.free_sit(pos) 
+			else:
+				will_sit = False
 			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
 
 			dist_to_dest = pos.distance_from(dest)
+			print(dest)
+			print(pos)
+			print('DIST TO DEST: {:.5f}'.format(dist_to_dest))
 			self.served[self.currH] = dist_to_dest < 1.0 and not will_sit
 			if self.debug:
 				print('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
@@ -179,7 +191,7 @@ class HumanController:
 				elif free_stop:
 					time.sleep(rest_time)
 
-		print('Human {} successfully served'.format(self.h[self.currH].hum_id))
+		print('Human {} successfully served'.format(self.currH+1))
 		if self.currH < len(self.h) - 1:
 			self.currH+=1
 
@@ -237,7 +249,7 @@ class HumanController:
 					self.send_served_cmd()
 
 		if self.served[self.currH]:
-			print('Human {} successfully served'.format(self.h[self.currH].hum_id))
+			print('Human {} successfully served'.format(self.currH+1))
 		if self.currH < len(self.h) - 1:
 			self.currH+=1
 
@@ -251,6 +263,7 @@ class HumanController:
 				print('FOLLOWER starting...')
 				self.run_follower()
 			elif m.p[self.currH] == Pattern.HUM_LEADER:
+				print('LEADER starting...')
 				self.run_leader()
 			elif m.p[self.currH] == Pattern.HUM_RECIPIENT:
 				# TODO
