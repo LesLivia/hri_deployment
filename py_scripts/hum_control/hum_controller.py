@@ -14,6 +14,7 @@ from agents.mission import *
 POS_LOG = '../scene_logs/humanPosition.log'
 FTG_LOG = '../scene_logs/humanFatigue.log'
 ROB_POS_LOG = '../scene_logs/robotPosition.log'
+ROOM_LOG = '../scene_logs/environmentData.log'
 
 DOOR_POS = Point(17.0+const.VREP_X_OFFSET, -1.0+const.VREP_Y_OFFSET)
 CHAIR_POS = Point(18.6+const.VREP_X_OFFSET, 4.67+const.VREP_Y_OFFSET)
@@ -59,6 +60,8 @@ class HumanController:
 			f = open(FTG_LOG)
 		elif log=='HUM_POS':
 			f = open(POS_LOG)
+		elif log=='ROOM':
+			f = open(ROOM_LOG)
 		else:
 			f = open(ROB_POS_LOG)
 		
@@ -72,6 +75,9 @@ class HumanController:
 		elif log=='HUM_POS':
 			read = Point.parse_point(last_line.split(':')[2])
 			return Point(read.x+const.VREP_X_OFFSET, read.y+const.VREP_Y_OFFSET)
+		elif log=='ROOM':
+			read = last_line.split(':')[1]
+			return (float(read.split('#')[0]), float(read.split('#')[1]))	
 		else:
 			read = Point.parse_point(last_line.split(':')[1])
 			return Point(read.x+const.VREP_X_OFFSET, read.y+const.VREP_Y_OFFSET)
@@ -100,7 +106,13 @@ class HumanController:
 
 	def start_h_action(self):
 		self.set_loc(Loc.BUSY)
-		psbl_states = [1, 5, 7, 9]
+		# room_data = (temperature [°C], humidity [%])
+		room_data = self.read_data('ROOM')
+		harsh_env = room_data is not None and (room_data[0]<=15.0 or room_data[0]>=30.0 or room_data[1]<=30.0 or room_data[1]>=50)
+		if harsh_env:
+			psbl_states = [7]
+		else:
+			psbl_states = [1]#, 5, 9]
 		self.set_state(psbl_states[random.randint(0, len(psbl_states)-1)])
 		vrep.start_human(self.clientID, self.h[self.currH].hum_id)
 
@@ -109,14 +121,31 @@ class HumanController:
 		vrep.stop_human(self.clientID, self.h[self.currH].hum_id)
 
 	def send_sit_cmd(self):
-		self.set_loc(Loc.SIT)
-		psbl_states = [2, 4, 6]
+		if self.LOC == Loc.RUN:
+			psbl_states = [4]
+		else:
+			# room_data = (temperature [°C], humidity [%])
+			room_data = self.read_data('ROOM')
+			harsh_env = room_data is not None and (room_data[0]<=15.0 or room_data[0]>=30.0 or room_data[1]<=30.0 or room_data[1]>=50)
+			if harsh_env:
+				psbl_states = [6]
+			else:
+				psbl_states = [2]
+
+		self.set_loc(Loc.SIT)				 
 		self.set_state(psbl_states[random.randint(0, len(psbl_states)-1)])
 		# vrep.sit(self.clientID, self.h[self.currH].hum_id)
 
 	def send_stand_cmd(self):
 		self.set_loc(Loc.IDLE)
-		psbl_states = [0, 8]
+		# room_data = (temperature [°C], humidity [%])
+		room_data = self.read_data('ROOM')
+		harsh_env = room_data is not None and (room_data[0]<=15.0 or room_data[0]>=30.0 or room_data[1]<=30.0 or room_data[1]>=50)
+		if harsh_env:
+			psbl_states = [8]
+		else:
+			psbl_states = [0]
+
 		self.set_state(psbl_states[random.randint(0, len(psbl_states)-1)])
 		# vrep.stand(self.clientID, self.h[self.currH].hum_id)
 
@@ -174,7 +203,7 @@ class HumanController:
 			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
 
 			dist_to_dest = pos.distance_from(dest)
-			self.served[self.currH] = dist_to_dest < 1.0 and not will_sit
+			self.served[self.currH] = dist_to_dest < 2.0 and not will_sit
 			if self.debug:
 				print('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
 				print('DIST TO DEST: {:.5f}'.format(dist_to_dest))
@@ -210,7 +239,7 @@ class HumanController:
 				will_sit = self.free_sit(pos) 
 			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
 
-			if (not self.served[self.currH] and dist_to_rob > 2.0):
+			if not self.served[self.currH]:
 				in_office = 1.0+const.VREP_X_OFFSET<=pos.x<=11+const.VREP_X_OFFSET and 1.4+const.VREP_Y_OFFSET<=pos.y<=9.5+const.VREP_Y_OFFSET
 				if will_sit and not SIT_ONCE:
 					will_sit = False
@@ -235,7 +264,7 @@ class HumanController:
 				print('DIST TO DEST: {:.5f}'.format(dist_to_dest))
 				print('DIST TO ROB: {:.5f}'.format(dist_to_rob))
 
-			if self.served[self.currH] or dist_to_rob < 1.0 or dist_to_rob > 8.0 or (will_sit and dist_to_dest < 2.0):
+			if self.served[self.currH] or dist_to_rob < 2.0 or dist_to_rob > 8.0 or (will_sit and dist_to_dest < 2.0):
 				self.stop_h_action()
 				rest_time = random.randint(8, 20)
 				if will_sit and dist_to_dest < 2.0:
