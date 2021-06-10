@@ -45,7 +45,7 @@ class HumanController:
 		self.served = [False]*len(h)
 		self.debug = debug
 		self.m = None
-		self.freeWillTh = 100
+		self.freeWillTh = 97
 		# SHA-graph variables
 		self.LOC = Loc.INIT
 
@@ -100,7 +100,8 @@ class HumanController:
 
 	def start_h_action(self):
 		self.set_loc(Loc.BUSY)
-		self.set_state(1)
+		psbl_states = [1, 5, 7, 9]
+		self.set_state(psbl_states[random.randint(0, len(psbl_states)-1)])
 		vrep.start_human(self.clientID, self.h[self.currH].hum_id)
 
 	def stop_h_action(self):
@@ -109,12 +110,14 @@ class HumanController:
 
 	def send_sit_cmd(self):
 		self.set_loc(Loc.SIT)
-		self.set_state(2)
+		psbl_states = [2, 4, 6]
+		self.set_state(psbl_states[random.randint(0, len(psbl_states)-1)])
 		# vrep.sit(self.clientID, self.h[self.currH].hum_id)
 
 	def send_stand_cmd(self):
 		self.set_loc(Loc.IDLE)
-		self.set_state(0)
+		psbl_states = [0, 8]
+		self.set_state(psbl_states[random.randint(0, len(psbl_states)-1)])
 		# vrep.stand(self.clientID, self.h[self.currH].hum_id)
 
 	def send_run_cmd(self):
@@ -171,9 +174,6 @@ class HumanController:
 			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
 
 			dist_to_dest = pos.distance_from(dest)
-			print(dest)
-			print(pos)
-			print('DIST TO DEST: {:.5f}'.format(dist_to_dest))
 			self.served[self.currH] = dist_to_dest < 1.0 and not will_sit
 			if self.debug:
 				print('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
