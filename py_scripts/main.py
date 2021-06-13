@@ -22,10 +22,9 @@ bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 12.0, 5.0)
 
-# Alternative A
-dest = [Point(22.5, 6.0), Point(5.0, 10.0)]
+dest = [Point(22.5, 6.0)] #, Point(5.0, 10.0)]
 unique_humans = [bill]
-humans = [bill, bill]
+humans = [bill] #, bill]
 
 patterns = []
 f = open('mission.txt', 'r')
@@ -43,30 +42,13 @@ try:
 	# START ROS NODES THAT ACQUIRE DATA FROM SENSORS
 	start_reading_data(humans)
 	rob.start_reading_data()
-	time.sleep(7)
-	
-	# START MONITORING HUMAN SENSOR DATA LOGS
-	thread_h = Thread(target = follow_position, args=[unique_humans])
-	thread_h.start()
-	thread_h_f = Thread(target = follow_fatigue, args=[unique_humans])
-	thread_h_f.start()
-	
-	# START MONITORING ROBOT SENSOR DATA LOGS
-	thread_r = Thread(target=rob.follow_position)
-	thread_r.start()
-	thread_rb = Thread(target=rob.follow_charge)
-	thread_rb.start()
-	
+	time.sleep(5)
+			
 	# START MISSION
-	time.sleep(7)
 	opchk = OpChk(0.5, 0.0, rob, humans, mission)
 	orch = Orchestrator(opchk)
-	thread_m = Thread(target = orch.run_mission)
-	thread_m.start()
-	
-	# keep going as long as the mission is not over	
-	while rob.is_sim_running():
-		pass
+
+	orch.run_mission()
 
 	if mission.get_scs():
 		print('Mission successfully completed.')

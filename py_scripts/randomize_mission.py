@@ -2,7 +2,7 @@
 import random
 from agents.mission import *
 
-HUMANS = 2
+HUMANS = 1
 f = open('mission.txt', 'w')
 
 lines = []

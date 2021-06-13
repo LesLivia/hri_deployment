@@ -62,54 +62,33 @@ class MobileRobot:
 
 	def follow_position(self):
 		filename = '../scene_logs/robotPosition.log'
-		_cached_stamp = 0
-		while self.is_sim_running():
-			try:
-				# when a new line is written to log file,
-				# robot position attribute is updated as well
-				# -> this needs to be continuously running in a
-				# parallel thread
-				stamp = os.stat(filename).st_mtime
-				if stamp != _cached_stamp:
-					f = open(filename, 'r')
-					lines = f.read().splitlines()
+		f = open(filename, 'r')
+		lines = f.read().splitlines()
+		if len(lines)>0:
+			last_line = lines[-1]
+			newPos = Position.parse_position(last_line.split(':')[1])
 
-					last_line = lines[-1]
-					newPos = Position.parse_position(last_line.split(':')[1])
+			# VRep layout origin is different from the
+			# one in the Uppaal model: translation is necessary
+			newPos.x += const.VREP_X_OFFSET
+			newPos.y += const.VREP_Y_OFFSET
+		else:
+			newPos = None
 
-					# VRep layout origin is different from the
-					# one in the Uppaal model: translation is necessary
-					newPos.x += const.VREP_X_OFFSET
-					newPos.y += const.VREP_Y_OFFSET
-
-					self.set_position(newPos)
-					_cached_stamp = stamp
-			except (KeyboardInterrupt, SystemExit):
-				print('Stopping robot position monitoring...')
-				return
+		self.set_position(newPos)
 
 	def follow_charge(self):
 		filename = '../scene_logs/robotBattery.log'
-		_cached_stamp = 0
-		while self.is_sim_running():
-			# when a new line is written to log file,
-			# robot charge attribute is updated as well
-			# -> this needs to be continuously running in a
-			# parallel thread
-			stamp = os.stat(filename).st_mtime
-			if stamp != _cached_stamp:
-				f = open(filename, 'r')
-				lines = f.read().splitlines()
+		f = open(filename, 'r')
+		lines = f.read().splitlines()
+	
+		if len(lines)>0:
+			last_line = lines[-1]
+			new_charge = float(last_line.split(':')[1])
+		else:
+			new_charge = None
 
-				last_line = lines[-1]
-				new_charge = float(last_line.split(':')[1])
-
-				now = datetime.now()
-				current_time = now.strftime("%H:%M:%S")
-				# print("Current Time =", current_time)
-
-				self.set_charge(new_charge)
-				_cached_stamp = stamp
+		self.set_charge(new_charge)
 	
 	def start_moving(self, targetSpeed):
 		node = 'robStatusPub.py'

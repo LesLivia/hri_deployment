@@ -144,50 +144,35 @@ def start_reading_data(humans: List[Human]):
 
 def follow_position(hums: List[Human]):
 	filename = '../scene_logs/humanPosition.log'
-	_cached_stamp = 0
-	_cached_pos = None
-	_last_read_line = 1
-	while hums[0].is_sim_running():
-		stamp = os.stat(filename).st_mtime
-		if stamp != _cached_stamp:
-			f = open(filename, 'r')
-			lines = f.read().splitlines()
-			new_lines = lines[_last_read_line:]
-			for line in new_lines:
-				humId = int((line.split(':')[1]).replace('hum', ''))
-				hum = hums[humId-1]
-				pos_str = line.split(':')[2]
-				if hum.get_position():
-					_cached_pos = hum.get_position()
-				new_position = Position.parse_position(pos_str)
-				new_position.x += const.VREP_X_OFFSET
-				new_position.y += const.VREP_Y_OFFSET
+	f = open(filename, 'r')
+	lines = f.read().splitlines()
+	
+	if len(lines)>0:
+		line = lines[-1]
+		humId = int((line.split(':')[1]).replace('hum', ''))
+		hum = hums[humId-1]
+		pos_str = line.split(':')[2]
+		new_position = Position.parse_position(pos_str)
+		new_position.x += const.VREP_X_OFFSET
+		new_position.y += const.VREP_Y_OFFSET
+	else:
+		new_position = None
 
-				hum.set_position(new_position)
-			_cached_stamp = stamp
-			_last_read_line = len(lines)-1
+	hum.set_position(new_position)
 
 
 def follow_fatigue(hums: List[Human]):
-	T_POLL = 2.0
-	global SIM_T
-	SIM_T = 0.0
 	filename = '../scene_logs/humanFatigue.log'
-	_cached_stamp = 0
-	_cached_status = [False]*len(hums)
-	_last_read_line = 1
-	while hums[0].is_sim_running():
-		stamp = os.stat(filename).st_mtime
-		if stamp != _cached_stamp:
-			f = open(filename, 'r')
-			lines = f.read().splitlines()
-			new_lines = lines[_last_read_line:]
-			for line in new_lines:
-				SIM_T = float(line.split(':')[0])
-				humId = int((line.split(':')[1]).replace('hum', ''))
-				hum = hums[humId-1]
-				new_ftg = float((line.split(':')[2]))
-				hum.set_fatigue(new_ftg)
-			_cached_stamp = stamp
-			_last_read_line = len(lines)-1
+	f = open(filename, 'r')
+	lines = f.read().splitlines()
+
+	if len(lines)>0:
+		line = lines[-1]
+		humId = int((line.split(':')[1]).replace('hum', ''))
+		hum = hums[humId-1]
+		new_ftg = float((line.split(':')[2]))
+	else:
+		new_ftg = None
+
+	hum.set_fatigue(new_ftg)
 

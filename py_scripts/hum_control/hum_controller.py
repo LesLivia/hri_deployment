@@ -168,7 +168,7 @@ class HumanController:
 	def free_sit(self, hum_pos: Point):
 		dist_to_door = hum_pos.distance_from(DOOR_POS)
 		if dist_to_door < 5.0:
-			needs_chair = random.randint(0, 100) >= self.freeWillTh
+			needs_chair = random.randint(0, 100) >= self.freeWillTh/2
 			return needs_chair
 		else:
 			return False
@@ -198,8 +198,8 @@ class HumanController:
 			
 			if SIT_ONCE and not will_sit:
 				will_sit = self.free_sit(pos) 
-			else:
-				will_sit = False
+			# else:
+			#	will_sit = False
 			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
 
 			dist_to_dest = pos.distance_from(dest)
@@ -240,7 +240,8 @@ class HumanController:
 			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
 
 			if not self.served[self.currH]:
-				in_office = 1.0+const.VREP_X_OFFSET<=pos.x<=11+const.VREP_X_OFFSET and 1.4+const.VREP_Y_OFFSET<=pos.y<=9.5+const.VREP_Y_OFFSET
+				# in_office = 1.0+const.VREP_X_OFFSET<=pos.x<=11+const.VREP_X_OFFSET and 1.4+const.VREP_Y_OFFSET<=pos.y<=9.5+const.VREP_Y_OFFSET
+				in_office = random.randint(0,100)>=90
 				if will_sit and not SIT_ONCE:
 					will_sit = False
 					self.send_stand_cmd()

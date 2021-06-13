@@ -11,5 +11,6 @@ do
 	cp ../scene_logs/humansServed.log /media/psf/logs/sim_logs/$NEW_DIR/
 	cp ../scene_logs/robotPosition.log /media/psf/logs/sim_logs/$NEW_DIR/
 	cp ../scene_logs/robotBattery.log /media/psf/logs/sim_logs/$NEW_DIR/
+	cp ../scene_logs/environmentData.log /media/psf/logs/sim_logs/$NEW_DIR/
 	sleep 5
 done

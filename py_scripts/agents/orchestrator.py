@@ -9,7 +9,7 @@ from typing import List
 from multiprocessing import Pool
 from agents.coordinates import Point
 from agents.mobilerobot import MobileRobot
-from agents.human import Human
+from agents.human import Human, follow_fatigue, follow_position
 from agents.mission import *
 
 class Operating_Modes(Enum):
@@ -67,6 +67,11 @@ class OpChk:
 		self.initialize()
 
 		while not self.scs and not self.fail and not self.stop:
+			self.rob.follow_position()
+			self.rob.follow_charge()
+			follow_position(self.humans)
+			follow_fatigue(self.humans)
+
 			self.LOCATION = 'op'
 			time.sleep(self.t_int)
 			# t_act >= T_int			
