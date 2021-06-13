@@ -40,7 +40,7 @@ debug = bool(sys.argv[1]) if len(sys.argv)>1 else False
 contr = HumanController(humans, vrep_sim, debug)
 
 try:
-	time.sleep(15)
+	time.sleep(5)
 	print('(Human Controller) Execution starting...')
 
 	contr.run(mission)	

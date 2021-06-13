@@ -112,7 +112,7 @@ class HumanController:
 		if harsh_env:
 			psbl_states = [7]
 		else:
-			psbl_states = [1]#, 5, 9]
+			psbl_states = [5]#, 1, 9]
 		self.set_state(psbl_states[random.randint(0, len(psbl_states)-1)])
 		vrep.start_human(self.clientID, self.h[self.currH].hum_id)
 
@@ -120,12 +120,13 @@ class HumanController:
 		self.set_loc(Loc.IDLE)
 		vrep.stop_human(self.clientID, self.h[self.currH].hum_id)
 
-	def send_sit_cmd(self):
-		if self.LOC == Loc.RUN:
+	def send_sit_cmd(self, running = False):
+		if running:
 			psbl_states = [4]
 		else:
 			# room_data = (temperature [°C], humidity [%])
 			room_data = self.read_data('ROOM')
+			print(room_data)
 			harsh_env = room_data is not None and (room_data[0]<=15.0 or room_data[0]>=30.0 or room_data[1]<=30.0 or room_data[1]>=50)
 			if harsh_env:
 				psbl_states = [6]
@@ -155,7 +156,7 @@ class HumanController:
 		# vrep.run_cmd(self.clientID, self.h[self.currH].hum_id)
 
 	def send_served_cmd(self):
-		self.set_loc(Loc.RUN)
+		self.set_loc(Loc.IDLE)
 		vrep.served_cmd(self.clientID, self.h[self.currH].hum_id)
 
 	def free_will(self):
@@ -168,7 +169,7 @@ class HumanController:
 	def free_sit(self, hum_pos: Point):
 		dist_to_door = hum_pos.distance_from(DOOR_POS)
 		if dist_to_door < 5.0:
-			needs_chair = random.randint(0, 100) >= self.freeWillTh/2
+			needs_chair = random.randint(0, 100) >= self.freeWillTh*0.5
 			return needs_chair
 		else:
 			return False
@@ -270,7 +271,7 @@ class HumanController:
 				rest_time = random.randint(8, 20)
 				if will_sit and dist_to_dest < 2.0:
 					SIT_ONCE = False
-					self.send_sit_cmd()
+					self.send_sit_cmd(running)
 					time.sleep(20)
 
 				if self.served[self.currH]:
