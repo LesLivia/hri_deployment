@@ -19,9 +19,10 @@ bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 8.0, 5.0)
 
-dest = [Point(22.0, 6.0)] #, Point(5.0, 10.0)]
+start = [Point(1.4, 11.0), Point(13.8, 8.8)]
+dest = [Point(22.0, 4.0), Point(22.0, 4.0)]
 unique_humans = [bill]
-humans = [bill] #, bill]
+humans = [bill, bill]
 
 patterns = []
 f = open('mission.txt', 'r')
@@ -33,7 +34,7 @@ for line in lines:
 		patterns.append(Pattern.HUM_FOLLOWER)
 f.close()
 
-mission = Mission(patterns, dest)	
+mission = Mission(patterns, dest, start=start)	
 
 
 debug = bool(sys.argv[1]) if len(sys.argv)>1 else False

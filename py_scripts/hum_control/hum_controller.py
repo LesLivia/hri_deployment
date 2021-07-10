@@ -46,7 +46,7 @@ class HumanController:
 		self.served = [False]*len(h)
 		self.debug = debug
 		self.m = None
-		self.freeWillTh = 97
+		self.freeWillTh = 101
 		# SHA-graph variables
 		self.LOC = Loc.INIT
 
@@ -112,7 +112,7 @@ class HumanController:
 		if harsh_env:
 			psbl_states = [7]
 		else:
-			psbl_states = [5]#, 1, 9]
+			psbl_states = [1]#, 5, 9]
 		self.set_state(psbl_states[random.randint(0, len(psbl_states)-1)])
 		vrep.start_human(self.clientID, self.h[self.currH].hum_id)
 
@@ -155,6 +155,10 @@ class HumanController:
 		self.set_state(3)
 		# vrep.run_cmd(self.clientID, self.h[self.currH].hum_id)
 
+	def reset_hum(self):
+		if len(self.m.start)>0:
+			vrep.reset_hum(self.clientID, self.h[self.currH].hum_id, self.m.start[self.currH])
+
 	def send_served_cmd(self):
 		self.set_loc(Loc.IDLE)
 		vrep.served_cmd(self.clientID, self.h[self.currH].hum_id)
@@ -169,12 +173,13 @@ class HumanController:
 	def free_sit(self, hum_pos: Point):
 		dist_to_door = hum_pos.distance_from(DOOR_POS)
 		if dist_to_door < 5.0:
-			needs_chair = random.randint(0, 100) >= self.freeWillTh*0.5
+			needs_chair = random.randint(0, 100) >= self.freeWillTh
 			return needs_chair
 		else:
 			return False
 
 	def run_follower(self):
+		self.reset_hum()
 		self.set_loc(Loc.IDLE)
 		SIT_ONCE = True
 		will_sit = False
@@ -226,6 +231,7 @@ class HumanController:
 			self.currH+=1
 
 	def run_leader(self):
+		self.reset_hum()
 		self.set_loc(Loc.IDLE)
 		running = False
 		SIT_ONCE = True
@@ -242,7 +248,7 @@ class HumanController:
 
 			if not self.served[self.currH]:
 				# in_office = 1.0+const.VREP_X_OFFSET<=pos.x<=11+const.VREP_X_OFFSET and 1.4+const.VREP_Y_OFFSET<=pos.y<=9.5+const.VREP_Y_OFFSET
-				in_office = random.randint(0,100)>=90
+				in_office = random.randint(0,100)>=self.freeWillTh
 				if will_sit and not SIT_ONCE:
 					will_sit = False
 					self.send_stand_cmd()

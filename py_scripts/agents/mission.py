@@ -13,12 +13,11 @@ class Pattern(Enum):
 	HUM_RECIPIENT = 2
 
 class Mission:
-	def __init__(self, p: List[Pattern], dest: List[Point]):
+	def __init__(self, p: List[Pattern], dest: List[Point], start: List[Point]=[]):
 		self.p = p
 		self.dest = dest
-		self.served = []
-		for n in range(len(p)):
-			self.served.append(False)
+		self.start = start if len(start)>0 else [None]*len(p)
+		self.served = [False]*len(p)
 		self.fail = False
 		
 	def get_scs(self):	

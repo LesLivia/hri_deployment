@@ -74,3 +74,14 @@ def set_hum_trajectory(clientID, humID:int, strTraj: str):
 def set_hum_state(clientID, humID:int, state: int):
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'set_state_cmd', [state], [], [], '', vrep.simx_opmode_blocking)
 
+def reset_hum(clientID, humID:int, pos:Point):
+	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'reset_cmd', [], [pos.x-const.VREP_X_OFFSET, pos.y-const.VREP_Y_OFFSET], [], '', vrep.simx_opmode_blocking)
+	
+
+
+
+
+
+
+
+
