@@ -42,7 +42,7 @@ try:
 	# START ROS NODES THAT ACQUIRE DATA FROM SENSORS
 	start_reading_data(humans)
 	rob.start_reading_data()
-	time.sleep(5)
+	time.sleep(7)
 			
 	# START MISSION
 	opchk = OpChk(0.5, 0.0, rob, humans, mission)
