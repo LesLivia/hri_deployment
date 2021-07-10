@@ -76,6 +76,7 @@ def set_hum_state(clientID, humID:int, state: int):
 
 def reset_hum(clientID, humID:int, pos:Point):
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'reset_cmd', [], [pos.x-const.VREP_X_OFFSET, pos.y-const.VREP_Y_OFFSET], [], '', vrep.simx_opmode_blocking)
+	vrep.simxCallScriptFunction(clientID, 'wearable_dev'.format(humID), vrep.sim_scripttype_childscript, 'reset_ftg', [], [], [], '', vrep.simx_opmode_blocking)
 	
 
 
