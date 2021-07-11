@@ -8,12 +8,13 @@ from agents.coordinates import Point
 from agents.mission import *
 from hum_control.hum_controller import HumanController
 
-vrep_sim = vrep.connect(19999)
+vrep_sim = -1
 if vrep_sim == -1:
-	# connection to v-rep could not be established
-	quit()
+	vrep_sim = vrep.connect(19999)
+if vrep_sim == -1:
+	vrep_sim = vrep.connect(19995)
 
-vrep.start_sim(vrep_sim)
+# vrep.start_sim(vrep_sim)
 
 bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)

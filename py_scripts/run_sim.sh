@@ -1,4 +1,4 @@
-for i in {1..10}
+for i in {1..5}
 do
 	# python3 randomize_mission.py
 	python3 main.py > outfile.txt &
@@ -13,5 +13,5 @@ do
 	cp ../scene_logs/robotPosition.log /media/psf/logs/sim_logs/$NEW_DIR/
 	cp ../scene_logs/robotBattery.log /media/psf/logs/sim_logs/$NEW_DIR/
 	cp ../scene_logs/environmentData.log /media/psf/logs/sim_logs/$NEW_DIR/
-	sleep 5
+	sleep 10
 done
