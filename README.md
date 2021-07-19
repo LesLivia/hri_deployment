@@ -18,7 +18,7 @@ The framework consists of the following elements:
 - a custom [V-Rep scene](VRep_Scenes/hri_healthcare_scene.ttt) in the [`VRep_Scenes/`](VRep_Scenes/hri_healthcare_scene.ttt) folder
 - [Python scripts](py_scripts) under the [`py_scripts/`](py_scripts) folder
 
-**Note**: The framework has been only tested on Ubuntu 18.04. Should you succeed in running it
+**Note**: The framework has been tested on Ubuntu 18.04. Should you succeed in running it
 on a different OS, please report any issue or interesting result to *livia.lestingi@polimi.it*.
 
 Authors:
