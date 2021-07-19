@@ -31,14 +31,35 @@ The standalone Python robot controller and the robot and humans in the simulated
 communicate over ROS.
 Installing [ROS Melodic][ros] is necessary to proceed.
 
-The custom package has to be built within the catkin workspace:
+The custom package has to be built within the catkin workspace (paths should be properly modified):
 
-	cd ~/catkin_ws
+	cd $REPO_PATH/catkin_ws
 	catkin_make
 
 Source the generated setup file:
 
-	source ~/catkin_ws/devel/setup.bash
+	source $REPO_PATH/catkin_ws/devel/setup.bash
+
+V-Rep Scene
+-----------
+
+Before running V-Rep, make sure `roscore` is running and the [ROS Interface][rosint]
+is correctly loaded.
+
+The custom scene can be opened either via the GUI or the following command 
+(paths should be properly modified):
+
+	./$VREP_PATH/vrep.sh $REPO_PATH/hri_deployment/VRep_Scenes/hri_healthcare_scene.ttt
+
+Python Script
+-----------
+
+Finally, run the controller Python script:
+
+	python3 $REPO_PATH/py_scripts/main.py
+	
+
+
 
 
 [paper1]: https://dx.doi.org/10.4204/EPTCS.319.2
@@ -46,5 +67,7 @@ Source the generated setup file:
 [paper3]: https://dx.doi.org/10.1109/SMC42975.2020.9283204
 [vrep]: https://coppeliarobotics.com/downloads
 [ros]: http://wiki.ros.org/melodic/Installation
+[rosint]: https://www.coppeliarobotics.com/helpFiles/en/rosInterf.htm
+
 
 
