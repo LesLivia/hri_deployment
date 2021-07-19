@@ -46,8 +46,7 @@ V-Rep Scene
 Before running V-Rep, make sure `roscore` is running and the [ROS Interface][rosint]
 is correctly loaded.
 
-The custom scene can be opened either via the GUI or the following command 
-(paths should be properly modified):
+The custom scene can be opened either via the GUI or the following command:
 
 	./$VREP_PATH/vrep.sh $REPO_PATH/hri_deployment/VRep_Scenes/hri_healthcare_scene.ttt
 
@@ -58,9 +57,9 @@ Finally, run the controller Python script:
 
 	python3 $REPO_PATH/py_scripts/main.py
 	
+---
 
-
-
+*Copyright &copy; 2021 Livia Lestingi*
 
 [paper1]: https://dx.doi.org/10.4204/EPTCS.319.2
 [paper2]: https://doi.org/10.1007/978-3-030-58768-0_17
