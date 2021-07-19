@@ -18,6 +18,9 @@ The framework consists of the following elements:
 - a custom [V-Rep scene](VRep_Scenes/hri_healthcare_scene.ttt) in the [`VRep_Scenes/`](VRep_Scenes/hri_healthcare_scene.ttt) folder
 - [Python scripts](py_scripts) under the [`py_scripts/`](py_scripts) folder
 
+**Note**: The framework has been only tested on Ubuntu 18.04. Should you succeed in running it
+on a different OS, please report any issue or interesting result to *livia.lestingi@polimi.it*.
+
 Authors:
 
 | Name              | E-mail address           |
@@ -50,8 +53,24 @@ The custom scene can be opened either via the GUI or the following command:
 
 	./$VREP_PATH/vrep.sh $REPO_PATH/hri_deployment/VRep_Scenes/hri_healthcare_scene.ttt
 
+**Note**: The human is controlled through the following keyboard inputs:
+
+| Key            | Action                |
+|:---------------|:----------------------|
+| Up Arrow       | Walk                  |
+| Down Arrow     | Stop                  |
+| Left Arrow     | Turn Left             |
+| Right Arrow    | Turn Right            |
+| Tab            | Switch to Other Human |
+| Enter          | Set as Served         |
+
+
 Python Script
 -----------
+
+Make sure you have the required dependencies installed:
+
+	pip install -r $REPO_PATH/py_scripts/requirements.txt
 
 Finally, run the controller Python script:
 
