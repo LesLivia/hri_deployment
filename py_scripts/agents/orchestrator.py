@@ -50,7 +50,7 @@ class OpChk:
 		self.STOP_DIST = 4.0
 		self.RESTART_DIST = 2.0
 
-		self.RECHARGE_TH = 0.0
+		self.RECHARGE_TH = 10.0
 		self.STOP_RECHARGE = 100.0
 		self.FAIL_CHARGE = 1.0
 		
@@ -179,11 +179,7 @@ class OpChk:
 			if not traj.index(point)==len(traj)-1:
 				str_traj += '#'
 		if len(traj)>0:
-			# print(str_traj)
 			vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)
-			# node = 'robTrajPub.py'
-			# pool = Pool()
-			# pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])
 
 	# CHECK WHETHER CURRENT ACTION SHOULD START
 	def check_start(self):
@@ -306,7 +302,6 @@ class OpChk:
 		self.stop = self.get_stop_condition(self.mission.p[self.currH])
 		if self.stop:
 			print('Action has to stop')
-			self.stop = True
 			#if self.mission.p[self.currH] == Pattern.HUM_RECIPIENT and self.rec_stages==1:
 				#self.rec_stages = 2
 
@@ -314,7 +309,6 @@ class OpChk:
 		self.stop = self.get_stop_condition(self.mission.p[self.currH])
 		if self.stop:
 			print('Action has to stop')
-			self.stop = True
 			# self.currOp = Operating_Modes.ROBOT_IDLE
 			# self.rob.stop_moving()
 		else:

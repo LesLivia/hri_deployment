@@ -96,7 +96,6 @@ class MobileRobot:
 		print(data)
 		if targetSpeed > 0:
 		    data = data + str(targetSpeed)
-		vrep.set_state(const.VREP_CLIENT_ID, data)
 		# requested target speed is published to both robot motors,
 		# so that the robot starts moving straight
 		pool = Pool()
@@ -107,7 +106,6 @@ class MobileRobot:
 	def stop_moving(self):
 		node = 'robStatusPub.py'
 		data = '0#0.0'
-		vrep.set_state(const.VREP_CLIENT_ID, data)
 		# both motors speed is set to 0, so that the robot stops moving
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, [data])])

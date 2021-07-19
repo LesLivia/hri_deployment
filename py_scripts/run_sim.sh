@@ -1,4 +1,4 @@
-for i in {1..5}
+for i in {1..1}
 do
 	# python3 randomize_mission.py
 	python3 main.py > outfile.txt &
