@@ -16,7 +16,7 @@ actual deployment.
 The framework consists of the following elements:
 - a custom [ROS package](catkin_ws/src/hri_scenarios) under the [`catkin_ws/`](catkin_ws/src/hri_scenarios) folder
 - a custom [V-Rep scene](VRep_Scenes/hri_healthcare_scene.ttt) in the [`VRep_Scenes/`](VRep_Scenes/hri_healthcare_scene.ttt) folder
-- [Python scripts](py_scripts) under the [`py_scripts/`](py_scripts) folder to control the robot in the scene and respond to human actions
+- [Python scripts](py_scripts) under the [`py_scripts/`](py_scripts) folder
 
 Authors:
 
@@ -24,13 +24,27 @@ Authors:
 |:----------------- |:-------------------------|
 | Lestingi Livia    | livia.lestingi@polimi.it |
 
-
+ROS Package
 -----------
 
+The standalone Python robot controller and the robot and humans in the simulated scene 
+communicate over ROS.
+Installing [ROS Melodic][ros] is necessary to proceed.
+
+The custom package has to be built within the catkin workspace:
+
+	cd ~/catkin_ws
+	catkin_make
+
+Source the generated setup file:
+
+	source ~/catkin_ws/devel/setup.bash
 
 
 [paper1]: https://dx.doi.org/10.4204/EPTCS.319.2
 [paper2]: https://doi.org/10.1007/978-3-030-58768-0_17
 [paper3]: https://dx.doi.org/10.1109/SMC42975.2020.9283204
 [vrep]: https://coppeliarobotics.com/downloads
+[ros]: http://wiki.ros.org/melodic/Installation
+
 
