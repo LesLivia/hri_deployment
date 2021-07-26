@@ -7,11 +7,11 @@ import vrep_utils.vrep as vrep
 from typing import List
 from multiprocessing import Pool
 from agents.position import Position
-from agents.coordinates import Point
+from agents.coordinates import Point			# posso importare tutto 'coordinates' ma cosi è piu comodo quando chiamo le funzioni
 from functools import cmp_to_key
 
 PI = 3.14
-
+												# prenderlo per buono
 def init_walls():
 	wall_pts = []
 	density = 0.5
@@ -28,8 +28,7 @@ def init_walls():
 
 def close_to_wall(to_check: Point, walls: List[Point]):
 	for point in walls:
-		if to_check.distance_from(point) < 0.5:
-			# print(str(to_check.distance_from(point)))
+		if to_check.distance_from(point) < 0.5:		# print(str(to_check.distance_from(point)))
 			return True
 	return False
 
@@ -62,7 +61,7 @@ def get_straight_line(start: Point, dest: Point, density=1.5):
 	# vrep.draw_point(const.VREP_CLIENT_ID, Point(dest.x, dest.y))		
 	return traj
 	
-def dist_cmp(item1, item2):
+def dist_cmp(item1, item2):				# funzione usata nella funzione successiva. infatti prima la definisco, e poi la posso usare. non il contrario senno mi da errore il codice
     if item1.distance_from(dest_pt) < item2.distance_from(dest_pt):
         return -1
     elif item1.distance_from(dest_pt) > item2.distance_from(dest_pt):

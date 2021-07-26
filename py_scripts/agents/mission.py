@@ -17,17 +17,17 @@ class Mission:
 		self.p = p
 		self.dest = dest
 		self.served = []
-		for n in range(len(p)):
+		for n in range(len(p)):   				# tot pattern. inizializza vettore con tot failure
 			self.served.append(False)
 		self.fail = False
 		
-	def get_scs(self):	
+	def get_scs(self):									# ti dice se è arrivato al successo
 		for hum in self.served:
-			if not hum:
+			if not hum:    								#se almeno uno è falso, entra dentro all if e ritorna false
 				return False
-		return True
+		return True										# se tutti gli obiettivi sono raggiunti, ritorna true
 
-	def set_served(self, index: int):
+	def set_served(self, index: int):				# metto una funzione in stato 'successo' e poi lo printo
 		self.served[index] = True
 		msg = 'SVD#' + str(index+1)
 		self.publish_status(msg)
@@ -38,4 +38,4 @@ class Mission:
 		pool.starmap(hriros.rosrun_nodes, [(node, [msg])])
 		print('Robot stopping...')
 
-
+		# questo da modificare se voglio aggiungere l id del rob che si sta fermando

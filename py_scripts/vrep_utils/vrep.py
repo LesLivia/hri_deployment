@@ -23,15 +23,28 @@ def stop_sim(clientID):
 
 def check_connection(clientID):
 	state = vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'sim_state', [], [], '', '', vrep.simx_opmode_blocking)
-	if state[0] != 0:
+	#TODO: scoprire differenza tra 0 e 1
+	if state[0] not in [0, 1]:
 		print('Connection lost')
 	return state[0]
 
-def set_trajectory(clientID, strTraj: str):
-	vrep.simxCallScriptFunction(clientID, 'MobileRobot', vrep.sim_scripttype_childscript, 'setTraj', [], [], [strTraj], '', vrep.simx_opmode_blocking)
+# def set_trajectory(clientID, strTraj: str):
+# 	vrep.simxCallScriptFunction(clientID, 'MobileRobot1', vrep.sim_scripttype_childscript, 'setTraj', [], [], [strTraj], '', vrep.simx_opmode_blocking)
+#
+# def set_state(clientID, strState: str):
+# 	vrep.simxCallScriptFunction(clientID, 'MobileRobot1', vrep.sim_scripttype_childscript, 'setRobotState', [], [], [strState], '', vrep.simx_opmode_blocking)
 
-def set_state(clientID, strState: str):
-	vrep.simxCallScriptFunction(clientID, 'MobileRobot', vrep.sim_scripttype_childscript, 'setRobotState', [], [], [strState], '', vrep.simx_opmode_blocking)
+####################################################################################################################
+def set_trajectory(clientID, strTraj: str, filename):
+	vrep.simxCallScriptFunction(clientID, filename, vrep.sim_scripttype_childscript, 'setTraj', [], [], [strTraj], '', vrep.simx_opmode_blocking)
+
+def set_state(clientID, strState: str,filename):
+	vrep.simxCallScriptFunction(clientID, filename, vrep.sim_scripttype_childscript, 'setRobotState', [], [], [strState], '', vrep.simx_opmode_blocking)
+
+
+
+
+####################################################################################################################
 
 def draw_point(clientID, pos: Point):
 	vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'draw_point', [], [pos.x-const.VREP_X_OFFSET, pos.y-const.VREP_Y_OFFSET], '', '', vrep.simx_opmode_blocking)
@@ -42,17 +55,17 @@ def draw_line(clientID, pos1: Point, pos2: Point):
 def clear_lines(clientID):
 	vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'clear_line', [], [], '', '', vrep.simx_opmode_blocking)
 
+
+
+
+
+
+
 def draw_rectangle(clientID, pos1: Point, pos2: Point, pos3: Point, pos4: Point):
 	clear_lines(const.VREP_CLIENT_ID)
 	draw_line(const.VREP_CLIENT_ID, pos1, pos2)
 	draw_line(const.VREP_CLIENT_ID, pos2, pos3)
 	draw_line(const.VREP_CLIENT_ID, pos3, pos4)
 	draw_line(const.VREP_CLIENT_ID, pos4, pos1)
-
-
-
-
-
-
 
 

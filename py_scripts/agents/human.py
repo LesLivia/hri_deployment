@@ -34,20 +34,27 @@ class Human:
 		self.hum_id = hum_id
 		self.speed = speed
 		self.ftg_profile = ftg_profile
-		self.fw_profile = fw_profile
+		self.fw_profile = fw_profile			# indica la curva del fatigue profile a cui fa riferimento. in realta questo parametro non viene usato, e infatti va cambiato direttamente dagli input in vrep
 		self.moving = False
 		self.position = None
 		self.fatigue = 0.0
-		self.f_0 = 0
-		self.last_switch = 0.0
-		self.emg_walk = []
-		self.emg_rest = []
+		self.f_0 = 0                           # è la stanchezza iniziale di ogni volta che cambia lo stato fermo-attivo, cioè quella finale dello stato precedente
+		self.last_switch = 0.0                 # non mi interessa
+		self.emg_walk = []  					# non mi interessa
+		self.emg_rest = []						# non mi interessa
 		self.lambdas = [0.0005]
 		self.mus = [0.0005]
-		self.def_bursts_mov = []
-		self.def_bursts_rest = []
-		self.cand_bursts_mov = []
-		self.cand_bursts_rest = []
+		self.def_bursts_mov = []        		# non mi interessa
+		self.def_bursts_rest = []				# non mi interessa
+		self.cand_bursts_mov = []				# non mi interessa
+		self.cand_bursts_rest = []				# non mi interessa
+
+
+		# AGGIUNTNO IO
+		self.free=True
+
+
+
 
 	def set_position(self, position: Position):
 		self.position = position
@@ -73,7 +80,7 @@ class Human:
 	def get_last_switch(self):
 		return self.last_switch
 
-	def set_emg_signal(self, state: str, emg: List[float]):
+	def set_emg_signal(self, state: str, emg: List[float]):                 # non mi interessa
 		if state=='m':
 			self.emg_walk += emg
 		else:
@@ -94,8 +101,8 @@ class Human:
 	def get_mus(self):
 		return self.mus
 
-	def set_sim_running(self, run):
-        	self.sim_running = run
+	def set_sim_running(self, run):      # self.sim_running è un attributo che creo ora. sim = simulation
+		self.sim_running = run
 
 	def is_sim_running(self):
 		return self.sim_running
@@ -106,7 +113,7 @@ class Human:
 	def is_moving(self):
 		return self.moving
 
-def start_reading_data(humans: List[Human]):
+def start_reading_data(humans: List[Human]):			# era cosi di default, dovrebbe funzionare anche con piu pazienti
 	f = open('../scene_logs/humanPosition.log', 'r+')
 	f.truncate(0)
 	f.close()
@@ -139,7 +146,7 @@ def start_reading_data(humans: List[Human]):
 		f.truncate(0)
 		f.close()	
 
-	for hum in humans:	
+	for hum in humans:
 		hum.set_sim_running(1)
 
 def follow_position(hums: List[Human]):
@@ -147,16 +154,26 @@ def follow_position(hums: List[Human]):
 	_cached_stamp = 0
 	_cached_pos = None
 	_last_read_line = 1
-	while hums[0].is_sim_running():
+	while hums[0].is_sim_running():						# analizzo solo il primo human perche tanto se la simulazione sta andando, lo fa per tutti. se non sta andando, lo stesso
 		stamp = os.stat(filename).st_mtime
 		if stamp != _cached_stamp:
 			f = open(filename, 'r')
 			lines = f.read().splitlines()
 			new_lines = lines[_last_read_line:]
+
+			#print('vediamo che rga leggo su humanposition.log')
+			#print(new_lines)
+
 			for line in new_lines:
 				humId = int((line.split(':')[1]).replace('hum', ''))
+
+				#print(line,'è la riga presa nel for')
+				#print('humId è',humId)
 				hum = hums[humId-1]
 				pos_str = line.split(':')[2]
+
+				#print(pos_str, 'è la pos_str')
+
 				if hum.get_position():
 					_cached_pos = hum.get_position()
 				new_position = Position.parse_position(pos_str)
@@ -164,11 +181,16 @@ def follow_position(hums: List[Human]):
 				new_position.y += const.VREP_Y_OFFSET
 
 				hum.set_position(new_position)
+
+				#print('NUOVA POSIZIONE HUM',humId,'è',new_position)
+
+
+
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
 
 
-def follow_fatigue(hums: List[Human]):
+def follow_fatigue(hums: List[Human]):									# prenderlo per buono
 	T_POLL = 2.0
 	global SIM_T
 	SIM_T = 0.0
@@ -190,4 +212,7 @@ def follow_fatigue(hums: List[Human]):
 				hum.set_fatigue(new_ftg)
 			_cached_stamp = stamp
 			_last_read_line = len(lines)-1
+
+
+
 

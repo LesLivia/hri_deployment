@@ -10,7 +10,7 @@ def missionStatusPub(msg):
     rate = rospy.Rate(10)
     count = 0
     while count < 3:
-	pub.publish(msg) 
+        pub.publish(msg)
         rate.sleep()
         count+=1
 
