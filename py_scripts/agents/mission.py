@@ -13,13 +13,19 @@ class Pattern(Enum):
 	HUM_RECIPIENT = 2
 
 class Mission:
-	def __init__(self, p: List[Pattern], dest: List[Point]):
+	def __init__(self, p: List[Pattern], dest: List[Point], mission_id: int):
 		self.p = p
 		self.dest = dest
 		self.served = []
 		for n in range(len(p)):   				# tot pattern. inizializza vettore con tot failure
 			self.served.append(False)
 		self.fail = False
+
+		#aggiunto io
+		self.mission_id = mission_id
+
+
+
 		
 	def get_scs(self):									# ti dice se è arrivato al successo
 		for hum in self.served:
@@ -36,6 +42,6 @@ class Mission:
 		node = 'missionStatusPub.py'
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, [msg])])
-		print('Robot stopping...')
+		#print('Robot stopping...')								# tanto il commento appare da altre parti
 
 		# questo da modificare se voglio aggiungere l id del rob che si sta fermando

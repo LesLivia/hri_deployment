@@ -23,6 +23,7 @@ class MobileRobot:
 		self.sim_running = 0
 
 		self.free=True
+		self.stop_recharge=95
 
 
 
@@ -47,10 +48,6 @@ class MobileRobot:
 
 
 
-	# PERCHE FOLLOW CHARGE MI FUNZIONA LO STESSO ANCHE SE NON MODIFICO LA RICERCA DELL ULTIMA RIGA UTILE (LAST_LINR_GIUSTA)
-	#			??????????????????????????????????????????????
-
-
 	def follow_charge(self):				#giustamente in una simulazione, la batteria deve seguire una funzione gia stabilita
 		filename = '../scene_logs/robotBattery.log'
 		_cached_stamp = 0
@@ -64,7 +61,16 @@ class MobileRobot:
 				f = open(filename, 'r')
 				lines = f.read().splitlines()
 
-				last_line = lines[-1]			# ogni tanto mi da errore IndexError, devo fare aspettare piu il programma, ma fuori, non in questa funzione
+				#last_line = lines[-1]			# ogni tanto mi da errore IndexError, devo fare aspettare piu il programma, ma fuori, non in questa funzione
+
+				i=-1
+				last_line=lines[i]
+				while int(last_line.split(':')[2]) != self.rob_id:
+					i=i-1
+					last_line=lines[i]
+
+
+
 				new_charge = float(last_line.split(':')[1])
 
 				now = datetime.now()
@@ -169,9 +175,12 @@ def follow_position_rob(rob: MobileRobot):
 
 					rob.set_position(newPos)
 					_cached_stamp = stamp
+
 			except (KeyboardInterrupt, SystemExit):
 				print('Stopping robot position monitoring...')
 				return
+
+
 
 def start_moving_rob(rob:MobileRobot, targetSpeed):
 
@@ -234,6 +243,137 @@ def nearest(robs: List[MobileRobot],hum: Human):
 
 def choose_rob(robs,hum):
 	return nearest(free_robs(robs),hum)
+
+
+##################################################################################
+
+def rob_go_to_pos(rob: MobileRobot, dest: Point):
+
+	robot_pos = rob.get_position()
+	robot_pt = Point(robot_pos.x, robot_pos.y)
+
+	while robot_pt.distance_from(dest) > 0.8 :
+
+		print(' ciao')
+
+		traj = nav.plan_traj(rob.get_position(), dest, nav.init_walls())
+		str_traj = ''
+		for point in traj:
+			str_traj += str(point.x) + ',' + str(point.y)
+			if not traj.index(point)==len(traj)-1:
+				str_traj += '#'
+		if len(traj)>0:
+			print(str_traj)
+#			vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)	# comm
+# 				PROVA												# comm
+			rob_id=rob.rob_id
+			filename='MobileRobot'+str(rob_id)
+
+
+			vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj,filename)
+
+			# node = 'robTrajPub.py'					# comm
+			# pool = Pool()							# comm
+			# pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])				# comm
+
+
+
+
+		start_moving_rob(rob,rob.max_speed)
+		time.sleep(5)
+		robot_pos = rob.get_position()
+		robot_pt = Point(robot_pos.x, robot_pos.y)
+		print('distance from pos' ,robot_pt.distance_from(dest))
+
+	print(' sono vicino alla pos e ora mi fermo')
+	rob.stop_moving()
+
+
+
+def rob_go_to_hum(rob: MobileRobot, hum: Human):
+
+	robot_pos = rob.get_position()
+	robot_pt = Point(robot_pos.x, robot_pos.y)
+
+	hum_pos = hum.get_position()
+	hum_pt = Point(hum_pos.x , hum_pos.y)
+	dest= hum_pt
+
+	while robot_pt.distance_from(dest) > 1.8 :
+
+		print(' ciao')
+
+		traj = nav.plan_traj(rob.get_position(), dest, nav.init_walls())
+		str_traj = ''
+		for point in traj:
+			str_traj += str(point.x) + ',' + str(point.y)
+			if not traj.index(point)==len(traj)-1:
+				str_traj += '#'
+		if len(traj)>0:
+			print(str_traj)
+#			vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)	# comm
+# 				PROVA												# comm
+			rob_id=rob.rob_id
+			filename='MobileRobot'+str(rob_id)
+
+
+			vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj,filename)
+
+			# node = 'robTrajPub.py'					# comm
+			# pool = Pool()							# comm
+			# pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])				# comm
+
+
+
+
+		start_moving_rob(rob,rob.max_speed)
+		time.sleep(5)
+		robot_pos = rob.get_position()
+		robot_pt = Point(robot_pos.x, robot_pos.y)
+		hum_pos = hum.get_position()
+		hum_pt = Point(hum_pos.x , hum_pos.y)
+		dest= hum_pt
+
+
+		print('robot distance from hum ', robot_pt.distance_from(dest))
+
+	print(' sono vicino all hum e ora mi fermo')
+	rob.stop_moving()
+
+
+
+
+def rob_full_charge(rob: MobileRobot):
+
+	while rob.get_charge() < rob.stop_recharge:
+		pass
+
+	print(' ROB ', rob.rob_id, ' È CARICO')
+	rob.free = True
+
+
+
+def rob_go_to_recharge_station(rob: MobileRobot):
+
+	rob_go_to_pos(rob,const.VREP_RECH_STATION)
+
+def rob_charged(rob: MobileRobot):
+
+	print(' ciao 4')
+
+	rob_go_to_recharge_station(rob)
+	rob_full_charge(rob)
+
+
+def prova_thread():
+	x = 0
+	print(' sono dentro, aspetto 10s')
+	while 1:
+		x+=1
+		print(x)
+		time.sleep(5)
+
+
 
 
 

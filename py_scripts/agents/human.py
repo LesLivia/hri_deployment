@@ -190,7 +190,7 @@ def follow_position(hums: List[Human]):
 			_last_read_line = len(lines)-1
 
 
-def follow_fatigue(hums: List[Human]):									# prenderlo per buono
+def follow_fatigue(hums: List[Human]):
 	T_POLL = 2.0
 	global SIM_T
 	SIM_T = 0.0
