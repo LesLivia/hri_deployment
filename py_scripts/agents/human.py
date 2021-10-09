@@ -19,18 +19,46 @@ class FatigueProfile(Enum):
 	ELDERLY_HEALTHY = 3
 	ELDERLY_SICK = 4
 
+
 	def get_def_rates(self):
 		if self==FatigueProfile.YOUNG_HEALTHY:
 			return [0.0004, 0.0005]
+			#return [ 0.04 , 0.05]
 		elif self==FatigueProfile.YOUNG_SICK:
 			return [0.004, 0.005]
 		elif self==FatigueProfile.ELDERLY_HEALTHY:
 			return [0.0005, 0.0004]
 		elif self==FatigueProfile.ELDERLY_SICK:
 			return [0.005, 0.004]
+			#return [0.5 , 0.4]
+
+
+class character(Enum):
+	YOUNG_HEALTHY = 1
+	YOUNG_SICK = 2
+	ELDERLY_HEALTHY = 3
+	ELDERLY_SICK = 4
+	NURSE = 5
+	DOCTOR = 6
+
+	def get_importance(self):
+		if self==character.YOUNG_HEALTHY:
+			return 1
+		elif self==character.YOUNG_SICK:
+			return 2
+		elif self==character.ELDERLY_HEALTHY:
+			return 3
+		elif self==character.ELDERLY_SICK:
+			return 4
+		elif self==character.NURSE:
+			return 5
+		elif self==character.DOCTOR:
+			return 6
+
+
 
 class Human:
-	def __init__(self, hum_id, speed, ftg_profile, fw_profile):
+	def __init__(self, hum_id, speed, ftg_profile, fw_profile , character):
 		self.hum_id = hum_id
 		self.speed = speed
 		self.ftg_profile = ftg_profile
@@ -52,7 +80,7 @@ class Human:
 
 		# AGGIUNTNO IO
 		self.free=True
-
+		self.character = character
 
 
 

@@ -11,9 +11,11 @@ class Pattern(Enum):
 	HUM_FOLLOWER = 0
 	HUM_LEADER = 1
 	HUM_RECIPIENT = 2
+	HUM_INTER = 3
 
 class Mission:
 	def __init__(self, p: List[Pattern], dest: List[Point], mission_id: int):
+
 		self.p = p
 		self.dest = dest
 		self.served = []
@@ -42,6 +44,3 @@ class Mission:
 		node = 'missionStatusPub.py'
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, [msg])])
-		#print('Robot stopping...')								# tanto il commento appare da altre parti
-
-		# questo da modificare se voglio aggiungere l id del rob che si sta fermando

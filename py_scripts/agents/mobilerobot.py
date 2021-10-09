@@ -12,7 +12,7 @@ from datetime import datetime
 
 from typing import List
 from agents.human import *
-
+from threading import Thread
 
 class MobileRobot:
 	def __init__(self, rob_id, max_speed, max_accel):	# max_accel anche se poi non la usiamo la lasciamo come parametro. la velocita è infatti gestita internamente a vrep
@@ -24,7 +24,8 @@ class MobileRobot:
 
 		self.free=True
 		self.stop_recharge=95
-
+		self.recharge_th=10
+		self.execution_finished=False
 
 
 	def set_position(self, position: Position):     # ha appena creato un nuovo attributo non specificato sopra
@@ -226,36 +227,88 @@ def free_robs(robs: List[MobileRobot]):
 def nearest(robs: List[MobileRobot],hum: Human):
 	if len(robs)==0:
 		return None
-
 	human_pos=hum.get_position()
-
 	dist=10000
 	for rob in robs:
 		rob_pos=rob.get_position()
 		rob_coord=Point(rob_pos.x,rob_pos.y)
-		new_dist=rob_coord.distance_from(human_pos)
+		new_dist=rob_coord.distance_from(human_pos) # argomento di distance_from puo essere sia point che position. guardare funzione per capire
 		if new_dist<dist:
 			dist=new_dist
 			chosen_rob=rob
+	return chosen_rob
 
+def nearest_to_point(robs: List[MobileRobot], point: Point):
+	if len(robs)==0:
+		return None
+	dist=10000
+	for rob in robs:
+		rob_pos=rob.get_position()
+		rob_coord=Point(rob_pos.x,rob_pos.y)
+		new_dist=rob_coord.distance_from(point) # argomento di distance_from puo essere sia point che position. guardare funzione per capire
+		if new_dist<dist:
+			dist=new_dist
+			chosen_rob=rob
 	return chosen_rob
 
 
-def choose_rob(robs,hum):
+def choose_rob(robs,hum):		# il piu vicino tra quelli liberi
 	return nearest(free_robs(robs),hum)
+
+def rob_piu_carico_tra_i_liberi(robs: List[MobileRobot]):
+	return rob_piu_carico(free_robs(robs))
+
+def rob_piu_carico(robs: List[MobileRobot]):
+	if len(robs) == 0:
+		return None
+	rob_scelto=robs[0]
+	for rob in robs:
+		if rob.get_charge() > rob_scelto.get_charge():
+			rob_scelto=rob
+	return rob_scelto
+
+def rob_piu_vicino_abbastanza_carico(robs: List[MobileRobot],hum: Human, carica_minima_accettabile: int):
+	return nearest(robs_abbastanza_carichi(free_robs(robs), carica_minima_accettabile) , hum)
+
+
+
+def robs_abbastanza_carichi(robs: List[MobileRobot] , carica_minima_accettabile: int):
+	new_robs=[]
+	for rob in robs:
+		if rob.get_charge() > carica_minima_accettabile:
+			new_robs.append(rob)
+	return new_robs
+
+def piu_scarico(robs: List[MobileRobot]):
+	if len(robs) == 0:
+		return None
+	rob_scelto=robs[0]
+	for rob in robs:
+		if rob.get_charge() < rob_scelto.get_charge():
+			rob_scelto=rob
+	return rob_scelto
+
+def scegli_rob(robs: List[MobileRobot],hum: Human, var: int, carica_minima_accettabile: int):
+	if var == 1:							# 1 = il piu vicino tra quelli liberi
+		return choose_rob(robs,hum)
+	if var == 2:							# 2 = il piu carico
+		return rob_piu_carico_tra_i_liberi(robs)
+	if var == 3:
+		return rob_piu_vicino_abbastanza_carico(robs,hum, carica_minima_accettabile)	# 3 = piu vicino con carica sufficente
+	if var == 4:
+		return piu_scarico(robs_abbastanza_carichi(free_robs(robs) , carica_minima_accettabile))	# 4 = piu scarico con carica sufficente
+
 
 
 ##################################################################################
 
 def rob_go_to_pos(rob: MobileRobot, dest: Point):
-
 	robot_pos = rob.get_position()
 	robot_pt = Point(robot_pos.x, robot_pos.y)
-
 	while robot_pt.distance_from(dest) > 0.8 :
-
-		print(' ciao')
-
+		if rob.execution_finished == True:
+			print(' termino il thread del rob')
+			return
 		traj = nav.plan_traj(rob.get_position(), dest, nav.init_walls())
 		str_traj = ''
 		for point in traj:
@@ -263,46 +316,26 @@ def rob_go_to_pos(rob: MobileRobot, dest: Point):
 			if not traj.index(point)==len(traj)-1:
 				str_traj += '#'
 		if len(traj)>0:
-			print(str_traj)
-#			vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)	# comm
-# 				PROVA												# comm
 			rob_id=rob.rob_id
 			filename='MobileRobot'+str(rob_id)
-
-
 			vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj,filename)
-
-			# node = 'robTrajPub.py'					# comm
-			# pool = Pool()							# comm
-			# pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])				# comm
-
-
-
-
 		start_moving_rob(rob,rob.max_speed)
 		time.sleep(5)
 		robot_pos = rob.get_position()
 		robot_pt = Point(robot_pos.x, robot_pos.y)
-		print('distance from pos' ,robot_pt.distance_from(dest))
 
-	print(' sono vicino alla pos e ora mi fermo')
+	print(' rob ', rob.rob_id,' vicino alla destinazione')
 	rob.stop_moving()
 
 
 
 def rob_go_to_hum(rob: MobileRobot, hum: Human):
-
 	robot_pos = rob.get_position()
 	robot_pt = Point(robot_pos.x, robot_pos.y)
-
 	hum_pos = hum.get_position()
 	hum_pt = Point(hum_pos.x , hum_pos.y)
 	dest= hum_pt
-
 	while robot_pt.distance_from(dest) > 1.8 :
-
-		print(' ciao')
-
 		traj = nav.plan_traj(rob.get_position(), dest, nav.init_walls())
 		str_traj = ''
 		for point in traj:
@@ -310,22 +343,9 @@ def rob_go_to_hum(rob: MobileRobot, hum: Human):
 			if not traj.index(point)==len(traj)-1:
 				str_traj += '#'
 		if len(traj)>0:
-			print(str_traj)
-#			vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)	# comm
-# 				PROVA												# comm
 			rob_id=rob.rob_id
 			filename='MobileRobot'+str(rob_id)
-
-
 			vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj,filename)
-
-			# node = 'robTrajPub.py'					# comm
-			# pool = Pool()							# comm
-			# pool.starmap(hriros.rosrun_nodes, [(node, [str_traj])])				# comm
-
-
-
-
 		start_moving_rob(rob,rob.max_speed)
 		time.sleep(5)
 		robot_pos = rob.get_position()
@@ -334,46 +354,53 @@ def rob_go_to_hum(rob: MobileRobot, hum: Human):
 		hum_pt = Point(hum_pos.x , hum_pos.y)
 		dest= hum_pt
 
-
-		print('robot distance from hum ', robot_pt.distance_from(dest))
-
-	print(' sono vicino all hum e ora mi fermo')
+	print(' rob ', rob.rob_id,' vicino all hum')
 	rob.stop_moving()
 
-
+def robs_go_to( rob1: MobileRobot, rob2: MobileRobot, hum: Human):
+	robot_pos = rob1.get_position()
+	robot_pt = Point(robot_pos.x, robot_pos.y)
+	robot_pos2 = rob2.get_position()
+	robot_pt2 = Point(robot_pos2.x, robot_pos2.y)
+	hum_pos = hum.get_position()
+	hum_pt = Point(hum_pos.x , hum_pos.y)
+	dest= hum_pt
+	#metto dei time.sleep in modo da non far partire troppi thread
+	while robot_pt.distance_from(dest) > 1.8 or robot_pt2.distance_from(dest) > 1.8:
+		if robot_pt.distance_from(dest) > 1.8 and robot_pt2.distance_from(dest) > 1.8:
+			Thread(target=rob_go_to_hum, args=[rob1,hum]).start()
+			Thread(target=rob_go_to_hum, args=[rob2,hum]).start()
+			time.sleep(5)
+		if robot_pt.distance_from(dest) > 1.8 and not robot_pt2.distance_from(dest) > 1.8:
+			Thread(target=rob_go_to_hum, args=[rob1,hum]).start()
+			time.sleep(5)
+		if not robot_pt.distance_from(dest) > 1.8 and robot_pt2.distance_from(dest) > 1.8:
+			Thread(target=rob_go_to_hum, args=[rob2,hum]).start()
+			time.sleep(5)
+		robot_pos = rob1.get_position()
+		robot_pt = Point(robot_pos.x, robot_pos.y)
+		robot_pos2 = rob2.get_position()
+		robot_pt2 = Point(robot_pos2.x, robot_pos2.y)
+		hum_pos = hum.get_position()
+		hum_pt = Point(hum_pos.x , hum_pos.y)
+		dest= hum_pt
 
 
 def rob_full_charge(rob: MobileRobot):
-
 	while rob.get_charge() < rob.stop_recharge:
+		if rob.execution_finished == True:
+			print(' termino il thread del rob')
+			return
 		pass
-
 	print(' ROB ', rob.rob_id, ' È CARICO')
 	rob.free = True
 
 
 
 def rob_go_to_recharge_station(rob: MobileRobot):
-
 	rob_go_to_pos(rob,const.VREP_RECH_STATION)
 
 def rob_charged(rob: MobileRobot):
-
-	print(' ciao 4')
-
 	rob_go_to_recharge_station(rob)
 	rob_full_charge(rob)
-
-
-def prova_thread():
-	x = 0
-	print(' sono dentro, aspetto 10s')
-	while 1:
-		x+=1
-		print(x)
-		time.sleep(5)
-
-
-
-
 
