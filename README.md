@@ -3,7 +3,9 @@ Deploying Formally-Verified Assistive Robotics Applications
 
 This repository contains the implementation of a deployment framework for assistive 
 robots applications, specifically targeting the healthcare setting.
-The deployment framework builds upon the work presented in the following articles:
+The deployment framework is presented in detail in:
+- [*A Deployment Framework for Formally Verified Human-Robot Interactions*][paper4]
+and builds upon the work presented in the following articles:
 - [*A Model-driven Approach for the Formal Analysis of Human-Robot Interaction Scenarios*][paper3]
 - [*Formal Verification of Human-Robot Interaction in Healthcare Scenarios*][paper2]
 - [*Statistical Model Checking of Human-Robot Interaction Scenarios*][paper1]
@@ -80,9 +82,10 @@ Finally, run the controller Python script:
 
 *Copyright &copy; 2021 Livia Lestingi*
 
-[paper1]: https://dx.doi.org/10.4204/EPTCS.319.2
+[paper1]: https://doi.org/10.4204/EPTCS.319.2
 [paper2]: https://doi.org/10.1007/978-3-030-58768-0_17
-[paper3]: https://dx.doi.org/10.1109/SMC42975.2020.9283204
+[paper3]: https://doi.org/10.1109/SMC42975.2020.9283204
+[paper4]: https://doi.org/10.1109/ACCESS.2021.3117852
 [vrep]: https://coppeliarobotics.com/downloads
 [ros]: http://wiki.ros.org/melodic/Installation
 [rosint]: https://www.coppeliarobotics.com/helpFiles/en/rosInterf.htm
