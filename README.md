@@ -5,6 +5,7 @@ This repository contains the implementation of a deployment framework for assist
 robots applications, specifically targeting the healthcare setting.
 The deployment framework is presented in detail in:
 - [*A Deployment Framework for Formally Verified Human-Robot Interactions*][paper4]
+
 and builds upon the work presented in the following articles:
 - [*A Model-driven Approach for the Formal Analysis of Human-Robot Interaction Scenarios*][paper3]
 - [*Formal Verification of Human-Robot Interaction in Healthcare Scenarios*][paper2]
