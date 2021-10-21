@@ -43,7 +43,7 @@ class OpChk:
 		self.currOp = Operating_Modes.ROBOT_IDLE			# parte in idle
 		self.currH = 0											# è l indice del vettore umani. inidica l umano a cui ci stiamo riferendo
 
-		
+
 		self.rob = rob
 		self.humans = hum
 		self.mission = m

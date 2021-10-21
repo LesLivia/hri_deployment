@@ -25,6 +25,7 @@ class Mission:
 
 		#aggiunto io
 		self.mission_id = mission_id
+		self.blocca=0
 
 
 

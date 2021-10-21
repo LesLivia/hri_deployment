@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/python/usr/bin env
 from agents.coordinates import Point
 
 HRI_ROS_PCKG = "hri_scenarios"
