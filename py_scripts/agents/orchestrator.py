@@ -2,15 +2,15 @@
 import time
 import rospy_utils.hriconstants as const
 import agents.navigation as nav
-import rospy_utils.hrirosnode as hriros
 import vrep_utils.vrep as vrep
 from enum import Enum
 from typing import List
-from multiprocessing import Pool
 from agents.coordinates import Point
 from agents.mobilerobot import MobileRobot
 from agents.human import Human, follow_fatigue, follow_position
 from agents.mission import *
+from utils.logger import Logger
+
 
 class Operating_Modes(Enum):
 	ROBOT_IDLE = 1
@@ -20,7 +20,9 @@ class Operating_Modes(Enum):
 	ROBOT_FOLL = 5
 	
 class OpChk:
-	def __init__(self, t_int: int, t_proc: int, rob: MobileRobot, hum: List[Human], m: Mission):
+	def __init__(self, t_int: int, t_proc: int, rob: MobileRobot, hum: List[Human], m: Mission, orch_id=1):
+		self.LOGGER = Logger('ORCHESTRATOR {}'.format(orch_id))
+
 		# AUTOMATON
 		self.LOCATION = "off"
 		self.scs = False
@@ -28,6 +30,7 @@ class OpChk:
 		self.stop = False
 
 		# PARAMS
+		self.orch_id = orch_id
 		self.t_int = t_int
 		self.t_proc = t_proc
 
@@ -86,10 +89,12 @@ class OpChk:
 	def check_actions(self):
 		self.check_scs()
 		if self.scs:
+			self.LOGGER.info('Mission completed with success, stopping orchestrator...')
 			return 
 
 		self.check_fail()
 		if self.fail:
+			self.LOGGER.error('Mission failed, stopping orchestrator...')
 			return
 
 		if self.currOp == Operating_Modes.ROBOT_IDLE:
@@ -110,12 +115,15 @@ class OpChk:
 	# CHECK IF MISSION HAS FAILED DUE TO BATTERY CHARGE TOO LOW, OR FATIGUE TOO HIGH
 	def check_fail(self):
 		if vrep.check_connection(const.VREP_CLIENT_ID)!=0:
+			self.LOGGER.warn('Lost connection to VRep...')			
 			self.mission.fail = True
 
 		if self.rob.get_charge()<=self.FAIL_CHARGE:
+			self.LOGGER.warn('Mission failing due to low charge...')			
 			self.mission.fail = True
 		
 		if self.humans[self.currH].get_fatigue()>=self.FAIL_FATIGUE:
+			self.LOGGER.warn('Mission failing due to high fatigue...')						
 			self.mission.fail = True
 		
 		self.fail = self.mission.fail
@@ -132,17 +140,16 @@ class OpChk:
 			human_robot_dist = self.get_human_robot_dist()
 			_min_dist = 1.5
 			if position is not None and pos.distance_from(dest) <= _min_dist and human_robot_dist <= _min_dist:
-				print('HUMAN ' + str(self.currH) + ' SERVED.')
+				self.LOGGER.info('HUMAN ' + str(self.currH) + ' SERVED.')	
 				human_served = True
-		# If human is leading, service is provided when 
-		# human player says so
+		# If human is leading, service is provided when the user decides it is
 		elif self.mission.p[self.currH] == Pattern.HUM_LEADER or (self.mission.p[self.currH] == Pattern.HUM_RECIPIENT and self.rec_stages == 2):
 			filename = '../scene_logs/humansServed.log'
 			f = open(filename, 'r+')
 			lines = f.read().splitlines()
 			for line in lines:
 				if line == 'human'+ str(self.humans[self.currH].hum_id) + 'served':
-					print('HUMAN ' + str(self.currH) + ' SERVED.')
+					self.LOGGER.info('HUMAN ' + str(self.currH) + ' SERVED.')	
 					human_served = True
 					f.truncate(0)
 					break
@@ -186,7 +193,7 @@ class OpChk:
 		# If battery charge is getting low, 
 		# robot switches to charging mode
 		if self.rob.get_charge() < self.RECHARGE_TH:
-			print('ROBOT CHARGE TOO LOW')
+			self.LOGGER.warn('Low robot charge, initiating recharge procedure...')	
 			self.stop = True
 			self.currOp = Operating_Modes.ROBOT_LEAD
 			self.curr_dest = const.VREP_RECH_STATION
@@ -195,7 +202,7 @@ class OpChk:
 		else:
 			start = self.get_start_condition(self.mission.p[self.currH])
 			if start:
-				print('Action can start, setting parameters...')
+				self.LOGGER.info('Starting action...')
 				self.set_op_params(self.mission.p[self.currH])
 				self.plan_trajectory()
 				self.stop = True
@@ -208,13 +215,13 @@ class OpChk:
 		human_fatigue_low = self.humans[self.currH].get_fatigue() <= self.RESUME_FATIGUE
 
 		if not battery_charge_sufficient:
-			print('ROBOT CHARGE TOO LOW')
+			self.LOGGER.info('Robot charge too low to start action.')
 		if human_fatigue_low and self.stopped_human:
 			self.stopped_human = False
-			print('HUMAN FATIGUE SUFFICIENTLY LOW')
+			self.LOGGER.info('Human sufficiently rested.')
 			self.mission.publish_status('DFTG#' + str(self.currH+1))
 			
-		print('HUMAN-ROBOT DISTANCE: ' + str(human_robot_dist))
+		self.LOGGER.debug('Human-Robot distance: ({:.2f})'.format(human_robot_dist))
 		# If human is a follower, the action can start if the battery charge is sufficient,
 		# if human fatigue is low, and if robot and human are close to each other
 		if p == Pattern.HUM_FOLLOWER:
@@ -266,18 +273,17 @@ class OpChk:
 		battery_charge_insufficient = self.rob.get_charge() <= self.RECHARGE_TH
 		human_fatigue_high = self.humans[self.currH].get_fatigue() >= self.STOP_FATIGUE
 		if battery_charge_insufficient:
-			print('!!ROBOT BATTERY CHARGE TOO LOW!!')
+			self.LOGGER.warn('Stopping action due to low battery...')
 		if human_fatigue_high:
 			self.mission.publish_status('FTG#' + str(self.currH+1))
 			self.stopped_human = True
-			print('!!HUMAN FATIGUE TOO HIGH!!')
+			self.LOGGER.warn('Stopping action due to excessive fatigue...')
 
 		# Human Follower -> action must stop if battery charge is too low, fatigue is too high
 		# or human and robot are excessively far from each other
 		if p == Pattern.HUM_FOLLOWER:
 			return battery_charge_insufficient or human_fatigue_high or human_robot_dist > self.STOP_DIST
-		# Human Leader -> action must stop if current destination has been reached or robot is already
-		# sufficiently close to human
+		# Human Leader -> action must stop if current destination has been reached or robot is already sufficiently close to human
 		elif p == Pattern.HUM_LEADER: 
 			robot_pos = self.rob.get_position()
 			robot_pt = Point(robot_pos.x, robot_pos.y)
@@ -301,14 +307,14 @@ class OpChk:
 	def check_r_move(self):
 		self.stop = self.get_stop_condition(self.mission.p[self.currH])
 		if self.stop:
-			print('Action has to stop')
+			self.LOGGER.info('Stopping action.')
 			#if self.mission.p[self.currH] == Pattern.HUM_RECIPIENT and self.rec_stages==1:
 				#self.rec_stages = 2
 
 	def check_h_move(self):
 		self.stop = self.get_stop_condition(self.mission.p[self.currH])
 		if self.stop:
-			print('Action has to stop')
+			self.LOGGER.info('Stopping action.')
 			# self.currOp = Operating_Modes.ROBOT_IDLE
 			# self.rob.stop_moving()
 		else:
@@ -324,9 +330,11 @@ class OpChk:
 		# While the robot is in recharging mode, motion must stop if 
 		# charging dock has already been reached
 		if robot_pt.distance_from(self.curr_dest) < 0.5 and self.rob.curr_speed > 0.0:
+			self.LOGGER.info('Reached recharge station.')
 			self.rob.stop_moving()			
 		
 		if self.rob.get_charge() >= self.STOP_RECHARGE:
+			self.LOGGER.info('Battery recharged. Resuming operations...')
 			self.currOp = Operating_Modes.ROBOT_IDLE
 
 
@@ -338,9 +346,10 @@ class Orchestrator:
 		self.rob = opchk.rob
 		self.humans = opchk.humans
 		self.mission = opchk.mission
+		self.LOGGER = Logger('ORCHESTRATOR {}'.format(opchk.orch_id))
 
 	def run_mission(self):
-		print('Starting mission...')
+		self.LOGGER.info('Starting mission...')
 		while not self.LOCATION=='o_fail_1' and not self.LOCATION=='o_fail_2' and not self.LOCATION=='o_scs':
 			self.opchk.start()
 			self.LOCATION = 'idle'			
