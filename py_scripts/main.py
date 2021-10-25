@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import time
 import vrep_utils.vrep as vrep
+import os
+import configparser
 from agents.mobilerobot import MobileRobot
 from agents.human import Human, start_reading_data, FatigueProfile
 from agents.coordinates import Point
@@ -8,9 +10,22 @@ from agents.orchestrator import Orchestrator, OpChk
 from agents.mission import *
 from utils.logger import Logger
 
+config = configparser.ConfigParser()
+config.read('./resources/config.ini')
+config.sections()
+
 LOGGER = Logger("MAIN")
 
 LOGGER.info('Bringing up the environment...')
+# Start VRep 
+if config['DEPLOYMENT ENVIRONMENT']['ENV']=='S':
+	VREP_PATH = config['DEPLOYMENT ENVIRONMENT']['VREP_PATH']
+	MAP_PATH = config['DEPLOYMENT ENVIRONMENT']['MAP_PATH']
+	MAP_NAME = config['DEPLOYMENT ENVIRONMENT']['MAP_NAME']
+	os.system("./resources/bringup_sim.sh {} {} {}".format(VREP_PATH, MAP_PATH, MAP_NAME))
+else:
+	os.system("./resources/bringup_real.sh")
+
 vrep_sim = vrep.connect(19997)
 vrep.start_sim(vrep_sim)
 
