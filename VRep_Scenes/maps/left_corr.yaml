@@ -1,4 +1,4 @@
-image: /home/parallels/Desktop/hri_deployment/VRep_Scenes/maps/map2.pgm
+image: /home/parallels/Desktop/hri_deployment/VRep_Scenes/maps/left_corr.pgm
 resolution: 0.050000
 origin: [-32.400000, -10.000000, 0.000000]
 negate: 0
