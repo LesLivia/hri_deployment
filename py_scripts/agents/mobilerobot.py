@@ -1,15 +1,11 @@
 #!/usr/bin/env python
-import os
-import time
 import rospy_utils.hrirosnode as hriros
 import rospy_utils.hriconstants as const
-import agents.navigation as nav
-import vrep_utils.vrep as vrep
 from multiprocessing import Pool
 from agents.position import Position
 from agents.coordinates import Point
 from datetime import datetime
-
+from utils.logger import Logger
 
 class MobileRobot:
 	def __init__(self, rob_id, max_speed, max_accel):
@@ -18,6 +14,7 @@ class MobileRobot:
 		self.max_accel = max_accel
 		self.curr_speed = 0.0
 		self.sim_running = 0
+		self.LOGGER = Logger("ROBOT {}".format(rob_id))
 
 	def set_position(self, position: Position):
 		self.position = position
@@ -45,6 +42,7 @@ class MobileRobot:
 		# launch ROS node that subscribes to robot GPS data
 		node = 'robSensorsSub.py'
 
+		self.LOGGER.info('Subscribing to position data...')
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, [''])])
 
@@ -55,6 +53,7 @@ class MobileRobot:
 		# launch ROS node that subscribes to robot GPS data
 		node = 'robBatterySub.py'
 
+		self.LOGGER.info('Subscribing to charge data...')
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, [''])])
 
@@ -66,16 +65,17 @@ class MobileRobot:
 		lines = f.read().splitlines()
 		if len(lines)>0:
 			last_line = lines[-1]
-			newPos = Position.parse_position(last_line.split(':')[1])
+			new_pos = Position.parse_position(last_line.split(':')[1])
 
 			# VRep layout origin is different from the
 			# one in the Uppaal model: translation is necessary
-			newPos.x += const.VREP_X_OFFSET
-			newPos.y += const.VREP_Y_OFFSET
+			new_pos.x += const.VREP_X_OFFSET
+			new_pos.y += const.VREP_Y_OFFSET
 		else:
-			newPos = None
+			new_pos = None
 
-		self.set_position(newPos)
+		self.LOGGER.debug('Updating position to ({:.2f}, {:.2f})'.format(new_pos.x, new_pos.y))
+		self.set_position(new_pos)
 
 	def follow_charge(self):
 		filename = '../scene_logs/robotBattery.log'
@@ -88,12 +88,13 @@ class MobileRobot:
 		else:
 			new_charge = None
 
+		self.LOGGER.debug('Updating charge to ({:.2f})'.format(new_charge))
 		self.set_charge(new_charge)
 	
 	def start_moving(self, targetSpeed):
 		node = 'robStatusPub.py'
 		data = '1#'
-		print(data)
+
 		if targetSpeed > 0:
 		    data = data + str(targetSpeed)
 		# requested target speed is published to both robot motors,
@@ -101,7 +102,7 @@ class MobileRobot:
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, [data])])
 		self.curr_speed = targetSpeed
-		print('Robot moving...')
+		self.LOGGER.info('Instructing robot to start moving (target speed {:.2f})...'.format(targetSpeed))
 
 	def stop_moving(self):
 		node = 'robStatusPub.py'
@@ -110,5 +111,5 @@ class MobileRobot:
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, [data])])
 		self.curr_speed = 0.0
-		print('Robot stopping...')
+		self.LOGGER.info('Instructing robot to stop moving...')
 

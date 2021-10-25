@@ -8,7 +8,7 @@ from agents.orchestrator import Orchestrator, OpChk
 from agents.mission import *
 from utils.logger import Logger
 
-LOGGER = Logger("main")
+LOGGER = Logger("MAIN")
 
 LOGGER.info('Bringing up the environment...')
 vrep_sim = vrep.connect(19997)

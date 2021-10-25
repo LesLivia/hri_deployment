@@ -1,17 +1,14 @@
 #!/usr/bin/env python
-import os
-import time
 import rospy_utils.hrirosnode as hriros
 import rospy_utils.hriconstants as const
-import math
-import numpy as np
-import scipy.io
-from scipy import signal
 from typing import List
 from multiprocessing import Pool
 from agents.position import Position
 from agents.coordinates import Point
 from enum import Enum
+from utils.logger import Logger
+
+LOGGER = Logger('ALL HUMANS')
 
 class FatigueProfile(Enum):
 	YOUNG_HEALTHY = 1
@@ -48,6 +45,7 @@ class Human:
 		self.def_bursts_rest = []
 		self.cand_bursts_mov = []
 		self.cand_bursts_rest = []
+		self.LOGGER = Logger('HUMAN {}'.format(hum_id))
 
 	def set_position(self, position: Position):
 		self.position = position
@@ -113,6 +111,7 @@ def start_reading_data(humans: List[Human]):
 
 	node = 'humSensorsSub.py'
 
+	LOGGER.info('Subscribing to position data...')
 	pool = Pool()
 	pool.starmap(hriros.rosrun_nodes, [(node, '')])
 
@@ -122,6 +121,7 @@ def start_reading_data(humans: List[Human]):
 
 	node = 'humFtgSub.py'
 
+	LOGGER.info('Subscribing to fatigue data...')
 	pool = Pool()
 	pool.starmap(hriros.rosrun_nodes, [(node, '')])
 
@@ -132,6 +132,7 @@ def start_reading_data(humans: List[Human]):
 	node = 'humServiceSub.py'
 
 	pool = Pool()
+	LOGGER.info('Subscribing to served data...')
 	pool.starmap(hriros.rosrun_nodes, [(node, '')])
 
 	for hum in humans:
@@ -158,6 +159,7 @@ def follow_position(hums: List[Human]):
 	else:
 		new_position = None
 
+	hum.LOGGER.debug('Updating position to ({:.2f}, {:.2f})'.format(new_position.x, new_position.y))
 	hum.set_position(new_position)
 
 
@@ -174,5 +176,6 @@ def follow_fatigue(hums: List[Human]):
 	else:
 		new_ftg = None
 
+	hum.LOGGER.debug('Updating fatigue to ({:.2f})'.format(new_ftg))
 	hum.set_fatigue(new_ftg)
 

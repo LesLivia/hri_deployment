@@ -62,10 +62,25 @@ class Logger():
        ts = datetime.now()
        print(self.MSG_STR.format(LogLevel.__str__(MIN_LOG_LEVEL), ts, self.speaker, msg))
 
+    def debug(self, msg: str):
+        if(LogLevel.DEBUG.value>=MIN_LOG_LEVEL.value):
+            ts = datetime.now()
+            print(self.MSG_STR.format(LogLevel.__str__(LogLevel.DEBUG), ts, self.speaker, msg))
+
     def info(self, msg: str):
         if(LogLevel.INFO.value>=MIN_LOG_LEVEL.value):
             ts = datetime.now()
             print(self.MSG_STR.format(LogLevel.__str__(LogLevel.INFO), ts, self.speaker, msg))
+
+    def warn(self, msg: str):
+        if(LogLevel.WARNING.value>=MIN_LOG_LEVEL.value):
+            ts = datetime.now()
+            print(self.MSG_STR.format(LogLevel.__str__(LogLevel.WARNING), ts, self.speaker, msg))
+
+    def error(self, msg: str):
+        if(LogLevel.ERROR.value>=MIN_LOG_LEVEL.value):
+            ts = datetime.now()
+            print(self.MSG_STR.format(LogLevel.__str__(LogLevel.ERROR), ts, self.speaker, msg))
 
 
     

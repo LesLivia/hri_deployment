@@ -2,16 +2,19 @@
 import vrep_utils.lib.vrep.vrep as vrep
 import rospy_utils.hriconstants as const
 from agents.coordinates import Point
+from utils.logger import Logger
+
+LOGGER = Logger("VREP")
 
 def connect(port):
-	print('Connecting to VRep...')
+	LOGGER.info('Connecting to VRep...')
 	clientID = vrep.simxStart('127.0.0.1',port,True,True,5000,5)
 	if clientID != -1:
-		print('Connection successfully established.')
+		LOGGER.info('Connection successfully established.')
 	else:
-		print('Connection to VRep could not be established.')
+		LOGGER.error('Connection to VRep could not be established.')
 
-	return clientID
+	return clientID 
 
 def start_sim(clientID):
 	result = vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot)
@@ -19,15 +22,16 @@ def start_sim(clientID):
 def stop_sim(clientID):
 	result = vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
 	if result != vrep.simx_return_ok:
-		print('Simulation stopped.')
+		LOGGER.info('Simulation stopped.')
 
 def check_connection(clientID):
 	state = vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'sim_state', [], [], '', '', vrep.simx_opmode_blocking)
 	if state[0] != 0:
-		print('Connection lost')
+		LOGGER.warn('Connection lost')
 	return state[0]
 
 def set_trajectory(clientID, strTraj: str):
+	LOGGER.debug('Sending new trajectory...')
 	vrep.simxCallScriptFunction(clientID, 'MobileRobot', vrep.sim_scripttype_childscript, 'setTraj', [], [], [strTraj], '', vrep.simx_opmode_blocking)
 
 def set_state(clientID, strState: str):
@@ -51,24 +55,31 @@ def draw_rectangle(clientID, pos1: Point, pos2: Point, pos3: Point, pos4: Point)
 
 # FUNCTIONS FOR AUTOMATED HUMAN CONTROL
 def start_human(clientID, humID: int):
+	LOGGER.debug('Instructing human {} to walk...'.format(humID))	
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'start_walking', [], [], [], '', vrep.simx_opmode_blocking)
 
 def stop_human(clientID, humID: int):
+	LOGGER.debug('Instructing human {} to stop...'.format(humID))	
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'stop_walking', [], [], [], '', vrep.simx_opmode_blocking)
 
 def sit(clientID, humID: int):
+	LOGGER.debug('Instructing human {} to sit...'.format(humID))	
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'sit_cmd', [], [], [], '', vrep.simx_opmode_blocking)
 
 def stand(clientID, humID: int):
+	LOGGER.debug('Instructing human {} to stand up...'.format(humID))	
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'stand_cmd', [], [], [], '', vrep.simx_opmode_blocking)
 
 def run_cmd(clientID, humID: int):
+	LOGGER.debug('Instructing human {} to sit...'.format(humID))		
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'run_cmd', [], [], [], '', vrep.simx_opmode_blocking)
 
 def served_cmd(clientID, humID: int):
+	LOGGER.debug('Marking human {} as served...'.format(humID))	
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'served_cmd', [], [], [], '', vrep.simx_opmode_blocking)
 
 def set_hum_trajectory(clientID, humID:int, strTraj: str):
+	LOGGER.debug('Sending trajectory to human {}...'.format(humID))	
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'setTraj', [], [], [strTraj], '', vrep.simx_opmode_blocking)
 
 def set_hum_state(clientID, humID:int, state: int):
@@ -78,11 +89,3 @@ def reset_hum(clientID, humID:int, pos:Point):
 	vrep.simxCallScriptFunction(clientID, 'Human{}'.format(humID), vrep.sim_scripttype_childscript, 'reset_cmd', [], [pos.x-const.VREP_X_OFFSET, pos.y-const.VREP_Y_OFFSET], [], '', vrep.simx_opmode_blocking)
 	vrep.simxCallScriptFunction(clientID, 'wearable_dev'.format(humID), vrep.sim_scripttype_childscript, 'reset_ftg', [], [], [], '', vrep.simx_opmode_blocking)
 	
-
-
-
-
-
-
-
-
