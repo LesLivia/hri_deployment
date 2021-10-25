@@ -7,15 +7,20 @@ from agents.human import Human, FatigueProfile
 from agents.coordinates import Point
 from agents.mission import *
 from hum_control.hum_controller import HumanController
+from utils.logger import Logger
 
+LOGGER = Logger("HUM MAIN")
+
+LOGGER.info('Bringing up human controller...')
 vrep_sim = -1
 if vrep_sim == -1:
+	LOGGER.info('Connection to VRep failed, trying a different door...')	
 	vrep_sim = vrep.connect(19999)
 if vrep_sim == -1:
+	LOGGER.info('Connection to VRep failed, trying a different door...')	
 	vrep_sim = vrep.connect(19995)
 
-# vrep.start_sim(vrep_sim)
-
+# MISSION CONFIGURATION
 bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 8.0, 5.0)
@@ -37,17 +42,15 @@ f.close()
 
 mission = Mission(patterns, dest, start=start)	
 
-
-debug = bool(sys.argv[1]) if len(sys.argv)>1 else False
-contr = HumanController(humans, vrep_sim, debug)
+contr = HumanController(humans, vrep_sim)
 
 try:
 	time.sleep(7)
-	print('(Human Controller) Execution starting...')
+	LOGGER.info('Starting human controller...')
 
 	contr.run(mission)	
 
-	print('(Human Controller) Execution finished.')
+	LOGGER.info('Shutting human controller down.')
 	quit()
 except (KeyboardInterrupt, SystemExit):
 	quit()

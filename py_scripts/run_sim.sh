@@ -1,7 +1,8 @@
 for i in {1..1}
 do
 	# python3 randomize_mission.py
-	python3 main.py > outfile.txt &
+	gnome-terminal -e "python3 main.py"
+	# python3 main.py > outfile.txt &
 	sleep 2
 	python3 hum_main.py
 	NEW_DIR=SIM_"$(date +"%Y-%m-%d-%H-%M-%S")"

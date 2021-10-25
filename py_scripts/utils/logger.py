@@ -51,6 +51,16 @@ else:
     MIN_LOG_LEVEL: LogLevel = LogLevel.WARNING
 #
 
+class bcolor:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 class Logger():
     MSG_STR = "[{}] {} [{}]: {}"
@@ -70,17 +80,17 @@ class Logger():
     def info(self, msg: str):
         if(LogLevel.INFO.value>=MIN_LOG_LEVEL.value):
             ts = datetime.now()
-            print(self.MSG_STR.format(LogLevel.__str__(LogLevel.INFO), ts, self.speaker, msg))
+            print(bcolor.OKBLUE + self.MSG_STR.format(LogLevel.__str__(LogLevel.INFO), ts, self.speaker, msg) + bcolor.ENDC)
 
     def warn(self, msg: str):
         if(LogLevel.WARNING.value>=MIN_LOG_LEVEL.value):
             ts = datetime.now()
-            print(self.MSG_STR.format(LogLevel.__str__(LogLevel.WARNING), ts, self.speaker, msg))
+            print(bcolor.WARNING + self.MSG_STR.format(LogLevel.__str__(LogLevel.WARNING), ts, self.speaker, msg) + bcolor.ENDC)
 
     def error(self, msg: str):
         if(LogLevel.ERROR.value>=MIN_LOG_LEVEL.value):
             ts = datetime.now()
-            print(self.MSG_STR.format(LogLevel.__str__(LogLevel.ERROR), ts, self.speaker, msg))
+            print(bcolor.FAIL + self.MSG_STR.format(LogLevel.__str__(LogLevel.ERROR), ts, self.speaker, msg) + bcolor.ENDC)
 
 
     

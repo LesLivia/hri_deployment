@@ -8,8 +8,10 @@ from typing import List
 from enum import Enum
 from agents.human import Human, FatigueProfile
 from agents.coordinates import Point
-from agents.orchestrator import Orchestrator, OpChk
+#from agents.orchestrator import Orchestrator, OpChk
 from agents.mission import *
+from utils.logger import Logger
+
 
 POS_LOG = '../scene_logs/humanPosition.log'
 FTG_LOG = '../scene_logs/humanFatigue.log'
@@ -38,21 +40,20 @@ class Loc(Enum):
 			return 'PASSED_OUT'
 
 class HumanController:
-	def __init__(self, h: List[Human], clientID, debug: bool = False):
+	def __init__(self, h: List[Human], clientID):
 		self.clientID = clientID
 		self.h = h
 		self.currH = 0
 		self.Tpoll = 1.0
 		self.served = [False]*len(h)
-		self.debug = debug
 		self.m = None
 		self.freeWillTh = 101
 		# SHA-graph variables
 		self.LOC = Loc.INIT
+		self.LOGGER = Logger("HUM CONTROLLER")
 
 	def set_loc(self, loc: Loc):
-		if self.debug:
-			print('SHA: switching from {} to {}'.format(str(self.LOC), str(loc)))
+		self.LOGGER.debug('SHA: switching from {} to {}'.format(str(self.LOC), str(loc)))
 		self.LOC = loc
 
 	def read_data(self, log: str):
@@ -126,7 +127,7 @@ class HumanController:
 		else:
 			# room_data = (temperature [°C], humidity [%])
 			room_data = self.read_data('ROOM')
-			print(room_data)
+			self.LOGGER.debug(room_data)
 			harsh_env = room_data is not None and (room_data[0]<=15.0 or room_data[0]>=30.0 or room_data[1]<=30.0 or room_data[1]>=50)
 			if harsh_env:
 				psbl_states = [6]
@@ -135,7 +136,6 @@ class HumanController:
 
 		self.set_loc(Loc.SIT)				 
 		self.set_state(psbl_states[random.randint(0, len(psbl_states)-1)])
-		# vrep.sit(self.clientID, self.h[self.currH].hum_id)
 
 	def send_stand_cmd(self):
 		self.set_loc(Loc.IDLE)
@@ -148,12 +148,10 @@ class HumanController:
 			psbl_states = [0]
 
 		self.set_state(psbl_states[random.randint(0, len(psbl_states)-1)])
-		# vrep.stand(self.clientID, self.h[self.currH].hum_id)
 
 	def send_run_cmd(self):
 		self.set_loc(Loc.RUN)
 		self.set_state(3)
-		# vrep.run_cmd(self.clientID, self.h[self.currH].hum_id)
 
 	def reset_hum(self):
 		if len(self.m.start)>0:
@@ -167,7 +165,7 @@ class HumanController:
 		random.seed()
 		freeWill = random.randint(0, 100)
 		if freeWill >= self.freeWillTh:
-			print('AUTONOMOUS ACTION')
+			self.LOGGER.info('Making haphazard decision...')
 		return freeWill >= self.freeWillTh
 
 	def free_sit(self, hum_pos: Point):
@@ -204,16 +202,13 @@ class HumanController:
 			
 			if SIT_ONCE and not will_sit:
 				will_sit = self.free_sit(pos) 
-			# else:
-			#	will_sit = False
 			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
 
 			dist_to_dest = pos.distance_from(dest)
 			self.served[self.currH] = dist_to_dest < 2.0 and not will_sit
-			if self.debug:
-				print('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
-				print('DIST TO DEST: {:.5f}'.format(dist_to_dest))
-				print('DIST TO ROB: {:.5f}'.format(dist_to_rob))
+			self.LOGGER.debug('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
+			self.LOGGER.debug('DIST TO DEST: {:.5f}'.format(dist_to_dest))
+			self.LOGGER.debug('DIST TO ROB: {:.5f}'.format(dist_to_rob))
 
 			free_stop = self.LOC == Loc.BUSY and self.free_will()
 			if self.served[self.currH] or dist_to_rob < 1.0 or free_stop or (will_sit and dist_to_dest < 2.0):
@@ -226,7 +221,7 @@ class HumanController:
 				elif free_stop:
 					time.sleep(rest_time)
 
-		print('Human {} successfully served'.format(self.currH+1))
+		self.LOGGER.info('Human {} successfully served'.format(self.currH+1))
 		if self.currH < len(self.h) - 1:
 			self.currH+=1
 
@@ -267,10 +262,9 @@ class HumanController:
 			
 			dist_to_dest = pos.distance_from(dest)
 			self.served[self.currH] = dist_to_dest < 1.0  if dest==self.m.dest[self.currH] else False
-			if self.debug:
-				print('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
-				print('DIST TO DEST: {:.5f}'.format(dist_to_dest))
-				print('DIST TO ROB: {:.5f}'.format(dist_to_rob))
+			self.LOGGER.debug('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
+			self.LOGGER.debug('DIST TO DEST: {:.5f}'.format(dist_to_dest))
+			self.LOGGER.debug('DIST TO ROB: {:.5f}'.format(dist_to_rob))
 
 			if self.served[self.currH] or dist_to_rob < 2.0 or dist_to_rob > 8.0 or (will_sit and dist_to_dest < 2.0):
 				self.stop_h_action()
@@ -286,7 +280,7 @@ class HumanController:
 					self.send_served_cmd()
 
 		if self.served[self.currH]:
-			print('Human {} successfully served'.format(self.currH+1))
+			self.LOGGER.info('Human {} successfully served'.format(self.currH+1))
 		if self.currH < len(self.h) - 1:
 			self.currH+=1
 
@@ -297,16 +291,17 @@ class HumanController:
 		self.m = m
 		while not self.served[-1] and not vrep.check_connection(self.clientID):
 			if m.p[self.currH] == Pattern.HUM_FOLLOWER:
-				print('FOLLOWER starting...')
+				self.LOGGER.info('FOLLOWER starting...')
 				self.run_follower()
 			elif m.p[self.currH] == Pattern.HUM_LEADER:
-				print('LEADER starting...')
+				self.LOGGER.info('LEADER starting...')
 				self.run_leader()
 			elif m.p[self.currH] == Pattern.HUM_RECIPIENT:
 				# TODO
+				self.LOGGER.info('RECIPIENT starting...')
 				self.run_recipient()
 			else:
-				print('No pattern found.')
+				self.LOGGER.error('No pattern found.')
 		vrep.stop_sim(self.clientID)
 
 
