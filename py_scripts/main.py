@@ -18,16 +18,25 @@ config.sections()
 LOGGER = Logger("MAIN")
 
 LOGGER.info('Bringing up the environment...')
-MAP_PATH = config['DEPLOYMENT ENVIRONMENT']['MAP_PATH']
 MAP_NAME = config['DEPLOYMENT ENVIRONMENT']['MAP_NAME']
 if config['DEPLOYMENT ENVIRONMENT']['ENV']=='S':
 	VREP_PATH = config['DEPLOYMENT ENVIRONMENT']['VREP_PATH']
+	SCENE_PATH = config['DEPLOYMENT ENVIRONMENT']['VREP_SCENES_PATH']
 	# Start VRep 
-	os.system("./resources/bringup_sim.sh {} {} {}".format(VREP_PATH, MAP_PATH, MAP_NAME))
+	os.system("./resources/bringup_sim.sh {} {} {}".format(VREP_PATH, SCENE_PATH, MAP_NAME))
 	vrep_sim = vrep.connect(19997)
 	vrep.start_sim(vrep_sim)
 else:
+	MAP_PATH = config['DEPLOYMENT ENVIRONMENT']['MAP_PATH']
 	os.system("./resources/bringup_real.sh {} {}".format(MAP_PATH, MAP_NAME))
+	MODE = config['DEPLOYMENT ENVIRONMENT']['MODE']
+	if MODE=='hybrid':
+		VREP_PATH = config['DEPLOYMENT ENVIRONMENT']['VREP_PATH']
+		SCENE_PATH = config['DEPLOYMENT ENVIRONMENT']['VREP_SCENES_PATH']
+		# Start VRep 
+		os.system("./resources/bringup_sim.sh {} {} {}".format(VREP_PATH, SCENE_PATH, MAP_NAME))
+		vrep_sim = vrep.connect(19997)
+		vrep.start_sim(vrep_sim)
 
 # SCENARIO CONFIGURATION
 bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
