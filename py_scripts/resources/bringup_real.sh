@@ -5,6 +5,7 @@ then
 	gnome-terminal -e roscore
 	sleep 3
 fi
+# Launch RVIZ and navigation stack if not already running
 RVIZ_ID=$(pgrep -x rviz)
 if [ -z "$RVIZ_ID" ]
 then

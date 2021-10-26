@@ -3,6 +3,7 @@ import time
 import vrep_utils.vrep as vrep
 import os
 import configparser
+import traceback
 from agents.mobilerobot import MobileRobot
 from agents.human import Human, start_reading_data, FatigueProfile
 from agents.coordinates import Point
@@ -73,9 +74,14 @@ try:
 		hum.set_sim_running(0)
 	vrep.stop_sim(vrep_sim)
 	LOGGER.info('Execution finished.')
+	LOGGER.info('Shutting down ROS nodes.')
+	os.system("./resources/shutdown.sh")
 	quit()
 
-except (KeyboardInterrupt, SystemExit):
+except Exception:
+	print(traceback.format_exc())
+	LOGGER.info('Shutting down ROS nodes.')
+	os.system("./resources/shutdown.sh")
 	rob.set_sim_running(0)
 	bill.set_sim_running(0)
 	vrep.stop_sim(vrep_sim)
