@@ -17,17 +17,16 @@ config.sections()
 LOGGER = Logger("MAIN")
 
 LOGGER.info('Bringing up the environment...')
-# Start VRep 
+MAP_PATH = config['DEPLOYMENT ENVIRONMENT']['MAP_PATH']
+MAP_NAME = config['DEPLOYMENT ENVIRONMENT']['MAP_NAME']
 if config['DEPLOYMENT ENVIRONMENT']['ENV']=='S':
 	VREP_PATH = config['DEPLOYMENT ENVIRONMENT']['VREP_PATH']
-	MAP_PATH = config['DEPLOYMENT ENVIRONMENT']['MAP_PATH']
-	MAP_NAME = config['DEPLOYMENT ENVIRONMENT']['MAP_NAME']
+	# Start VRep 
 	os.system("./resources/bringup_sim.sh {} {} {}".format(VREP_PATH, MAP_PATH, MAP_NAME))
+	vrep_sim = vrep.connect(19997)
+	vrep.start_sim(vrep_sim)
 else:
-	os.system("./resources/bringup_real.sh")
-
-vrep_sim = vrep.connect(19997)
-vrep.start_sim(vrep_sim)
+	os.system("./resources/bringup_real.sh {} {}".format(MAP_PATH, MAP_NAME))
 
 # SCENARIO CONFIGURATION
 bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)

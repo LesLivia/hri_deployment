@@ -7,7 +7,7 @@ from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 import time
 
-def ttb3_cmd_nav(speed=0.01):
+def ttb3_cmd_nav(x, y, w):
     #pub = rospy.Publisher('move_base/goal', MoveBaseActionGoal, queue_size=10)
     #pub_plan = rospy.Publisher('move_base/NavfnROS/plan', Path, queue_size=10)
     rospy.init_node('ttb3_cmd_nav', anonymous=False)
@@ -21,9 +21,9 @@ def ttb3_cmd_nav(speed=0.01):
 
     goal_msg.target_pose.header.frame_id = "map"
     goal_msg.target_pose.header.stamp = rospy.Time.now()
-    goal_msg.target_pose.pose.position.x = 0.26636081934
-    goal_msg.target_pose.pose.position.y = -0.642632722855
-    goal_msg.target_pose.pose.orientation.w = 0.691019155664 
+    goal_msg.target_pose.pose.position.x = x
+    goal_msg.target_pose.pose.position.y = y
+    goal_msg.target_pose.pose.orientation.w = w
     print(goal_msg)
 
     move_base.send_goal(goal_msg)
@@ -37,6 +37,6 @@ def ttb3_cmd_nav(speed=0.01):
     
 if __name__ == '__main__':
     try:
-        ttb3_cmd_nav()
+        ttb3_cmd_nav(float(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3]))
     except rospy.ROSInterruptException:
         pass

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import configparser
 import rospy_utils.hrirosnode as hriros
 import rospy_utils.hriconstants as const
 from multiprocessing import Pool
@@ -6,6 +7,12 @@ from agents.position import Position
 from agents.coordinates import Point
 from datetime import datetime
 from utils.logger import Logger
+
+config = configparser.ConfigParser()
+config.read('./resources/config.ini')
+config.sections()
+
+ENV = config['DEPLOYMENT ENVIRONMENT']['ENV']
 
 class MobileRobot:
 	def __init__(self, rob_id, max_speed, max_accel):
@@ -40,7 +47,10 @@ class MobileRobot:
 		f.truncate(0)
 		f.close()
 		# launch ROS node that subscribes to robot GPS data
-		node = 'robSensorsSub.py'
+		if ENV=='S':
+			node = 'robSensorsSub.py'
+		else:
+			node = 'ttb3subpos.py'
 
 		self.LOGGER.info('Subscribing to position data...')
 		pool = Pool()
@@ -51,7 +61,10 @@ class MobileRobot:
 		f.truncate(0)
 		f.close()
 		# launch ROS node that subscribes to robot GPS data
-		node = 'robBatterySub.py'
+		if ENV=='S':
+			node = 'robBatterySub.py'
+		else:
+			node = 'ttb3subchg.py'
 
 		self.LOGGER.info('Subscribing to charge data...')
 		pool = Pool()
