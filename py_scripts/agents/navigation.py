@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import configparser
 import numpy
 import rospy_utils.hriconstants as const
 import vrep_utils.vrep as vrep
@@ -6,6 +7,12 @@ from typing import List
 from agents.coordinates import Point
 from functools import cmp_to_key
 from utils.logger import Logger
+
+config = configparser.ConfigParser()
+config.read('./resources/config.ini')
+config.sections()
+
+ENV = config['DEPLOYMENT ENVIRONMENT']['ENV']
 
 LOGGER = Logger('NAVIGATION')
 

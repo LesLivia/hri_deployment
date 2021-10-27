@@ -7,13 +7,10 @@ from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 import time
 
-def ttb3_cmd_nav(x, y, w):
+def ttb3_cmd_nav(x, y, w=0.0):
     #pub = rospy.Publisher('move_base/goal', MoveBaseActionGoal, queue_size=10)
     #pub_plan = rospy.Publisher('move_base/NavfnROS/plan', Path, queue_size=10)
     rospy.init_node('ttb3_cmd_nav', anonymous=False)
-    rospy.loginfo(speed)
-    rate = rospy.Rate(10)
-    count = 0
     move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction) 
     move_base.wait_for_server()
 
@@ -37,6 +34,6 @@ def ttb3_cmd_nav(x, y, w):
     
 if __name__ == '__main__':
     try:
-        ttb3_cmd_nav(float(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3]))
+        ttb3_cmd_nav(float(sys.argv[1]), float(sys.argv[2]))
     except rospy.ROSInterruptException:
         pass

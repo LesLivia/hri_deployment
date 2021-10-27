@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import configparser
 import time
 import rospy_utils.hriconstants as const
 import agents.navigation as nav
@@ -11,6 +12,11 @@ from agents.human import Human, follow_fatigue, follow_position
 from agents.mission import *
 from utils.logger import Logger
 
+config = configparser.ConfigParser()
+config.read('./resources/config.ini')
+config.sections()
+
+ENV = config['DEPLOYMENT ENVIRONMENT']['ENV']
 
 class Operating_Modes(Enum):
 	ROBOT_IDLE = 1
@@ -179,14 +185,15 @@ class OpChk:
 
 	# PLAN (AND PUBLISH) TRAJECTORY FROM CURRENT POS TO CURRENT DESTINATION
 	def plan_trajectory(self):
-		traj = nav.plan_traj(self.rob.get_position(), self.curr_dest, nav.init_walls())
-		str_traj = ''
-		for point in traj:
-			str_traj += str(point.x) + ',' + str(point.y)
-			if not traj.index(point)==len(traj)-1:
-				str_traj += '#'
-		if len(traj)>0:
-			vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)
+		if ENV=='S':
+			traj = nav.plan_traj(self.rob.get_position(), self.curr_dest, nav.init_walls())
+			str_traj = ''
+			for point in traj:
+				str_traj += str(point.x) + ',' + str(point.y)
+				if not traj.index(point)==len(traj)-1:
+					str_traj += '#'
+			if len(traj)>0:
+				vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)
 
 	# CHECK WHETHER CURRENT ACTION SHOULD START
 	def check_start(self):
@@ -355,7 +362,10 @@ class Orchestrator:
 			self.LOCATION = 'idle'			
 			if self.opchk.stop:
 				self.LOCATION = 'r_start'
-				self.rob.start_moving(self.rob.max_speed)
+				if ENV == 'S':
+					self.rob.start_moving(self.rob.max_speed)
+				else:
+					self.rob.start_moving(self.rob.max_speed, Point(self.opchk.curr_dest.x-const.VREP_X_OFFSET, self.opchk.curr_dest.y-const.VREP_Y_OFFSET))					
 				self.LOCATION = 'h_start' 
 				# no effect, we cannot control the human
 				self.LOCATION = 'x_move'

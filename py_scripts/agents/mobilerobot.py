@@ -104,14 +104,19 @@ class MobileRobot:
 		self.LOGGER.debug('Updating charge to ({:.2f})'.format(new_charge))
 		self.set_charge(new_charge)
 	
-	def start_moving(self, targetSpeed):
-		node = 'robStatusPub.py'
-		data = '1#'
+	def start_moving(self, targetSpeed, dest:Point=None):
+		if ENV=='S':
+			# requested target speed is published to both robot motors,
+			# so that the robot starts moving straight
+			node = 'robStatusPub.py'
+			data = '1#'
 
-		if targetSpeed > 0:
-		    data = data + str(targetSpeed)
-		# requested target speed is published to both robot motors,
-		# so that the robot starts moving straight
+			if targetSpeed > 0:
+				data = data + str(targetSpeed)
+		else: 	
+			node = 'ttb3cmdnav.py'
+			data = '{:.4f} {:.4f}'.format(dest.x, dest.y)
+
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, [data])])
 		self.curr_speed = targetSpeed
