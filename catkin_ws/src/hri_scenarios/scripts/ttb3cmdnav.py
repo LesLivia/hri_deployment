@@ -7,7 +7,7 @@ from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 import time
 
-def ttb3_cmd_nav(x, y, w=0.0):
+def ttb3_cmd_nav(x, y, w=0.99988252198):
     #pub = rospy.Publisher('move_base/goal', MoveBaseActionGoal, queue_size=10)
     #pub_plan = rospy.Publisher('move_base/NavfnROS/plan', Path, queue_size=10)
     rospy.init_node('ttb3_cmd_nav', anonymous=False)
