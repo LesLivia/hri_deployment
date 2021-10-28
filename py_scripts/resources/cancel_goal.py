@@ -1,0 +1,1 @@
+rostopic pub --once move_base/cancel actionlib_msgs/GoalID {}

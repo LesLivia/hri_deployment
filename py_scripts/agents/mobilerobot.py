@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import configparser
 import rospy_utils.hrirosnode as hriros
 import rospy_utils.hriconstants as const
@@ -127,11 +128,14 @@ class MobileRobot:
 		self.LOGGER.info('Instructing robot to start moving (target speed {:.2f})...'.format(targetSpeed))
 
 	def stop_moving(self):
-		node = 'robStatusPub.py'
-		data = '0#0.0'
+		if ENV=='S':
+			node = 'robStatusPub.py'
+			data = '0#0.0'
+			pool = Pool()
+			pool.starmap(hriros.rosrun_nodes, [(node, [data])])
+		else:
+			os.system("./resources/cancel_goal.sh")
 		# both motors speed is set to 0, so that the robot stops moving
-		pool = Pool()
-		pool.starmap(hriros.rosrun_nodes, [(node, [data])])
 		self.curr_speed = 0.0
 		self.LOGGER.info('Instructing robot to stop moving...')
 
