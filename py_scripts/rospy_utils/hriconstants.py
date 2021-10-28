@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 from agents.coordinates import Point
+import configparser
+
+config = configparser.ConfigParser()
+config.read('./resources/config.ini')
+config.sections()
+
+ENV = config['DEPLOYMENT ENVIRONMENT']['ENV']
 
 HRI_ROS_PCKG = "hri_scenarios"
 
-VREP_X_OFFSET = 7.725
-VREP_Y_OFFSET = 11.4
+if ENV=='S':
+	VREP_X_OFFSET = 7.725
+	VREP_Y_OFFSET = 11.4
+else:
+	VREP_X_OFFSET = 10.945
+	VREP_Y_OFFSET = 11.4
 
 VREP_CLIENT_ID = 0
 
