@@ -82,8 +82,12 @@ class MobileRobot:
 
 			# VRep layout origin is different from the
 			# one in the Uppaal model: translation is necessary
-			new_pos.x += const.VREP_X_OFFSET
-			new_pos.y += const.VREP_Y_OFFSET
+			if ENV=='S':
+				new_pos.x += const.VREP_X_OFFSET
+				new_pos.y += const.VREP_Y_OFFSET
+			else:
+				new_pos.x += const.REAL_X_OFFSET
+				new_pos.y += const.REAL_Y_OFFSET
 		else:
 			new_pos = None
 

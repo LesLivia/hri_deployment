@@ -366,7 +366,7 @@ class Orchestrator:
 					self.rob.start_moving(self.rob.max_speed)
 				else:
 					#self.rob.start_moving(self.rob.max_speed, Point(0.303095638752, 0.335622757673))	
-					self.rob.start_moving(self.rob.max_speed, Point(self.opchk.curr_dest.x-const.VREP_X_OFFSET, self.opchk.curr_dest.y-const.VREP_Y_OFFSET))					
+					self.rob.start_moving(self.rob.max_speed, Point(self.opchk.curr_dest.x-const.REAL_X_OFFSET, self.opchk.curr_dest.y-const.REAL_Y_OFFSET))					
 				self.LOCATION = 'h_start' 
 				# no effect, we cannot control the human
 				self.LOCATION = 'x_move'
