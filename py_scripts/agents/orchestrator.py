@@ -49,6 +49,7 @@ class OpChk:
 		self.rec_stages = 1
 		self.stopped_human = False
 		if self.mission.p[self.currH] == Pattern.HUM_LEADER:
+			follow_position(self.humans)
 			human_pos = self.humans[self.currH].get_position()
 			human_coord = Point(human_pos.x, human_pos.y)
 			self.curr_dest = human_coord
@@ -134,6 +135,14 @@ class OpChk:
 		
 		self.fail = self.mission.fail
 
+	def record_hum_served(self):
+		filename = '../scene_logs/humansServed.log'
+		f = open(filename, 'a')
+		ts = vrep.get_sim_time(const.VREP_CLIENT_ID)
+		new_line = '{:.2f}:human{}served\n'.format(ts,self.humans[self.currH].hum_id)
+		f.write(new_line)	
+		f.close()		
+
 	# CHECK IF CURRENT SERVICE HAS BEEN PROVIDED, THUS THE MISSION CAN MOVE ON
 	def check_service_provided(self):
 		human_served = False
@@ -153,17 +162,17 @@ class OpChk:
 			filename = '../scene_logs/humansServed.log'
 			f = open(filename, 'r+')
 			lines = f.read().splitlines()
-			for line in lines:
-				if line == 'human'+ str(self.humans[self.currH].hum_id) + 'served':
-					self.LOGGER.info('HUMAN ' + str(self.currH) + ' SERVED.')	
-					human_served = True
-					f.truncate(0)
-					break
+			sought_line = 'human'+ str(self.humans[self.currH].hum_id) + 'served'
+			if sought_line in lines:
+				self.LOGGER.info('HUMAN ' + str(self.currH) + ' SERVED.')	
+				human_served = True
+			f.close()
 			
 		# In any case, if current service has been completed,
 		# robot stops and human index increases, and robot goes back
 		# to idle if the human that was just served was not the last one
 		if human_served:
+			self.record_hum_served()
 			self.stop = True
 			self.mission.set_served(self.currH)
 			self.currH+=1

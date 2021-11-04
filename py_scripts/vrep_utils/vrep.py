@@ -24,6 +24,10 @@ def stop_sim(clientID):
 	if result != vrep.simx_return_ok:
 		LOGGER.info('Simulation stopped.')
 
+def get_sim_time(clientID):
+	result = vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'get_time', [], [], '', '', vrep.simx_opmode_blocking)
+	return result[2][0]
+
 def check_connection(clientID):
 	state = vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'sim_state', [], [], '', '', vrep.simx_opmode_blocking)
 	if state[0] != 0:

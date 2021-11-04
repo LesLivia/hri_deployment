@@ -39,11 +39,12 @@ else:
 		vrep.start_sim(vrep_sim)
 
 # SCENARIO CONFIGURATION
+vrep.get_sim_time(vrep_sim)
 bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 12.0, 5.0)
 
-dest = [Point(13.0, 10.6)]#, Point(22.0, 4.0)]
+dest = [Point(22.0, 10.0)]#, Point(22.0, 4.0)]
 unique_humans = [bill]
 humans = [bill]#, bill]
 
@@ -64,7 +65,7 @@ try:
 	# START ROS NODES THAT ACQUIRE DATA FROM SENSORS
 	start_reading_data(humans)
 	rob.start_reading_data()
-	time.sleep(7)
+	time.sleep(15)
 			
 	# START MISSION
 	opchk = OpChk(0.5, 0.0, rob, humans, mission)

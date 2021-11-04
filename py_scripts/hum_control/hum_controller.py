@@ -232,6 +232,7 @@ class HumanController:
 		SIT_ONCE = True
 		will_sit = False
 		while not self.served[self.currH] and not vrep.check_connection(self.clientID):
+			self.LOGGER.debug('Leader starting')
 			ftg = self.read_data('FTG')
 			pos = self.read_data('HUM_POS')
 			rob_pos = self.read_data('ROB_POS')
