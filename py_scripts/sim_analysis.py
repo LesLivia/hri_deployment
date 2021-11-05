@@ -81,9 +81,7 @@ def read_sims_from_logs(scenario_name: str, mis: Mission):
     return outcomes
 
 outcomes = read_sims_from_logs(sys.argv[1], Mission([0]*1, [], []))
-for o in outcomes:
-    print(o.served)
-    print(o.scs)
-    print(o.fail)
-    print(o.ftg)
-    print(o.chg)
+trials = len(outcomes)
+successes = len(list(filter(lambda o: o.scs, outcomes)))
+lo, hi = clopper_pearson(successes, trials)
+print('With {} successes over {} trials the interval is: ({}, {}), width={}'.format(successes, trials, lo, hi, hi-lo))
