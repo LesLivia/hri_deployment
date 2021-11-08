@@ -205,13 +205,13 @@ class HumanController:
 			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
 
 			dist_to_dest = pos.distance_from(dest)
-			self.served[self.currH] = dist_to_dest < 2.0 and not will_sit
+			self.served[self.currH] = dist_to_dest < 1.0 and not will_sit
 			self.LOGGER.debug('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
 			self.LOGGER.debug('DIST TO DEST: {:.5f}'.format(dist_to_dest))
 			self.LOGGER.debug('DIST TO ROB: {:.5f}'.format(dist_to_rob))
 
 			free_stop = self.LOC == Loc.BUSY and self.free_will()
-			if self.served[self.currH] or dist_to_rob < 1.0 or free_stop or (will_sit and dist_to_dest < 2.0):
+			if self.served[self.currH] or dist_to_rob < 0.5 or free_stop or (will_sit and dist_to_dest < 1.0):
 				self.stop_h_action()
 				rest_time = random.randint(8, 20)
 				if will_sit and dist_to_dest < 2.0:
@@ -267,7 +267,7 @@ class HumanController:
 			self.LOGGER.debug('DIST TO DEST: {:.5f}'.format(dist_to_dest))
 			self.LOGGER.debug('DIST TO ROB: {:.5f}'.format(dist_to_rob))
 
-			if self.served[self.currH] or dist_to_rob < 2.0 or dist_to_rob > 8.0 or (will_sit and dist_to_dest < 2.0):
+			if self.served[self.currH] or dist_to_rob < 1.0 or dist_to_rob > 8.0 or (will_sit and dist_to_dest < 2.0):
 				self.stop_h_action()
 				rest_time = random.randint(8, 20)
 				if will_sit and dist_to_dest < 2.0:

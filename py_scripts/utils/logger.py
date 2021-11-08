@@ -92,5 +92,8 @@ class Logger():
             ts = datetime.now()
             print(bcolor.FAIL + self.MSG_STR.format(LogLevel.__str__(LogLevel.ERROR), ts, self.speaker, msg) + bcolor.ENDC)
 
+    def msg(self, msg: str):
+        if(LogLevel.MSG.value>=MIN_LOG_LEVEL.value):
+            ts = datetime.now()
+            print(bcolor.OKGREEN + self.MSG_STR.format(LogLevel.__str__(LogLevel.MSG), ts, self.speaker, msg) + bcolor.ENDC)
 
-    

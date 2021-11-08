@@ -96,7 +96,7 @@ class OpChk:
 	def check_actions(self):
 		self.check_scs()
 		if self.scs:
-			self.LOGGER.info('Mission completed with success, stopping orchestrator...')
+			self.LOGGER.msg('Mission completed with success, stopping orchestrator...')
 			return 
 
 		self.check_fail()
@@ -153,7 +153,7 @@ class OpChk:
 			position = self.humans[self.currH].get_position()
 			pos = Point(position.x, position.y)
 			human_robot_dist = self.get_human_robot_dist()
-			_min_dist = 1.5
+			_min_dist = 2.0
 			if position is not None and pos.distance_from(dest) <= _min_dist and human_robot_dist <= _min_dist:
 				self.LOGGER.info('HUMAN ' + str(self.currH) + ' SERVED.')	
 				human_served = True

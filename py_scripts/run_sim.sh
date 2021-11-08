@@ -1,4 +1,4 @@
-for i in {1..$2}
+for((i=1;i<=$2;i++))
 do
 	# python3 randomize_mission.py
 	gnome-terminal -e "python3 main.py"
@@ -15,4 +15,5 @@ do
 	cp ../scene_logs/robotBattery.log /media/psf/logs/sim_logs/faoc_exp/$1/$NEW_DIR/
 	cp ../scene_logs/environmentData.log /media/psf/logs/sim_logs/faoc_exp/$1/$NEW_DIR/
 	sleep 10
+	python3 sim_analysis.py $1
 done
