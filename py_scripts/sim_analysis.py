@@ -92,7 +92,7 @@ trials = len(outcomes)
 successes = len(list(filter(lambda o: o.scs and o.served[-1][0]<=TAU, outcomes)))
 lo, hi = clopper_pearson(successes, trials)
 LOGGER.msg('Found {} successes over {} trials'.format(successes, trials))
-LOGGER.msg('Confidence interval: ({}, {})'.format(lo, hi))
-LOGGER.msg('Confidence interval width: {}'.format(hi-lo))
+LOGGER.msg('Confidence interval: ({:.3f}, {:.3f})'.format(lo, hi))
+LOGGER.msg('Confidence interval width: {:.3f}'.format(hi-lo))
 
  

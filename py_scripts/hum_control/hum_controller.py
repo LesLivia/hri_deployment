@@ -47,7 +47,7 @@ class HumanController:
 		self.Tpoll = 1.0
 		self.served = [False]*len(h)
 		self.m = None
-		self.freeWillTh = 101
+		self.freeWillTh = 99
 		# SHA-graph variables
 		self.LOC = Loc.INIT
 		self.LOGGER = Logger("HUM CONTROLLER")
