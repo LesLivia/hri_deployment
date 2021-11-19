@@ -39,12 +39,11 @@ else:
 		vrep.start_sim(vrep_sim)
 
 # SCENARIO CONFIGURATION
-vrep.get_sim_time(vrep_sim)
 bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 12.0, 5.0)
 
-dest = [Point(22.0, 15.0)]#, Point(22.0, 4.0)]
+dest = [Point(5.0, 2.0)]#, Point(22.0, 4.0)]
 unique_humans = [bill]
 humans = [bill]#, bill]
 
