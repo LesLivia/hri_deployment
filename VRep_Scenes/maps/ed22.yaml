@@ -1,6 +1,7 @@
 image: ed22.pgm
 resolution: 0.01950
 origin: [-6.05, -6.25, 0.000000]
+#origin: [-5.65, -4.7, 0.000000]
 negate: 0
 occupied_thresh: 0.65
 free_thresh: 0.196

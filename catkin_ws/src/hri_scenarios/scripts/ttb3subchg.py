@@ -8,7 +8,7 @@ from sensor_msgs.msg import BatteryState
 def callback(data):
     f = open("../scene_logs/robotBattery.log", "a")
     ts=data.header.stamp.secs
-    percentage=(12.0-float(data.voltage))*100
+    percentage=(float(data.voltage)-11.1)/0.9*100
     chg_log="{:.2f}:{:.2f}\n".format(ts, percentage)
     f.write(chg_log)
     f.close()
