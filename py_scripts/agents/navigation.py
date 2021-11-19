@@ -26,11 +26,13 @@ def init_walls(draw=False):
 			for x in numpy.arange(wall[0].x, wall[1].x, density):
 				wall_pts.append(Point(x, wall[0].y))
 				if draw:
+					LOGGER.debug('drawing point {} {}...'.format(x, wall[0].y))
 					vrep.draw_point(const.VREP_CLIENT_ID, Point(x, wall[0].y))
 		elif wall[0].x == wall[1].x:
 			for y in numpy.arange(wall[0].y, wall[1].y, density):
 				wall_pts.append(Point(wall[0].x, y))
 				if draw:
+					LOGGER.debug('drawing point {} {}...'.format(wall[0].x, y))
 					vrep.draw_point(const.VREP_CLIENT_ID, Point(wall[0].x, y))
 	return wall_pts
 

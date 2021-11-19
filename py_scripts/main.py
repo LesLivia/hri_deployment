@@ -10,6 +10,7 @@ from agents.coordinates import Point
 from agents.orchestrator import Orchestrator, OpChk
 from agents.mission import *
 from utils.logger import Logger
+import agents.navigation as nav
 
 config = configparser.ConfigParser()
 config.read('./resources/config.ini')
@@ -62,6 +63,8 @@ for line in lines:
 f.close()
 
 mission = Mission(patterns, dest)	
+
+nav.init_walls(True)
 
 # SCENARIO DEPLOYMENT
 try:
