@@ -10,7 +10,6 @@ from agents.coordinates import Point
 from agents.orchestrator import Orchestrator, OpChk
 from agents.mission import *
 from utils.logger import Logger
-import agents.navigation as nav
 
 config = configparser.ConfigParser()
 config.read('./resources/config.ini')
@@ -44,7 +43,6 @@ bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 12.0, 5.0)
 
-
 #position: 
 #    x: 4.39499902725
 #    y: 0.289999425411
@@ -63,8 +61,6 @@ for line in lines:
 f.close()
 
 mission = Mission(patterns, dest)	
-
-nav.init_walls(True)
 
 # SCENARIO DEPLOYMENT
 try:
