@@ -38,7 +38,7 @@ def init_walls(draw=False):
 
 def close_to_wall(to_check: Point, walls: List[Point]):
 	for point in walls:
-		if to_check.distance_from(point) < 0.5:
+		if to_check.distance_from(point) < 0.2:
 			return True
 	return False
 

@@ -8,6 +8,8 @@ from agents.coordinates import Point
 from agents.mission import *
 from hum_control.hum_controller import HumanController
 from utils.logger import Logger
+import agents.navigation as nav
+import configparser
 
 LOGGER = Logger("HUM MAIN")
 
@@ -19,16 +21,19 @@ if vrep_sim == -1:
 if vrep_sim == -1:
 	LOGGER.info('Connection to VRep failed, trying a different door...')	
 	vrep_sim = vrep.connect(19995)
+if vrep_sim == -1:
+	LOGGER.info('Connection to VRep failed, trying a different door...')	
+	vrep_sim = vrep.connect(19997)
 
 # MISSION CONFIGURATION
 bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 8.0, 5.0)
 
-start = [Point(1.4, 11.0), Point(13.8, 8.8)]
-dest = [Point(22.0, 4.0), Point(22.0, 4.0)]
+start = [Point(1.0, 2.0)]
+dest = [Point(8.0, 6.75)]
 unique_humans = [bill]
-humans = [bill, bill]
+humans = [bill]
 
 patterns = []
 f = open('mission.txt', 'r')

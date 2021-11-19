@@ -8,10 +8,15 @@ from typing import List
 from enum import Enum
 from agents.human import Human, FatigueProfile
 from agents.coordinates import Point
-#from agents.orchestrator import Orchestrator, OpChk
 from agents.mission import *
 from utils.logger import Logger
+import configparser
 
+config = configparser.ConfigParser()
+config.read('./resources/config.ini')
+config.sections()
+
+ENV = config['DEPLOYMENT ENVIRONMENT']['ENV']
 
 POS_LOG = '../scene_logs/humanPosition.log'
 FTG_LOG = '../scene_logs/humanFatigue.log'
@@ -81,10 +86,14 @@ class HumanController:
 			return (float(read.split('#')[0]), float(read.split('#')[1]))	
 		else:
 			read = Point.parse_point(last_line.split(':')[1])
-			return Point(read.x+const.VREP_X_OFFSET, read.y+const.VREP_Y_OFFSET)
+			if ENV=='S':
+				return Point(read.x+const.VREP_X_OFFSET, read.y+const.VREP_Y_OFFSET)
+			else:
+				return Point(read.x+const.REAL_X_OFFSET+6.05, read.y+const.REAL_Y_OFFSET+6.25)
 
 	# PLAN (AND PUBLISH) TRAJECTORY FROM CURRENT POS TO CURRENT DESTINATION
 	def plan_trajectory(self, start: Point, dest: Point):
+		self.LOGGER.debug('Planning trajectory to {} {}...'.format(dest.x, dest.y))
 		if dest!=CHAIR_POS:
 			traj = nav.plan_traj(start, dest, nav.init_walls())
 		else:

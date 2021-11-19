@@ -152,6 +152,6 @@ else:
 
 	WALLS = [W_1, W_2, W_3, W_4, W_5, W_6, W_7, W_8, W_9, W_10, W_11, W_12, W_13, W_14, W_15, W_16, W_17, W_18, W_19, W_20, W_21, W_22, W_23, W_24]
 	TURN_POINTS = [T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9, T_10]
-	DOORS = [DOOR_1]
+	DOORS = []
 
 VREP_CLIENT_ID = 0
