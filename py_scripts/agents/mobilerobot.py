@@ -87,8 +87,8 @@ class MobileRobot:
 				new_pos.x += const.VREP_X_OFFSET
 				new_pos.y += const.VREP_Y_OFFSET
 			else:
-				new_pos.x += const.REAL_X_OFFSET
-				new_pos.y += const.REAL_Y_OFFSET
+				new_pos.x += const.REAL_X_OFFSET+6.05
+				new_pos.y += const.REAL_Y_OFFSET+6.25
 		else:
 			new_pos = None
 
