@@ -30,7 +30,7 @@ bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 8.0, 5.0)
 
-start = [Point(1.0, 2.0)]
+start = [Point(3.0, 2.0)]
 dest = [Point(14.5, 2.75)]
 unique_humans = [bill]
 humans = [bill]

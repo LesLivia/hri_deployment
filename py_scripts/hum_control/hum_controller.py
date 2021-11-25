@@ -248,12 +248,12 @@ class HumanController:
 			dist_to_rob = pos.distance_from(rob_pos)
 
 			if SIT_ONCE and not will_sit:
-				will_sit = self.free_sit(pos) 
+				will_sit = False #self.free_sit(pos) 
 			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
 
-			if not self.served[self.currH]:
+			if not self.served[self.currH] and 1.0 <= dist_to_rob <= 4.0:
 				# in_office = 1.0+const.VREP_X_OFFSET<=pos.x<=11+const.VREP_X_OFFSET and 1.4+const.VREP_Y_OFFSET<=pos.y<=9.5+const.VREP_Y_OFFSET
-				in_office = random.randint(0,100)>=self.freeWillTh
+				in_office = False # random.randint(0,100)>=self.freeWillTh
 				if will_sit and not SIT_ONCE:
 					will_sit = False
 					self.send_stand_cmd()
@@ -274,9 +274,9 @@ class HumanController:
 			self.served[self.currH] = dist_to_dest < 1.0  if dest==self.m.dest[self.currH] else False
 			self.LOGGER.debug('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
 			self.LOGGER.debug('DIST TO DEST: {:.5f}'.format(dist_to_dest))
-			self.LOGGER.debug('DIST TO ROB: {:.5f}'.format(dist_to_rob))
+			self.LOGGER.info('DIST TO ROB: {:.5f}'.format(dist_to_rob))
 
-			if self.served[self.currH] or dist_to_rob < 1.0 or dist_to_rob > 8.0 or (will_sit and dist_to_dest < 2.0):
+			if self.served[self.currH] or dist_to_rob < 1.0 or dist_to_rob > 4.0 or (will_sit and dist_to_dest < 2.0):
 				self.stop_h_action()
 				rest_time = random.randint(8, 20)
 				if will_sit and dist_to_dest < 2.0:

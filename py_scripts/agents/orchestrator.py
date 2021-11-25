@@ -60,7 +60,7 @@ class OpChk:
 		self.STOP_DIST = 4.0
 		self.RESTART_DIST = 2.0
 
-		self.RECHARGE_TH = 10.0
+		self.RECHARGE_TH = 1.0
 		self.STOP_RECHARGE = 100.0
 		self.FAIL_CHARGE = 1.0
 		
@@ -203,6 +203,8 @@ class OpChk:
 					str_traj += '#'
 			if len(traj)>0:
 				vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)
+		else:
+			self.rob.start_moving(self.rob.max_speed, Point(self.curr_dest.x, self.curr_dest.y))					
 
 	# CHECK WHETHER CURRENT ACTION SHOULD START
 	def check_start(self):
@@ -237,7 +239,7 @@ class OpChk:
 			self.LOGGER.info('Human sufficiently rested.')
 			self.mission.publish_status('DFTG#' + str(self.currH+1))
 			
-		self.LOGGER.debug('Human-Robot distance: ({:.2f})'.format(human_robot_dist))
+		self.LOGGER.info('Human-Robot distance: ({:.2f})'.format(human_robot_dist))
 		# If human is a follower, the action can start if the battery charge is sufficient,
 		# if human fatigue is low, and if robot and human are close to each other
 		if p == Pattern.HUM_FOLLOWER:
@@ -272,7 +274,10 @@ class OpChk:
 		elif p == Pattern.HUM_LEADER:
 			self.currOp = Operating_Modes.ROBOT_FOLL
 			curr_human_pos = self.humans[self.currH].get_position()
-			self.curr_dest = Point(curr_human_pos.x, curr_human_pos.y)
+			if ENV == 'S':
+				self.curr_dest = Point(curr_human_pos.x, curr_human_pos.y)
+			else:
+				self.curr_dest = Point(curr_human_pos.x-const.REAL_X_OFFSET, curr_human_pos.y-const.REAL_Y_OFFSET)
 		# Human recipient -> (stage1) dest = prescribed dest, (stage2) dest = current human position
 		elif p == Pattern.HUM_RECIPIENT:
 			self.currOp = Operating_Modes.ROBOT_CARR
@@ -335,9 +340,12 @@ class OpChk:
 			# self.rob.stop_moving()
 		else:
 			human_pos = self.humans[self.currH].get_position()
-			hum_pt = Point(human_pos.x, human_pos.y)
-			if hum_pt.distance_from(self.curr_dest) > 3.0:
-				self.curr_dest = Point(human_pos.x, human_pos.y)
+			hum_pt = Point(human_pos.x-const.REAL_X_OFFSET, human_pos.y-const.REAL_Y_OFFSET)
+			# Point(curr_human_pos.x-const.REAL_X_OFFSET, curr_human_pos.y-const.REAL_Y_OFFSET)
+			self.LOGGER.info('{}'.format(hum_pt.distance_from(self.curr_dest)))
+			if hum_pt.distance_from(self.curr_dest) > 0.5:
+				self.LOGGER.info('Restarting')
+				self.curr_dest = hum_pt
 				self.plan_trajectory()
 
 	def check_r_rech(self):
