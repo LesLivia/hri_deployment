@@ -6,11 +6,13 @@ from std_msgs.msg import String
 from sensor_msgs.msg import BatteryState
 
 def callback(data):
-    f = open("../scene_logs/robotBattery.log", "a")
+    #f = open("../scene_logs/robotBattery.log", "a")
+    f = open("/home/parallels/Desktop/hri_deployment/scene_logs/robotBattery.log", "a")
     ts=data.header.stamp.secs
     percentage=(float(data.voltage)-11.1)/0.9*100
     chg_log="{:.2f}:{:.2f}\n".format(ts, percentage)
     f.write(chg_log)
+    #print(data.voltage)
     f.close()
         
 def listener():

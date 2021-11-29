@@ -163,7 +163,7 @@ class OpChk:
 			f = open(filename, 'r+')
 			lines = f.read().splitlines()
 			sought_line = 'human'+ str(self.humans[self.currH].hum_id) + 'served'
-			if sought_line in lines:
+			if any([l.__contains__(sought_line) for l in lines]):
 				self.LOGGER.info('HUMAN ' + str(self.currH) + ' SERVED.')	
 				human_served = True
 			f.close()
