@@ -150,10 +150,12 @@ class OpChk:
 		# both human and robot are close to the destination
 		if self.mission.p[self.currH] == Pattern.HUM_FOLLOWER:
 			dest = self.mission.dest[self.currH]
-			position = self.humans[self.currH].get_position()
+			position = self.rob.get_position()
+			# position = self.humans[self.currH].get_position()
 			pos = Point(position.x, position.y)
 			human_robot_dist = self.get_human_robot_dist()
 			_min_dist = 2.0
+			self.LOGGER.info('dist to dest: {}'.format(pos.distance_from(dest)))
 			if position is not None and pos.distance_from(dest) <= _min_dist and human_robot_dist <= _min_dist:
 				self.LOGGER.info('HUMAN ' + str(self.currH) + ' SERVED.')	
 				human_served = True
@@ -204,7 +206,8 @@ class OpChk:
 			if len(traj)>0:
 				vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)
 		else:
-			self.rob.start_moving(self.rob.max_speed, Point(self.curr_dest.x, self.curr_dest.y))					
+			pass
+			#self.rob.start_moving(self.rob.max_speed, Point(self.curr_dest.x, self.curr_dest.y))					
 
 	# CHECK WHETHER CURRENT ACTION SHOULD START
 	def check_start(self):

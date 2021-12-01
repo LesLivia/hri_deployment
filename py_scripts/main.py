@@ -46,7 +46,7 @@ rob = MobileRobot(1, 12.0, 5.0)
 #position: 
 #    x: 4.39499902725
 #    y: 0.289999425411
-dest = [Point(14.5, 2.28)]#, Point(22.0, 4.0)]
+dest = [Point(14.0, 4.0)]#, Point(22.0, 4.0)]
 unique_humans = [bill]
 humans = [bill]#, bill]
 
