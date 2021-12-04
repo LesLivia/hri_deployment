@@ -206,8 +206,8 @@ class OpChk:
 			if len(traj)>0:
 				vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)
 		else:
-			pass
-			#self.rob.start_moving(self.rob.max_speed, Point(self.curr_dest.x, self.curr_dest.y))					
+			#pass
+			self.rob.start_moving(self.rob.max_speed, Point(self.curr_dest.x, self.curr_dest.y))					
 
 	# CHECK WHETHER CURRENT ACTION SHOULD START
 	def check_start(self):

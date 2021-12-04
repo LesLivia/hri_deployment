@@ -14,7 +14,7 @@ do
 	cp ../scene_logs/robotPosition.log /media/psf/logs/sim_logs/faoc_exp/$1/$NEW_DIR/
 	cp ../scene_logs/robotBattery.log /media/psf/logs/sim_logs/faoc_exp/$1/$NEW_DIR/
 	cp ../scene_logs/environmentData.log /media/psf/logs/sim_logs/faoc_exp/$1/$NEW_DIR/
-	sleep 10
+	sleep 15
 	python3 sim_analysis.py $1
 	rosrun hri_scenarios ttb3cmdnav.py 1.00 0.28
 done

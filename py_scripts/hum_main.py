@@ -30,8 +30,8 @@ bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 8.0, 5.0)
 
-start = [Point(2.0, 2.0)]
-dest = [Point(14.0, 4.0)]
+start = [Point(3.0, 2.0)]
+dest = [Point(14.0, 2.0)]
 unique_humans = [bill]
 humans = [bill]
 
@@ -50,7 +50,7 @@ mission = Mission(patterns, dest, start=start)
 contr = HumanController(humans, vrep_sim)
 
 try:
-	time.sleep(7)
+	time.sleep(5)
 	LOGGER.info('Starting human controller...')
 
 	contr.run(mission)	

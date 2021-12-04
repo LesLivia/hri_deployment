@@ -45,9 +45,11 @@ def clopper_pearson(x, n, alpha=0.05):
     return 0.0 if math.isnan(lo) else lo, 1.0 if math.isnan(hi) else hi
 
 
-def read_sims_from_logs(scenario_name: str, mis: Mission):
+def read_sims_from_logs(scenario_name: str, mis: Mission, N:int = None):
     sims = os.listdir(LOGS_PATH) 
     paths = [LOGS_PATH+s+'/' for s in sims if s.startswith('SIM')]
+    if N is not None:
+    	paths = paths[:N]
     outcomes = []
     for p in paths:
         served = []
@@ -83,11 +85,17 @@ def read_sims_from_logs(scenario_name: str, mis: Mission):
         outcomes.append(Sim_Outcome(served, ftg, chg))
     return outcomes
 
-TAU = 100000
 if len(sys.argv)>2:
     TAU = float(sys.argv[2])
+else:
+	TAU = 100000
+if len(sys.argv)>3:
+    N = int(sys.argv[3])
+else:
+	N = None
 
-outcomes = read_sims_from_logs(sys.argv[1], Mission([0]*1, [], []))
+
+outcomes = read_sims_from_logs(sys.argv[1], Mission([0]*1, [], []), N)
 trials = len(outcomes)
 successes = len(list(filter(lambda o: o.scs and o.served[-1][0]<=TAU, outcomes)))
 lo, hi = clopper_pearson(successes, trials)
