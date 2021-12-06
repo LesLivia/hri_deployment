@@ -22,6 +22,7 @@ POS_LOG = '../scene_logs/humanPosition.log'
 FTG_LOG = '../scene_logs/humanFatigue.log'
 ROB_POS_LOG = '../scene_logs/robotPosition.log'
 ROOM_LOG = '../scene_logs/environmentData.log'
+SERVED_LOG = '../scene_logs/humansServed.log'
 
 DOOR_POS = Point(17.0+const.VREP_X_OFFSET, -1.0+const.VREP_Y_OFFSET)
 CHAIR_POS = Point(18.6+const.VREP_X_OFFSET, 4.67+const.VREP_Y_OFFSET)
@@ -75,16 +76,21 @@ class HumanController:
 		if len(lines)<1:
 			return None
 	
-		last_line = lines[-1]
 		if log == 'FTG':
+			hum_lines = list(filter(lambda l: len(l)>1 and l.split(':')[1]=='hum{}'.format(self.h[self.currH].hum_id) , lines))
+			last_line = hum_lines[-1]
 			return float(last_line.split(':')[2])
 		elif log=='HUM_POS':
+			hum_lines = list(filter(lambda l: len(l)>1 and l.split(':')[1]=='hum{}'.format(self.h[self.currH].hum_id) , lines))
+			last_line = hum_lines[-1]
 			read = Point.parse_point(last_line.split(':')[2])
 			return Point(read.x+const.VREP_X_OFFSET, read.y+const.VREP_Y_OFFSET)
 		elif log=='ROOM':
+			last_line = lines[-1]
 			read = last_line.split(':')[1]
 			return (float(read.split('#')[0]), float(read.split('#')[1]))	
-		else:
+		else: # ROBOT POSITION
+			last_line = lines[-1]
 			read = Point.parse_point(last_line.split(':')[1])
 			if ENV=='S':
 				return Point(read.x+const.VREP_X_OFFSET, read.y+const.VREP_Y_OFFSET)
@@ -185,6 +191,16 @@ class HumanController:
 		else:
 			return False
 
+	def check_served(self):
+		f = open(SERVED_LOG)
+		lines = f.readlines()
+		svd_line = list(filter(lambda l: l.__contains__('human{}served'.format(self.h[self.currH].hum_id)), lines))
+		curr_svd = False
+		if len(svd_line)>0:
+			curr_svd = True
+		f.close()
+		return curr_svd
+
 	def run_follower(self):
 		self.reset_hum()
 		self.set_loc(Loc.IDLE)
@@ -210,11 +226,11 @@ class HumanController:
 			time.sleep(self.Tpoll)
 			
 			if SIT_ONCE and not will_sit:
-				will_sit = self.free_sit(pos) 
+				will_sit = False # self.free_sit(pos) 
 			dest = CHAIR_POS if will_sit else self.m.dest[self.currH]
 
 			dist_to_dest = pos.distance_from(dest)
-			self.served[self.currH] = dist_to_dest < 1.0 and not will_sit
+			self.served[self.currH] = self.check_served() #dist_to_dest < 1.0 and not will_sit
 			self.LOGGER.debug('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
 			self.LOGGER.debug('DIST TO DEST: {:.5f}'.format(dist_to_dest))
 			self.LOGGER.debug('DIST TO ROB: {:.5f}'.format(dist_to_rob))
@@ -271,7 +287,7 @@ class HumanController:
 			time.sleep(self.Tpoll)
 			
 			dist_to_dest = pos.distance_from(dest)
-			self.served[self.currH] = dist_to_dest < 1.0  if dest==self.m.dest[self.currH] else False
+			self.served[self.currH] = dist_to_dest < 1.0 if dest==self.m.dest[self.currH] else False
 			self.LOGGER.debug('HUMAN in {}, ftg: {:.5f}'.format(pos, ftg))
 			self.LOGGER.debug('DIST TO DEST: {:.5f}'.format(dist_to_dest))
 			self.LOGGER.info('DIST TO ROB: {:.5f}'.format(dist_to_rob))
