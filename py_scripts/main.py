@@ -23,7 +23,7 @@ if config['DEPLOYMENT ENVIRONMENT']['ENV']=='S':
 	VREP_PATH = config['DEPLOYMENT ENVIRONMENT']['VREP_PATH']
 	SCENE_PATH = config['DEPLOYMENT ENVIRONMENT']['VREP_SCENES_PATH']
 	# Start VRep 
-	os.system("./resources/bringup_sim.sh {} {} {}".format(VREP_PATH, SCENE_PATH, MAP_NAME))
+	os.system("./resources/bringup_sim.sh {} {} {}".format(VREP_PATH, SCENE_PATH, MAP_NAME+'_sim'))
 	vrep_sim = vrep.connect(19997)
 	vrep.start_sim(vrep_sim)
 else:
@@ -46,9 +46,9 @@ rob = MobileRobot(1, 12.0, 5.0)
 #position: 
 #    x: 4.39499902725
 #    y: 0.289999425411
-dest = [Point(14.0, 4.0)]#, Point(22.0, 4.0)]
-unique_humans = [bill]
-humans = [bill]#, bill]
+dest = [Point(26.0, 2.0), Point(14.0, 4.0)]
+unique_humans = [bill, carl]
+humans = [bill, carl]
 
 patterns = []
 f = open('mission.txt', 'r')

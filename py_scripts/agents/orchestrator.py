@@ -155,7 +155,7 @@ class OpChk:
 			pos = Point(position.x, position.y)
 			human_robot_dist = self.get_human_robot_dist()
 			_min_dist = 2.0
-			self.LOGGER.info('dist to dest: {}'.format(pos.distance_from(dest)))
+			self.LOGGER.debug('dist to dest: {}'.format(pos.distance_from(dest)))
 			if position is not None and pos.distance_from(dest) <= _min_dist and human_robot_dist <= _min_dist:
 				self.LOGGER.info('HUMAN ' + str(self.currH) + ' SERVED.')	
 				human_served = True

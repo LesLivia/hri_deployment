@@ -148,19 +148,22 @@ def follow_position(hums: List[Human]):
 	f = open(filename, 'r')
 	lines = f.read().splitlines()
 	
-	if len(lines)>0:
-		line = lines[-1]
-		humId = int((line.split(':')[1]).replace('hum', ''))
-		hum = hums[humId-1]
-		pos_str = line.split(':')[2]
-		new_position = Position.parse_position(pos_str)
-		new_position.x += const.VREP_X_OFFSET
-		new_position.y += const.VREP_Y_OFFSET
-	else:
-		new_position = None
+	for hum in hums:
+		hum_lines = list(filter(lambda l: len(l)>1 and l.split(':')[1]=='hum{}'.format(hum.hum_id), lines))
 
-	hum.LOGGER.debug('Updating position to ({:.2f}, {:.2f})'.format(new_position.x, new_position.y))
-	hum.set_position(new_position)
+		if len(hum_lines)>0:
+			line = hum_lines[-1]
+			#humId = int((line.split(':')[1]).replace('hum', ''))
+			#hum = hums[humId-1]
+			pos_str = line.split(':')[2]
+			new_position = Position.parse_position(pos_str)
+			new_position.x += const.VREP_X_OFFSET
+			new_position.y += const.VREP_Y_OFFSET
+		else:
+			new_position = None
+
+		hum.LOGGER.debug('Updating position to ({:.2f}, {:.2f})'.format(new_position.x, new_position.y))
+		hum.set_position(new_position)
 
 
 def follow_fatigue(hums: List[Human]):
@@ -168,14 +171,17 @@ def follow_fatigue(hums: List[Human]):
 	f = open(filename, 'r')
 	lines = f.read().splitlines()
 
-	if len(lines)>0:
-		line = lines[-1]
-		humId = int((line.split(':')[1]).replace('hum', ''))
-		hum = hums[humId-1]
-		new_ftg = float((line.split(':')[2]))
-	else:
-		new_ftg = None
+	for hum in hums:
+		hum_lines = list(filter(lambda l: len(l)>1 and l.split(':')[1]=='hum{}'.format(hum.hum_id), lines))
+		
+		if len(hum_lines)>0:
+			line = hum_lines[-1]
+			#humId = int((line.split(':')[1]).replace('hum', ''))
+			#hum = hums[humId-1]
+			new_ftg = float((line.split(':')[2]))
+		else:
+			new_ftg = None
 
-	hum.LOGGER.debug('Updating fatigue to ({:.2f})'.format(new_ftg))
-	hum.set_fatigue(new_ftg)
+		hum.LOGGER.debug('Updating fatigue to ({:.2f})'.format(new_ftg))
+		hum.set_fatigue(new_ftg)
 
