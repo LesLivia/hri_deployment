@@ -4,6 +4,7 @@ import vrep_utils.vrep as vrep
 import os
 import configparser
 import traceback
+import agents.navigation as nav
 from agents.mobilerobot import MobileRobot
 from agents.human import Human, start_reading_data, FatigueProfile
 from agents.coordinates import Point
@@ -46,7 +47,8 @@ rob = MobileRobot(1, 12.0, 5.0)
 #position: 
 #    x: 4.39499902725
 #    y: 0.289999425411
-dest = [Point(4.0, 1.0), Point(35.0, 2.0)]#, Point(5.0, 1.0)]
+start = [Point(2.0, 2.0), Point(10.0, 2.0), Point(10.0, 2.0)]
+dest = [Point(14.0, 2.0), Point(30.0, 3.0), Point(40.0, 8.0)]
 unique_humans = [bill, carl]
 humans = [bill, carl]#, bill]
 
@@ -62,39 +64,24 @@ f.close()
 
 mission = Mission(patterns, dest)	
 
-# SCENARIO DEPLOYMENT
+start_reading_data(humans)
+rob.start_reading_data()
+time.sleep(5)
+
 try:
-	# START ROS NODES THAT ACQUIRE DATA FROM SENSORS
-	start_reading_data(humans)
-	rob.start_reading_data()
-	time.sleep(15)
-			
-	# START MISSION
-	opchk = OpChk(0.5, 0.0, rob, humans, mission)
-	orch = Orchestrator(opchk)
+	for pt in const.TURN_POINTS:
+		vrep.draw_point(const.VREP_CLIENT_ID, pt)
 
-	orch.run_mission()
-
-	if mission.get_scs():
-		LOGGER.info('Mission successfully completed.')
-	if mission.fail:
-		LOGGER.info('Mission failed.')
-
-	# When mission is over (either with success or failure),
-	# shut everything down
+	for i, p in enumerate(start):
+		nav.plan_traj(p, dest[i], nav.init_walls(), True)
+		vrep.clear_lines(vrep_sim)
+except:
+	print(traceback.format_exc())
+finally:
 	for hum in humans:
 		hum.set_sim_running(0)
 	vrep.stop_sim(vrep_sim)
 	LOGGER.info('Execution finished.')
 	LOGGER.info('Shutting down ROS nodes.')
 	os.system("./resources/shutdown.sh")
-	quit()
-
-except Exception:
-	print(traceback.format_exc())
-	LOGGER.info('Shutting down ROS nodes.')
-	os.system("./resources/shutdown.sh")
-	rob.set_sim_running(0)
-	bill.set_sim_running(0)
-	vrep.stop_sim(vrep_sim)
 	quit()

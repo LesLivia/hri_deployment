@@ -84,10 +84,10 @@ def dist_cmp(item1, item2):
     else:
         return 0
 
-def plan_traj(start: Point, dest: Point, walls: List[Point]):
+def plan_traj(start: Point, dest: Point, walls: List[Point], draw=False):
 	crosses = False
 	traj = []
-	straight_line = get_straight_line(start, dest, 0.25)
+	straight_line = get_straight_line(start, dest, 0.25, draw)
 	for point in straight_line:
 		crosses = close_to_wall(Point(point.x+const.VREP_X_OFFSET, point.y+const.VREP_Y_OFFSET), walls)
 		if crosses:
@@ -109,24 +109,32 @@ def plan_traj(start: Point, dest: Point, walls: List[Point]):
 			_closest_turn = None
 			_dist_to_closest_turn = 1000.0
 			for point in turn_pts:
-				dist = _curr.distance_from(point)
+				dist = point.distance_from(dest)
 				if dist < _dist_to_closest_turn and point not in _visited:
-					_dist_to_closest_turn = dist
-					_closest_turn = point
+					print('{} {}'.format(point.x, point.y))
+					straight_line = get_straight_line(_curr, point, 1.5, draw)
+					for point in straight_line:
+						crosses = close_to_wall(Point(point.x+const.VREP_X_OFFSET, point.y+const.VREP_Y_OFFSET), walls)
+						if crosses:
+							LOGGER.debug('Straight line crosses wall')
+							break	
+					else:				
+						_dist_to_closest_turn = dist
+						_closest_turn = point
 			_visited.append(_closest_turn)
-			new_segment = get_straight_line(_curr, _closest_turn, 1.5)
+			new_segment = get_straight_line(_curr, _closest_turn, 1.5, draw)
 			traj = traj + new_segment
 			_curr = _closest_turn
-			straight_line = get_straight_line(_curr, dest, 0.25)
+			straight_line = get_straight_line(_curr, dest, 0.25, draw)
 			for point in straight_line:
 				crosses = close_to_wall(Point(point.x+const.VREP_X_OFFSET, point.y+const.VREP_Y_OFFSET), walls)
 				if crosses:
 					LOGGER.debug('Straight line crosses wall')
 					break
-		new_segment = get_straight_line(_curr, dest, 1.5)
+		new_segment = get_straight_line(_curr, dest, 1.5, draw)
 		traj = traj + new_segment
 	else:	
-		straight_line = get_straight_line(start, dest, 1.5)
+		straight_line = get_straight_line(start, dest, 1.5, draw)
 		traj = straight_line.copy()
 	return traj
 

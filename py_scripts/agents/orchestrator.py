@@ -197,6 +197,7 @@ class OpChk:
 	# PLAN (AND PUBLISH) TRAJECTORY FROM CURRENT POS TO CURRENT DESTINATION
 	def plan_trajectory(self):
 		if ENV=='S':
+			print(self.curr_dest)
 			traj = nav.plan_traj(self.rob.get_position(), self.curr_dest, nav.init_walls())
 			str_traj = ''
 			for point in traj:
@@ -206,8 +207,10 @@ class OpChk:
 			if len(traj)>0:
 				vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)
 		else:
-			#pass
-			self.rob.start_moving(self.rob.max_speed, Point(self.curr_dest.x, self.curr_dest.y))					
+			if self.mission.p[self.currH] == Pattern.HUM_FOLLOWER:
+				pass
+			else:
+				self.rob.start_moving(self.rob.max_speed, Point(self.curr_dest.x, self.curr_dest.y))					
 
 	# CHECK WHETHER CURRENT ACTION SHOULD START
 	def check_start(self):
