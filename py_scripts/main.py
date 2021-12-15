@@ -46,9 +46,9 @@ rob = MobileRobot(1, 12.0, 5.0)
 #position: 
 #    x: 4.39499902725
 #    y: 0.289999425411
-dest = [Point(4.0, 1.0), Point(35.0, 2.0)]#, Point(5.0, 1.0)]
-unique_humans = [bill, carl]
-humans = [bill, carl]#, bill]
+dest = [Point(4.0, 0.5)]#, Point(14.0, 2.0), Point(40.0, 1.0), Point(4.0, 1.0), Point(40.0, 1.0)]
+unique_humans = [bill]#, carl]
+humans = [bill]#, carl, carl, bill, bill]
 
 patterns = []
 f = open('mission.txt', 'r')
@@ -56,6 +56,8 @@ lines = f.readlines()
 for line in lines:
 	if line.replace('\n', '') == 'LEADER':
 		patterns.append(Pattern.HUM_LEADER)
+	elif line.replace('\n', '') == 'RECIPIENT':
+		patterns.append(Pattern.HUM_RECIPIENT)
 	else:
 		patterns.append(Pattern.HUM_FOLLOWER)
 f.close()

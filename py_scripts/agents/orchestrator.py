@@ -164,8 +164,10 @@ class OpChk:
 			filename = '../scene_logs/humansServed.log'
 			f = open(filename, 'r+')
 			lines = f.read().splitlines()
-			sought_line = 'human'+ str(self.humans[self.currH].hum_id) + 'served'
-			if any([l.__contains__(sought_line) for l in lines]):
+			svd_lines = list(filter(lambda l: l.__contains__('served'), lines))
+			#sought_line = 'human'+ str(self.humans[self.currH].hum_id) + 'served'
+			#if any([l.__contains__(sought_line) for l in lines]):
+			if len(svd_lines) == self.currH+1:
 				self.LOGGER.info('HUMAN ' + str(self.currH) + ' SERVED.')	
 				human_served = True
 			f.close()
@@ -207,7 +209,7 @@ class OpChk:
 			if len(traj)>0:
 				vrep.set_trajectory(const.VREP_CLIENT_ID, str_traj)
 		else:
-			if self.mission.p[self.currH] == Pattern.HUM_FOLLOWER:
+			if self.mission.p[self.currH] == Pattern.HUM_FOLLOWER or (self.mission.p[self.currH] == Pattern.HUM_RECIPIENT and self.rec_stages == 1):
 				pass
 			else:
 				self.rob.start_moving(self.rob.max_speed, Point(self.curr_dest.x, self.curr_dest.y))					
@@ -262,6 +264,7 @@ class OpChk:
 		# If human is a recipient, the action can start if
 		# battery charge is sufficient and human fatigue is low
 		elif p == Pattern.HUM_RECIPIENT:
+			self.LOGGER.info('{}'.format(self.rec_stages))
 			if self.rec_stages == 1:
 				return battery_charge_sufficient 
 			else:	
@@ -286,12 +289,17 @@ class OpChk:
 				self.curr_dest = Point(curr_human_pos.x-const.REAL_X_OFFSET, curr_human_pos.y-const.REAL_Y_OFFSET)
 		# Human recipient -> (stage1) dest = prescribed dest, (stage2) dest = current human position
 		elif p == Pattern.HUM_RECIPIENT:
-			self.currOp = Operating_Modes.ROBOT_CARR
 			if self.rec_stages == 1:
+				self.currOp = Operating_Modes.ROBOT_CARR
 				self.curr_dest = self.mission.dest[self.currH]
 			else:
+				self.currOp = Operating_Modes.ROBOT_FOLL
 				curr_human_pos = self.humans[self.currH].get_position()
-				self.curr_dest = Point(curr_human_pos.x, curr_human_pos.y)				
+				if ENV == 'S':
+					self.curr_dest = Point(curr_human_pos.x, curr_human_pos.y)
+				else:
+					self.curr_dest = Point(curr_human_pos.x-const.REAL_X_OFFSET, curr_human_pos.y-const.REAL_Y_OFFSET)
+				self.LOGGER.info('HERE {}'.format(self.curr_dest))
 		return
  	
 	# METHODS TO CHECK WHETHER ACTION HAS TO STOP
@@ -322,12 +330,13 @@ class OpChk:
 		elif p == Pattern.HUM_RECIPIENT: 
 			robot_pos = self.rob.get_position()
 			robot_pt = Point(robot_pos.x, robot_pos.y)
+			self.currOp = Operating_Modes.ROBOT_IDLE
 			if self.rec_stages == 1:
-				if robot_pt.distance_from(self.curr_dest) <= 1.0:
+				if robot_pt.distance_from(self.curr_dest) <= self.RESTART_DIST:
 					self.rec_stages = 2
-				return battery_charge_insufficient or robot_pt.distance_from(self.curr_dest) <= 1.0
+				return battery_charge_insufficient or robot_pt.distance_from(self.curr_dest) <= self.RESTART_DIST
 			else:
-				return robot_pt.distance_from(self.curr_dest) <= 1.0 or human_robot_dist < self.RESTART_DIST
+				return robot_pt.distance_from(self.curr_dest) <= self.RESTART_DIST or human_robot_dist < self.RESTART_DIST
 		else:
 			return False
 	
@@ -398,7 +407,10 @@ class Orchestrator:
 				self.LOCATION = 'stopping'
 				rob_to_rech = self.opchk.currOp == Operating_Modes.ROBOT_LEAD
 				rob_leading = self.opchk.currOp == Operating_Modes.ROBOT_CARR
-				hum_recipient = self.mission.p[(self.opchk.currH)-1] == Pattern.HUM_RECIPIENT
+				try:
+					hum_recipient = self.mission.p[(self.opchk.currH)] == Pattern.HUM_RECIPIENT
+				except IndexError:
+					hum_recipient = False
 				if self.opchk.stop and not (rob_to_rech or (rob_leading and hum_recipient)):
 					# stopHuman or not, we cannot control the human
 					self.opchk.currOp = Operating_Modes.ROBOT_IDLE
@@ -418,6 +430,7 @@ class Orchestrator:
 					elif rob_leading and hum_recipient:
 						# cannot control human sync
 						self.LOCATION = 'delivering'
+						self.opchk.start()
 						self.LOCATION = 'o_init'
 				elif self.opchk.scs:
 					self.LOCATION = 'o_scs'

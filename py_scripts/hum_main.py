@@ -30,10 +30,10 @@ bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
 rob = MobileRobot(1, 8.0, 5.0)
 
-start = [Point(23.0, 2.0), Point(14.0, 4)]#, Point(24.0, 1.0)]
-dest = [Point(4.0, 1.0), Point(30.0, 3.0)]#, Point(5.0, 1.0)]
+start = [Point(23.0, 2.0), Point(30.0, 4.0), Point(14.0, 2.0), Point(4.0, 1.0), Point(4.0, 1.0)]
+dest = [Point(4.0, 1.0), Point(14.0, 2.0), Point(40.0, 1.0), Point(4.0, 1.0), Point(40.0, 1.0)]
 unique_humans = [bill, carl]
-humans = [bill, carl]#, bill]
+humans = [bill, carl, carl, bill, bill]
 
 patterns = []
 f = open('mission.txt', 'r')
