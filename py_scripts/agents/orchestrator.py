@@ -330,9 +330,9 @@ class OpChk:
 		elif p == Pattern.HUM_RECIPIENT: 
 			robot_pos = self.rob.get_position()
 			robot_pt = Point(robot_pos.x, robot_pos.y)
-			self.currOp = Operating_Modes.ROBOT_IDLE
 			if self.rec_stages == 1:
 				if robot_pt.distance_from(self.curr_dest) <= self.RESTART_DIST:
+					self.currOp = Operating_Modes.ROBOT_IDLE
 					self.rec_stages = 2
 				return battery_charge_insufficient or robot_pt.distance_from(self.curr_dest) <= self.RESTART_DIST
 			else:

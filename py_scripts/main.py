@@ -46,9 +46,9 @@ rob = MobileRobot(1, 12.0, 5.0)
 #position: 
 #    x: 4.39499902725
 #    y: 0.289999425411
-dest = [Point(4.0, 0.5)]#, Point(14.0, 2.0), Point(40.0, 1.0), Point(4.0, 1.0), Point(40.0, 1.0)]
-unique_humans = [bill]#, carl]
-humans = [bill]#, carl, carl, bill, bill]
+dest = [Point(9.0, 5.0), Point(31.0, 1.5), Point(36.0, 0.5), Point(9.0, 5.0), Point(36.0, 0.5)]
+unique_humans = [bill, carl]
+humans = [bill, carl, carl, bill, bill]
 
 patterns = []
 f = open('mission.txt', 'r')
