@@ -39,16 +39,18 @@ else:
 		vrep.start_sim(vrep_sim)
 
 # SCENARIO CONFIGURATION
-bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
-carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
+alice = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
+bill = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
+carl = Human(3, 10, FatigueProfile.ELDERLY_SICK, 1)
+dora = Human(4, 10, FatigueProfile.YOUNG_HEALTHY, 1)
 rob = MobileRobot(1, 12.0, 5.0)
 
 #position: 
 #    x: 4.39499902725
 #    y: 0.289999425411
-dest = [Point(9.0, 5.0), Point(31.0, 1.5), Point(36.0, 0.5), Point(9.0, 5.0), Point(36.0, 0.5)]
-unique_humans = [bill, carl]
-humans = [bill, carl, carl, bill, bill]
+dest = [Point(9.0, 5.5), Point(21.0, 3.0), Point(36.0, 0.5), Point(15.0, 2.0), Point(30.0, 2.0), Point(40.0, 0.5), Point(9.0, 4.0), Point(1.0, 0.28), Point(36.0, 0.5), Point(40.0, 5.5)]
+unique_humans = [alice, bill, carl, dora]
+humans = [alice, carl, carl, dora, bill, bill, alice, alice, carl, carl]
 
 patterns = []
 f = open('mission.txt', 'r')
