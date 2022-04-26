@@ -26,14 +26,12 @@ if vrep_sim == -1:
 	vrep_sim = vrep.connect(19997)
 
 # MISSION CONFIGURATION
-bill = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
-carl = Human(2, 10, FatigueProfile.ELDERLY_HEALTHY, 1)
-rob = MobileRobot(1, 8.0, 5.0)
+alice = Human(1, 10, FatigueProfile.YOUNG_SICK, 1)
 
-start = [Point(23.0, 2.0), Point(30.0, 4.0), Point(14.0, 2.0), Point(4.0, 1.0), Point(4.0, 1.0)]
-dest = [Point(4.0, 1.0), Point(14.0, 2.0), Point(40.0, 1.0), Point(4.0, 1.0), Point(40.0, 1.0)]
-unique_humans = [bill, carl]
-humans = [bill, carl, carl, bill, bill]
+start = [Point(1.0, 2.0)]
+dest = [Point(14.0, 2.0)]
+unique_humans = [alice]
+humans = [alice]
 
 patterns = []
 f = open('mission.txt', 'r')
