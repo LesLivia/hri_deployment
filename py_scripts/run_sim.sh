@@ -1,5 +1,6 @@
 for((i=1;i<=$1;i++))
 do
+	# TEST
 	# python3 randomize_mission.py
 	# gnome-terminal -e "python3 main.py"
 	# python3 main.py
