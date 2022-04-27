@@ -1,0 +1,10 @@
+mkdir scene_logs
+cd scene_logs
+touch emg_to_ftg1.log
+touch emg_to_ftg2.log
+touch environmentData.log
+touch humanFatigue.log
+touch humanPosition.log
+touch humansServed.log
+touch robotBattery.log
+touch robotPosition.log

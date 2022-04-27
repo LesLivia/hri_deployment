@@ -7,4 +7,3 @@ __pycache__/
 .idea/
 VRep_Scenes/emg_traces/
 py_scripts/outfile.txt
-py_scripts/resources/config.ini
