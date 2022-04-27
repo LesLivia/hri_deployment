@@ -1,3 +1,4 @@
+#test
 for((i=1;i<=$1;i++))
 do
 	# python3 randomize_mission.py
