@@ -10,7 +10,7 @@ def robTrajPub(points):
     rate = rospy.Rate(10)
     count = 0
     while count < 3:
-	pub.publish(points) 
+        pub.publish(points)
         rate.sleep()
         count+=1
 

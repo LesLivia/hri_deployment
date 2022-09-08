@@ -13,7 +13,6 @@ def connect(port):
 		LOGGER.info('Connection successfully established.')
 	else:
 		LOGGER.error('Connection to VRep could not be established.')
-
 	return clientID 
 
 def start_sim(clientID):
@@ -34,12 +33,12 @@ def check_connection(clientID):
 		LOGGER.warn('Connection lost')
 	return state[0]
 
-def set_trajectory(clientID, strTraj: str):
+def set_trajectory(clientID, strTraj: str, id: str):
 	LOGGER.debug('Sending new trajectory...')
-	vrep.simxCallScriptFunction(clientID, 'MobileRobot', vrep.sim_scripttype_childscript, 'setTraj', [], [], [strTraj], '', vrep.simx_opmode_blocking)
+	vrep.simxCallScriptFunction(clientID, 'MobileRobot'+id, vrep.sim_scripttype_childscript, 'setTraj', [], [], [strTraj], '', vrep.simx_opmode_blocking)
 
-def set_state(clientID, strState: str):
-	vrep.simxCallScriptFunction(clientID, 'MobileRobot', vrep.sim_scripttype_childscript, 'setRobotState', [], [], [strState], '', vrep.simx_opmode_blocking)
+def set_state(clientID, strState: str, id: str):
+	vrep.simxCallScriptFunction(clientID, 'MobileRobot'+id, vrep.sim_scripttype_childscript, 'setRobotState', [], [], [strState], '', vrep.simx_opmode_blocking)
 
 def draw_point(clientID, pos: Point):
 	vrep.simxCallScriptFunction(clientID, 'floor', vrep.sim_scripttype_childscript, 'draw_point', [], [pos.x-const.VREP_X_OFFSET, pos.y-const.VREP_Y_OFFSET], '', '', vrep.simx_opmode_blocking)

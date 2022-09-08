@@ -1,10 +1,9 @@
-#test
-for((i=1;i<=$1;i++))
+for((i=1;i<=1;i++))
 do
 	# python3 randomize_mission.py
 	# gnome-terminal -e "python3 main.py"
 	# python3 main.py
-	python3 main.py > outfile.txt &
+	python3 main_orch.py $1 $2 > outfile$1.txt &
 	# sleep 15
 	# python3 hum_main.py
 	# NEW_DIR=SIM_"$(date +"%Y-%m-%d-%H-%M-%S")"

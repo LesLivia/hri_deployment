@@ -6,7 +6,6 @@ from multiprocessing import Pool
 import rospy_utils.hrirosnode as hriros
 import rospy_utils.hriconstants as const
 
-
 class Pattern(Enum):
 	HUM_FOLLOWER = 0
 	HUM_LEADER = 1
@@ -25,7 +24,7 @@ class Mission:
 			if not hum:
 				return False
 		return True
-
+	# SET IF HUMAN HAVE BEEN SERVED
 	def set_served(self, index: int):
 		self.served[index] = True
 		msg = 'SVD#' + str(index+1)

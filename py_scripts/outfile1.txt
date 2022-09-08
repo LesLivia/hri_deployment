@@ -1,0 +1,41 @@
+[94m[INFO] 2022-09-08 10:52:27.336562 [VREP]: Connecting to VRep...[0m
+[94m[INFO] 2022-09-08 10:52:27.337841 [VREP]: Connection successfully established.[0m
+Argument List: ['main_orch.py', '1', '0']
+Robot_id:  1
+Missione:  0
+[94m[INFO] 2022-09-08 10:52:27.337989 [ALL HUMANS]: Subscribing to position data...[0m
+[94m[INFO] 2022-09-08 10:52:27.352986 [ALL HUMANS]: Subscribing to fatigue data...[0m
+[94m[INFO] 2022-09-08 10:52:27.378641 [ALL HUMANS]: Subscribing to served data...[0m
+[94m[INFO] 2022-09-08 10:52:27.383706 [ROBOT 1]: Subscribing to position data...[0m
+[94m[INFO] 2022-09-08 10:52:27.437293 [ROBOT 1]: Subscribing to charge data...[0m
+[94m[INFO] 2022-09-08 10:52:27.491875 [ROBOT 1]: Subscribing to distance data...[0m
+killing /humFtgSub1
+killed
+shutdown request: user request
+killing /humPosSub1
+killed
+shutdown request: user request
+killing /humSvcSub1
+killed
+shutdown request: user request
+killing /robBatterySub1
+killed
+shutdown request: user request
+killing /robPosSub1
+killed
+shutdown request: user request
+killing /checkDist1
+killed
+shutdown request: user request
+[DEBUG] 2022-09-08 10:52:42.553788 [HUMAN 0]: Updating position to (10.90, 1.82)
+STO FERMO PERCHÈ NON HO UNA MISSIONE
+STO FERMO PERCHÈ NON HO UNA MISSIONE
+STO FERMO PERCHÈ NON HO UNA MISSIONE
+STO FERMO PERCHÈ NON HO UNA MISSIONE
+STO FERMO PERCHÈ NON HO UNA MISSIONE
+STO FERMO PERCHÈ NON HO UNA MISSIONE
+STO FERMO PERCHÈ NON HO UNA MISSIONE
+STO FERMO PERCHÈ NON HO UNA MISSIONE
+STO FERMO PERCHÈ NON HO UNA MISSIONE
+[94m[INFO] 2022-09-08 10:52:42.554016 [MAIN]: Execution finished.[0m
+[94m[INFO] 2022-09-08 10:52:42.554052 [MAIN]: Shutting down ROS nodes.[0m

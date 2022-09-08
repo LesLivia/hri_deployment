@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import time
 import subprocess
 import rospy_utils.hriconstants as const
@@ -9,9 +10,10 @@ def rosrun_nodes(node: str, args: List[str]):
 	for arg in args:
 		command += " " + arg
 	# print(command)
-	subprocess.Popen(command, shell=True)
+	# print('\n')
+	subprocess.Popen(command, shell=True)	# writes on the command line " rosrun 'name' "
 
 def roskill_nodes(node: str):
 	command = "rosnode kill " +  node
-	subprocess.Popen(command, shell=True)
+	subprocess.Popen(command, shell=True)	# writes on the command line " rosnode kill 'name' "
 
