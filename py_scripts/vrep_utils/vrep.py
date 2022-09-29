@@ -3,6 +3,7 @@ import vrep_utils.lib.vrep.vrep as vrep
 import rospy_utils.hriconstants as const
 from agents.coordinates import Point
 from utils.logger import Logger
+from vrep_utils.lib.vrep.vrepConst import simx_return_ok
 
 LOGGER = Logger("VREP")
 
@@ -34,8 +35,9 @@ def check_connection(clientID):
 	return state[0]
 
 def set_trajectory(clientID, strTraj: str, id: str):
-	LOGGER.debug('Sending new trajectory...')
+	LOGGER.info('Sending new trajectory...')
 	vrep.simxCallScriptFunction(clientID, 'MobileRobot'+id, vrep.sim_scripttype_childscript, 'setTraj', [], [], [strTraj], '', vrep.simx_opmode_blocking)
+
 
 def set_state(clientID, strState: str, id: str):
 	vrep.simxCallScriptFunction(clientID, 'MobileRobot'+id, vrep.sim_scripttype_childscript, 'setRobotState', [], [], [strState], '', vrep.simx_opmode_blocking)

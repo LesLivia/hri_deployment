@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import time
 import configparser
 import numpy
 import rospy_utils.hriconstants as const
@@ -19,7 +20,7 @@ LOGGER = Logger('NAVIGATION')
 PI = 3.14
 
 
-def init_walls(draw=False):
+def init_walls(draw=True):
     wall_pts = []
     density = 0.5
     for wall in const.WALLS:
@@ -49,7 +50,7 @@ def get_straight_line(start: Point, dest: Point, density=1.5, draw=False):
     traj = []
     if abs(start.x - dest.x) > 2.0:
         m = (start.y - dest.y) / (start.x - dest.x)
-        q = start.y - m * (start.x)
+        q = start.y - m * start.x
         if start.x >= dest.x:
             for x in numpy.arange(start.x, dest.x, -density):
                 y = m * x + q

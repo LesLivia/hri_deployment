@@ -20,6 +20,6 @@ def robotStatusPub(data):
 
 if __name__ == '__main__':
     try:
-        robotStatusPub(str(sys.argv[1]))
+        robotStatusPub(str(sys.argv[2]))
     except rospy.ROSInterruptException:
         pass

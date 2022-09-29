@@ -110,44 +110,30 @@ class Human:
 
 
 # READ DATA FROM ALL THE HUMANS
-def start_reading_data(humans: List[Human], orch_id):
-    if orch_id == 0:
-        f = open('../scene_logs/humanPosition.log', 'r+')
-        f.truncate(0)  # clear the position log file
+def start_reading_data(humans: List[Human]):
+
+    for hum in humans:
+        f = open('../scene_logs/emg_to_ftg{}.log'.format(hum.hum_id), 'r+')
+        f.truncate(0)
         f.close()
 
     node = 'humSensorsSub.py'
 
     LOGGER.info('Subscribing to position data...')
     pool = Pool()
-    pool.starmap(hriros.rosrun_nodes, [(node, str(orch_id))])
-
-    if orch_id == 0:
-        f = open('../scene_logs/humanFatigue.log', 'r+')  # read data from the log of the human fatigue
-        f.truncate(0)
-        f.close()
+    pool.starmap(hriros.rosrun_nodes, [(node, '')])
 
     node = 'humFtgSub.py'
 
     LOGGER.info('Subscribing to fatigue data...')
-    pool = Pool()  # [...]
-    pool.starmap(hriros.rosrun_nodes, [(node, str(orch_id))])
-
-    if orch_id == 0:
-        f = open('../scene_logs/humansServed.log', 'r+')
-        f.truncate(0)
-        f.close()
+    pool = Pool()
+    pool.starmap(hriros.rosrun_nodes, [(node, '')])
 
     node = 'humServiceSub.py'
 
     pool = Pool()
     LOGGER.info('Subscribing to served data...')
-    pool.starmap(hriros.rosrun_nodes, [(node, str(orch_id))])
-
-    for hum in humans:
-        f = open('../scene_logs/emg_to_ftg{}.log'.format(hum.hum_id), 'r+')
-        f.truncate(0)
-        f.close()
+    pool.starmap(hriros.rosrun_nodes, [(node, '')])
 
     for hum in humans:
         hum.set_sim_running(1)  # set humans to 'running'
@@ -160,9 +146,8 @@ def follow_position(hums: List[Human]):
     lines = f.read().splitlines()
     for hum in hums:
         hum_lines = list(filter(lambda l: len(l) > 1 and l.split(':')[1] == 'hum{}'.format(hum.hum_id), lines))
-
         if len(hum_lines) > 0:
-            n_humans = 2
+            n_humans = 1
             to_read = hum_lines[hum.hum_id - n_humans]
             # humId = int((line.split(':')[1]).replace('hum', ''))
             # hum = hums[humId-1]
@@ -184,7 +169,7 @@ def follow_fatigue(hums: List[Human]):
     lines = f.read().splitlines()
     for hum in hums:
         hum_lines = lines
-        n_humans = 2
+        n_humans = 1
         if len(hum_lines) > 0:
             to_read = hum_lines[hum.hum_id - n_humans]
             # humId = int((line.split(':')[1]).replace('hum', ''))

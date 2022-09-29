@@ -12,10 +12,20 @@ def callback(data):
     f = open("../scene_logs/robotDistance.log", "a")
     s = data.data
     l = s.split(':')
+    dict = {}
+    sorted_dict = {}
     if id_param == l[1]:
-        for i in range(0, 7):
-            f.write(l[i] + ":")
-        f.write("\n")
+        for i in range(0, 8):
+            f.write(":" + l[i])
+        for j in range(2, 8, 2):
+            if l[j] != id_param:
+                dict[int(l[j])] = l[j+1]
+        sorted_keys = sorted(dict, key=dict.get)  # [1, 3, 2]
+        for w in sorted_keys:
+            sorted_dict[w] = dict[w]
+        for key in sorted_dict:
+            f.write(':'+str(key))
+        f.write('\n')
     f.close()
 
 def listener():

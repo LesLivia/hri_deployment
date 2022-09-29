@@ -15,5 +15,5 @@ class Position:
                         float(fields[3]), float(fields[4]), float(fields[5]))
 
     def __str__(self):
-        return 'x: ' + str(self.x) + '	y: ' + str(self.y) + '	z: ' + str(self.z) + '	alpha: ' + str(
-            self.a) + '	beta: ' + str(self.b) + '	gamma: ' + str(self.g)
+        return 'x: ' + str(self.x) + ' y: ' + str(self.y) + ' z: ' + str(self.z) + ' alpha: ' + str(
+            self.a) + ' beta: ' + str(self.b) + ' gamma: ' + str(self.g)

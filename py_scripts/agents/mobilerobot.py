@@ -24,6 +24,8 @@ class MobileRobot:
 		self.last_time_charge = 0.0
 		self.curr_speed = 0.0
 		self.sim_running = 0
+		self.charge = 50.0
+		self.position = None
 		self.LOGGER = Logger("ROBOT {}".format(rob_id))
 
 	def set_position(self, position: Position):	# define set and get functions:
@@ -58,23 +60,6 @@ class MobileRobot:
 
 	# READ DATA FROM POSITION AND CHARGE LOG
 	def start_reading_data(self):
-		# clear robot position log file								bisogna farlo perché potrebbe essere ancora scritto dall'altra volta
-		if self.rob_id == '0':
-			f = open('../scene_logs/robotPosition.log', 'r+')
-			f.truncate(0)
-			f.close()
-			f1 = open('../scene_logs/robotDistance.log', 'r+')
-			f1.truncate(0)
-			f1.close()
-			f2 = open('../scene_logs/robotBattery.log', 'r+')
-			f2.truncate(0)
-			f2.close()
-			f3 = open("../scene_logs/humanPosition.log", "a")
-			f3.truncate(0)
-			f3.close()
-			f4 = open("../scene_logs/humanFatigue.log", "a")
-			f4.truncate(0)
-			f4.close()
 
 		# launch ROS node that subscribes to robot GPS data
 		if ENV=='S':
@@ -95,13 +80,7 @@ class MobileRobot:
 		pool = Pool()
 		pool.starmap(hriros.rosrun_nodes, [(node, [self.rob_id])])
 
-		#############################
-		node = 'checkDist.py'
-		self.LOGGER.info('Subscribing to distance data...')
-		pool = Pool()
-		pool.starmap(hriros.rosrun_nodes, [(node, [self.rob_id])])
 		self.set_sim_running(1)								# the robot is running
-		#############################
 
 	# TRACK THE POSITION OF THE ROBOT
 	def follow_position(self):
@@ -135,7 +114,6 @@ class MobileRobot:
 			new_pos = None
 			self.set_position(new_pos)
 			self.LOGGER.debug('Updating position to ({:.2f}, {:.2f})'.format(new_pos.x, new_pos.y))
-
 
 	# TRACK THE CHARGE OF THE ROBOT
 	def follow_charge(self):
@@ -171,8 +149,7 @@ class MobileRobot:
 		if ENV=='S':
 			# requested target speed is published to both robot motors, so that the robot starts moving straight
 			node = 'robStatusPub.py'
-			data = str(self.rob_id)+'#1#'
-
+			data = str(self.rob_id) + '#1#'
 			if targetSpeed > 0:
 				data = data + str(targetSpeed)
 		else: 	
@@ -180,7 +157,7 @@ class MobileRobot:
 			data = '{:.4f} {:.4f}'.format(dest.x, dest.y)
 
 		pool = Pool()
-		pool.starmap(hriros.rosrun_nodes, [(node, [data])])
+		pool.starmap(hriros.rosrun_nodes, [(node, [str(self.rob_id), data])])
 		self.curr_speed = targetSpeed
 		self.LOGGER.info('Instructing robot to start moving (target speed {:.2f})...'.format(targetSpeed))
 
@@ -188,9 +165,9 @@ class MobileRobot:
 	def stop_moving(self):
 		if ENV=='S':
 			node = 'robStatusPub.py'
-			data = str(self.rob_id)+'#0#0.0'
+			data = str(self.rob_id) + '#0#0.0'
 			pool = Pool()
-			pool.starmap(hriros.rosrun_nodes, [(node, [data])])
+			pool.starmap(hriros.rosrun_nodes, [(node, [str(self.rob_id), data])])
 		else:
 			os.system("./resources/cancel_goal.sh")
 		# both motors speed is set to 0, so that the robot stops moving
